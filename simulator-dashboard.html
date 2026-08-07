@@ -44,6 +44,51 @@
   }
   .back-link:hover { color: var(--sky); border-color: var(--sky); }
 
+  .theme-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: rgba(15,23,42,.6); color: #e2e8f0;
+    font-size: 13px; transition: border-color .2s ease, transform .15s ease;
+  }
+  .theme-btn:hover { border-color: var(--sky); transform: scale(1.05); }
+
+  [data-theme="light"] {
+    --bg: #f1f5f9;
+    --panel: rgba(255,255,255,.75);
+    --panel2: rgba(241,245,249,.8);
+    --card: #ffffff;
+    --border: rgba(148,163,184,.55);
+    --ink: #0f172a;
+    --muted: #475569;
+    --dim: #64748b;
+  }
+  [data-theme="light"] body { color: var(--ink); }
+  [data-theme="light"] .back-link { background: rgba(255,255,255,.85); color: var(--dim); }
+  [data-theme="light"] .back-link:hover { color: var(--sky); }
+  [data-theme="light"] .theme-btn { background: rgba(226,232,240,.7); color: #334155; }
+  [data-theme="light"] header { background: rgba(255,255,255,.9); }
+  [data-theme="light"] .hwrap h1, [data-theme="light"] .kpi .k-head, [data-theme="light"] .tab.active { color: var(--ink); }
+  [data-theme="light"] .sl-top .sl-val, [data-theme="light"] .k-val, [data-theme="light"] .k-val.small { color: var(--ink); }
+  [data-theme="light"] .kpi .k-sub, [data-theme="light"] .ch-sub, [data-theme="light"] .kpi-row-label,
+  [data-theme="light"] .sl-top label, [data-theme="light"] .legend, [data-theme="light"] .cb-top .amt .pct,
+  [data-theme="light"] .mini .lbl, [data-theme="light"] .method-body p, [data-theme="light"] .ctip .ct-ttl { color: var(--dim); }
+  [data-theme="light"] .cb-top .amt { color: #1e293b; }
+  [data-theme="light"] .mini .val { color: #0f172a; }
+  [data-theme="light"] .tabs { background: rgba(226,232,240,.8); }
+  [data-theme="light"] .tab { color: var(--dim); }
+  [data-theme="light"] .tab:hover:not(.active) { color: #334155; background: rgba(203,213,225,.6); }
+  [data-theme="light"] input[type=range] { background: #cbd5e1; }
+  [data-theme="light"] input[type=range]::-webkit-slider-thumb { border-color: #fff; }
+  [data-theme="light"] input[type=range]::-moz-range-thumb { border-color: #fff; }
+  [data-theme="light"] .ctip { background: rgba(255,255,255,.97); border-color: #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,.15); }
+  [data-theme="light"] .ctip .ct-r .lbl { color: #334155; }
+  [data-theme="light"] .ctip .ct-v { color: #0f172a; }
+  [data-theme="light"] .method-body { background: rgba(241,245,249,.5); border-top-color: var(--border); }
+  [data-theme="light"] .method-body h3 { color: #1e293b; }
+  [data-theme="light"] .method > button { color: #1e293b; background: var(--panel2); }
+  [data-theme="light"] .method > button:hover { background: rgba(226,232,240,.7); }
+  [data-theme="light"] .cb-track { background: rgba(203,213,225,.7); }
+
   header {
     border-bottom: 1px solid var(--border);
     padding: 14px 20px;
@@ -176,6 +221,7 @@
     <div class="hbadges">
       <div class="hbadge"><span class="pulse"></span>Live model</div>
       <div class="hbadge"><span id="hcCount">—</span> headcount at M36</div>
+      <button class="theme-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
     </div>
   </div>
 </header>
@@ -706,6 +752,18 @@
       $('legendEbitda').style.display = t.view === 'ebitda' ? 'block' : 'none';
       compute();
     });
+  });
+
+  // ─── Theme toggle ───
+  const themeBtn = $('themeBtn');
+  const savedTheme = localStorage.getItem('sim-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    themeBtn.textContent = next === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('sim-theme', next);
   });
 
   // ─── Methodology toggle ───
