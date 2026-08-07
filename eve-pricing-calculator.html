@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EVE Pricing Calculator — Commercial Logistics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg0: #0b0f1a;
+    --bg1: #0f1524;
+    --panel: rgba(255,255,255,0.045);
+    --panel-solid: #131a2b;
+    --panel2: rgba(255,255,255,0.06);
+    --ink: #e7ecf6;
+    --muted: #8b95ad;
+    --accent: #6d8bff;
+    --accent2: #9f7bff;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #fb7185;
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.14);
+    --grad: linear-gradient(135deg, #6d8bff 0%, #9f7bff 100%);
+    --shadow: 0 20px 45px -20px rgba(0,0,0,0.65);
+    --header-bg: rgba(11,15,26,0.5);
+    --glow1: rgba(109,139,255,0.16);
+    --glow2: rgba(159,123,255,0.14);
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  html[data-theme="light"] {
+    --bg0: #eef3ff;
+    --bg1: #f7faff;
+    --panel: rgba(255,255,255,0.78);
+    --panel-solid: #ffffff;
+    --panel2: rgba(15,23,42,0.045);
+    --ink: #0f172a;
+    --muted: #5b6477;
+    --accent: #4f6bf5;
+    --accent2: #7c4dff;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #e0245e;
+    --border: rgba(15,23,42,0.10);
+    --border-strong: rgba(15,23,42,0.18);
+    --shadow: 0 20px 45px -24px rgba(15,23,42,0.28);
+    --header-bg: rgba(255,255,255,0.72);
+    --glow1: rgba(79,107,247,0.12);
+    --glow2: rgba(124,77,255,0.10);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(900px 600px at 12% -8%, var(--glow1), transparent 60%),
+      radial-gradient(900px 600px at 95% 0%, var(--glow2), transparent 55%),
+      linear-gradient(180deg, var(--bg0), var(--bg1) 60%);
+    background-attachment: fixed;
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    transition: background .35s ease, color .35s ease;
+  }
+
+  header { padding: 26px 40px 20px; border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); background: var(--header-bg); position: sticky; top: 0; z-index: 20; transition: background .35s ease; }
+  .ctrl { display: flex; align-items: center; justify-content: flex-end; gap: 8px; white-space: nowrap; flex-shrink: 0; margin-left: auto; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border);
+    background: var(--panel2); color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 0; width: 40px; height: 40px; border-radius: 10px; transition: transform .15s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
+  }
+  .icon-btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+  .icon-btn .ico { font-size: 19px; line-height: 1; }
+  .hero { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .hero > div:first-child { min-width: 0; flex: 1 1 auto; }
+  header .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  header .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(52,211,153,.5); animation: pulse 2.4s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(52,211,153,.45)} 70%{box-shadow:0 0 0 9px rgba(52,211,153,0)} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0)} }
+  header h1 { margin: 0 0 6px; font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .wrap { display: grid; grid-template-columns: 390px 1fr; gap: 22px; padding: 26px 40px 40px; max-width: 1240px; margin: 0 auto; align-items: start; }
+
+  .panel, .card, .pitch { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+  .panel { padding: 24px; position: sticky; top: 118px; max-height: calc(100vh - 140px); overflow-y: auto; }
+  .panel h2, .card h2, .pitch h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .section-ico { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; color: #fff; background: var(--grad); box-shadow: 0 6px 16px -6px rgba(109,139,255,.7); flex: 0 0 26px; }
+
+  .subhead { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 22px 0 12px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .subhead:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+
+  .field { margin-bottom: 20px; }
+  .field label { display: flex; align-items: baseline; gap: 6px; font-size: 13px; font-weight: 500; margin-bottom: 10px; color: var(--ink); }
+  .field label .val { color: var(--accent); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; margin-left: auto; }
+  .field label .lab { color: var(--muted); }
+
+  .info {
+    position: relative; display: inline-flex; align-items: center; justify-content: center; align-self: center;
+    width: 15px; height: 15px; border-radius: 50%; background: var(--border-strong); color: var(--muted);
+    font-size: 10px; font-weight: 700; font-style: normal; cursor: help; flex: 0 0 15px; user-select: none;
+  }
+  .info::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(4px);
+    background: var(--panel-solid); color: var(--ink); border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 9px 12px; font-size: 12px; font-weight: 500; line-height: 1.45; width: max-content; max-width: 240px;
+    box-shadow: var(--shadow); opacity: 0; visibility: hidden; transition: opacity .18s var(--ease), transform .18s var(--ease), visibility .18s;
+    z-index: 60; pointer-events: none; white-space: normal; text-transform: none; letter-spacing: 0;
+  }
+  .info:hover::after, .info:focus-visible::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.10); outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.4); transition: transform .15s var(--ease); }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.4); cursor: pointer; }
+  .field .hint { font-size: 11px; color: var(--muted); margin-top: 7px; padding-left: 2px; }
+
+  .text, .select, .date {
+    width: 100%; height: 42px; background: var(--panel2); border: 1px solid var(--border); color: var(--ink);
+    border-radius: 10px; padding: 0 12px; font-size: 14px; font-weight: 500; font-family: inherit; line-height: 42px;
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease); -webkit-appearance: none; appearance: none;
+  }
+  .select { height: 42px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b95ad' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+  .select option, .text::placeholder { color: var(--muted); }
+  .text:focus, .select:focus, .date:focus, input[type=number]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(109,139,255,.18); }
+  .num input[type=number] {
+    width: 100%; height: 42px; background: var(--panel2); border: 1px solid var(--border); color: var(--ink);
+    border-radius: 10px; padding: 0 12px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .dual > div { display: flex; flex-direction: column; min-width: 0; }
+  .dual label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; margin-bottom: 10px; color: var(--ink); line-height: 1.3; }
+  .dual label span { white-space: normal; line-height: 1.3; }
+
+  .checkrow { display: flex; align-items: center; gap: 10px; background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .2s var(--ease); }
+  .checkrow:hover { border-color: var(--border-strong); }
+  .checkrow input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+  .checkrow .cl { font-size: 13px; font-weight: 600; }
+  .checkrow .cs { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .checkrow .cval { margin-left: auto; font-weight: 700; color: var(--green); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  .livepill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 10px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); margin-top: 6px; }
+  .livepill .lDot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+  button.link { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  button.link:hover { color: var(--accent2); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel2); color: var(--ink); font: inherit; font-size: 13px; font-weight: 600;
+    padding: 9px 12px; border-radius: 10px; transition: transform .15s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+  .btn.primary { background: var(--grad); border-color: transparent; color: #fff; }
+  .btn.primary:hover { filter: brightness(1.08); border-color: transparent; }
+  .btn.danger:hover { border-color: var(--red); color: var(--red); }
+  .btn.small { padding: 7px 10px; font-size: 12px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+
+  .scen-inline { display: flex; gap: 8px; }
+  .scen-inline .text { flex: 1; }
+
+  .results { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .card, .pitch { padding: 24px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .stat { position: relative; overflow: hidden; background: var(--panel2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; transition: transform .2s var(--ease), border-color .2s var(--ease); }
+  .stat:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .stat .v { font-size: 22px; font-weight: 800; margin-top: 6px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .stat .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat.green .v { color: var(--green); }
+  .stat.amber .v { color: var(--amber); }
+  .stat.accent .v { color: var(--accent); }
+
+  .range-row { background: linear-gradient(135deg, rgba(109,139,255,.10), rgba(159,123,255,.10)); border: 1px solid var(--border); border-radius: 16px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .range-row .lbl { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+  .range-row .price { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .range-row .price span { color: var(--accent); }
+  .range-row .feat { display: flex; flex-direction: column; text-align: center; padding: 0 8px; }
+  .range-row .feat .cap { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  .table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  .table th, .table td { text-align: right; padding: 11px 12px; }
+  .table th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); }
+  .table td { border-bottom: 1px solid var(--border); }
+  .table td:first-child, .table th:first-child { text-align: left; color: var(--ink); }
+  .table th:first-child { color: var(--muted); }
+  .table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--ink); }
+  .table tbody tr:hover { background: var(--panel2); }
+  .table.ladder { margin-top: 8px; }
+  .ladder-head { font-size: 12px; font-weight: 600; color: var(--ink); margin: 18px 0 0; }
+  .ladder-exp { font-size: 12px; color: var(--muted); line-height: 1.55; margin: 8px 0 12px; }
+  .ladder-exp strong { color: var(--ink); font-weight: 600; }
+  .table.ladder tbody tr.active { background: var(--panel2); outline: 1px solid var(--accent); outline-offset: -1px; border-radius: 8px; }
+  .table.ladder tbody tr.active td { font-weight: 700; color: var(--accent); }
+
+  .split { margin: 4px 0 8px; }
+  .split-bar { display: flex; height: 26px; border-radius: 8px; overflow: hidden; background: var(--panel2); border: 1px solid var(--border); }
+  .seg { height: 100%; transition: width .3s var(--ease); }
+  .seg-capt { background: var(--grad); }
+  .seg-keep { background: var(--green); }
+  .split-legend { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .split-legend b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .neg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 18px; }
+  .neg { background: var(--panel2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+  .neg .neg-k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .neg .neg-v { font-size: 20px; font-weight: 800; margin-top: 6px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .neg .neg-v.green { color: var(--green); }
+  .neg .neg-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .warn-box { margin-top: 18px; border: 1px solid var(--border); border-left: 3px solid var(--amber); background: var(--panel2); border-radius: 12px; padding: 12px 14px; }
+  .warn-box[hidden] { display: none; }
+  .warn-title { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 6px; }
+  .warn-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .warn-list li { font-size: 12px; color: var(--ink); }
+  .warn-list li.warn-tone-red { color: var(--red); font-weight: 600; }
+  .warn-list li.warn-tone-amber { color: var(--amber); }
+
+  .table tfoot th { background: var(--panel2); border-top: 2px solid var(--border); color: var(--ink); font-weight: 700; }
+
+  .fc-chart { display: flex; align-items: flex-end; gap: 14px; height: 210px; padding: 12px 4px 0; }
+  .fc-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .fc-bar-wrap { width: 100%; max-width: 70px; height: 170px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+  .fc-bar { width: 30%; border-radius: 6px 6px 2px 2px; min-height: 4px; transition: height .3s var(--ease); }
+  .fc-capt { background: var(--grad); }
+  .fc-keep { background: var(--green); }
+  .fc-val { font-size: 10px; color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .fc-year { font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+  .fc-note { font-size: 11px; color: var(--muted); margin-top: 12px; }
+
+  .pnl { display: flex; flex-direction: column; gap: 6px; margin: 0; list-style: none; padding: 0; }
+  .pnl-item { display: flex; gap: 16px; padding: 14px; border-radius: 12px; transition: background .2s var(--ease); }
+  .pnl-item:hover { background: var(--panel2); }
+  .pnl-item .badge { flex: 0 0 34px; height: 34px; border-radius: 10px; background: var(--grad); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px -6px rgba(109,139,255,.7); }
+  .pnl-item em { color: var(--accent2); font-style: normal; font-weight: 600; }
+  .pnl-item p { margin: 0; font-size: 14px; font-weight: 500; }
+  .pnl-item .tip { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .foot { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 24px 40px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--panel-solid); color: var(--ink); border: 1px solid var(--border-strong);
+    padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow);
+    opacity: 0; pointer-events: none; transition: opacity .3s var(--ease), transform .3s var(--ease); z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .help {
+    max-width: 1180px; margin: 20px auto 0; padding: 22px 26px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    box-shadow: var(--shadow); backdrop-filter: blur(10px);
+    animation: helpIn .25s var(--ease);
+  }
+  @keyframes helpIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
+  .help-col h3 { margin: 0 0 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+  .help-col p { margin: 0 0 8px; font-size: 13px; color: var(--ink); }
+  .help-col ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink); }
+  .help-col li { margin-bottom: 6px; }
+  .help-col strong { color: var(--accent2); }
+  .help-col em { color: var(--accent); font-style: normal; font-weight: 600; }
+  .help-note { font-size: 11px !important; color: var(--muted) !important; margin-top: 10px; }
+  #helpBtn .ico { font-weight: 800; }
+
+  @media (max-width: 920px) {
+    header { padding: 24px 20px; }
+    .hero { flex-wrap: wrap; }
+    .ctrl { margin-left: 0; width: 100%; }
+    .wrap { grid-template-columns: 1fr; padding: 20px; }
+    .panel { position: static; max-height: none; }
+    .grid { grid-template-columns: 1fr; }
+    .range-row { flex-direction: column; text-align: center; }
+    .range-row .feat { padding: 4px 0; }
+    .dual { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Print / PDF export ---------- */
+  @media print {
+    @page { margin: 13mm; }
+    html, body { background: #fff !important; color: #111 !important; }
+    body { color: #111 !important; }
+    header { position: static; background: #fff !important; border: none; padding: 0 0 8mm; }
+    header .badge { color: #555; }
+    header p { color: #333; }
+    .ctrl, .livepill, .foot, .toast, .help { display: none !important; }
+    .wrap { display: none !important; }
+    .printsheet { display: block !important; }
+    .printsheet * { color: #111; border-color: #ddd; }
+    .printsheet h2 { color: #4f6bf5; }
+    .printsheet .p-meta-item .val, .printsheet table strong { color: #0f172a; }
+    body[data-print="dark"] { background: #0b0f1a !important; }
+    body[data-print="dark"] .printsheet { background: #0b0f1a !important; }
+    body[data-print="dark"] .printsheet * { color: #e7ecf6 !important; }
+    body[data-print="dark"] .printsheet h2 { color: #6d8bff !important; }
+    body[data-print="dark"] .printsheet .p-meta-item { border-color: #2a3550; }
+    body[data-print="dark"] .printsheet th, body[data-print="dark"] .printsheet .tip, body[data-print="dark"] .printsheet .p-foot { color: #8b95ad !important; }
+    body[data-print="dark"] .printsheet .p-meta-item .val, body[data-print="dark"] .printsheet table strong { color: #e7ecf6 !important; }
+    body[data-print="dark"] .printsheet h1 { color: #fff !important; }
+  }
+  .printsheet { display: none; font-family: 'Inter', Arial, sans-serif; }
+  .printsheet .p-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #4f6bf5; padding-bottom: 8mm; margin-bottom: 8mm; }
+  .printsheet .p-head h1 { font-size: 22pt; margin: 0; }
+  .printsheet .p-head .meta { font-size: 9pt; color: #555; text-align: right; }
+  .printsheet .p-meta { display: flex; gap: 8mm; flex-wrap: wrap; margin-bottom: 8mm; }
+  .printsheet .p-meta-item { flex: 1; min-width: 42mm; border: 1px solid #ddd; border-radius: 4mm; padding: 4mm; }
+  .printsheet .p-meta-item .lbl { font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; color: #666; }
+  .printsheet .p-meta-item .val { font-size: 13pt; font-weight: 700; margin-top: 1mm; }
+  .printsheet h2 { font-size: 13pt; border-bottom: 1px solid #ddd; padding-bottom: 2mm; margin: 7mm 0 4mm; }
+  .printsheet table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  .printsheet th, .printsheet td { text-align: right; padding: 2.2mm 3mm; border-bottom: 1px solid #eee; }
+  .printsheet th { color: #666; font-weight: 600; }
+  .printsheet td:first-child, .printsheet th:first-child { text-align: left; }
+  .printsheet .pitch-list { margin: 0; padding: 0; list-style: none; }
+  .printsheet .pitch-list li { display: flex; gap: 5mm; padding: 3mm 0; border-bottom: 1px solid #eee; }
+  .printsheet .pitch-list .n { flex: 0 0 10mm; height: 10mm; border-radius: 3mm; background: #4f6bf5; color: #fff !important; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .printsheet .pitch-list p { margin: 0; }
+  .printsheet .pitch-list .tip { font-size: 8.5pt; color: #666; margin-top: 1mm; }
+  .printsheet .p-foot { margin-top: 10mm; font-size: 8pt; color: #888; text-align: center; border-top: 1px solid #ddd; padding-top: 3mm; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div>
+      <div class="badge"><span class="dot"></span> Value-Based Pricing · EVE</div>
+      <h1>Economic Value Estimation</h1>
+      <p>Turn your deal's value into a defensible annual price — and the headroom to negotiate around it.</p>
+    </div>
+    <div class="ctrl">
+      <button class="icon-btn" id="linkBtn" title="Copy a shareable link that loads this scenario" aria-label="Copy shareable link"><span class="ico">🔗</span></button>
+      <button class="icon-btn" id="csvBtn" title="Export every number as a CSV file" aria-label="Export CSV"><span class="ico">▤</span></button>
+      <button class="icon-btn" id="copyBtn" title="Copy the pricing summary as Markdown for Slack, Notion, or email" aria-label="Share / copy summary"><span class="ico">⧉</span></button>
+      <button class="icon-btn" id="helpBtn" title="What does this tool do?" aria-label="About this tool" aria-expanded="false" aria-controls="helpPanel"><span class="ico">ⓘ</span></button>
+      <button class="icon-btn" id="themeBtn" title="Toggle light / dark theme" aria-label="Toggle theme"><svg class="thico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle id="icoSun" cx="12" cy="12" r="5"/><path id="icoSunRays" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+      <button class="icon-btn" id="printBtn" title="Export summary as PDF" aria-label="Export PDF"><span class="ico">⬇</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="help" id="helpPanel" hidden>
+  <div class="help-grid">
+    <div class="help-col">
+      <h3>What is this tool?</h3>
+      <p>This calculator applies <strong>Economic Value Estimation (EVE)</strong> — a value-based pricing method. Instead of pricing features, it prices the <em>economic value</em> our solution creates relative to the customer's next best alternative (competitor).</p>
+      <p>The logic: take the competitor's price, add the net value of our differentiation (the two value drivers you name, minus switching friction), and recommend a price that captures only 30–40% of that net value — leaving the customer most of the benefit so the deal is a clear win.</p>
+    </div>
+    <div class="help-col">
+      <h3>How to use it</h3>
+      <ul>
+        <li>Fill in the <strong>Deal Inputs</strong> panel on the left — everything recalculates live.</li>
+        <li>Read the <strong>Target Price Range</strong> for the recommended annual list price.</li>
+        <li>Use <strong>Negotiation Headroom</strong> to see how far you can discount before losing the 30% floor, and the value split per dollar.</li>
+        <li>Check the <strong>5-Year Forecast</strong> for the multi-year ROI story and feature-1 sensitivity for negotiation prep.</li>
+        <li>Save any input set as a <strong>scenario preset</strong> to compare deals or revisit later.</li>
+      </ul>
+    </div>
+    <div class="help-col">
+      <h3>What the buttons do</h3>
+      <ul>
+        <li><strong>🔗 Link</strong> — copies a shareable URL that opens this exact scenario (no install needed by the receiver).</li>
+        <li><strong>▤ CSV</strong> — downloads every number as a spreadsheet file.</li>
+        <li><strong>⧉ Share</strong> — copies the summary as Markdown to paste into Slack, Notion, or email.</li>
+        <li><strong>ⓘ About</strong> — toggles this explanation panel.</li>
+        <li><strong>Theme</strong> (moon/sun icon) — switches light / dark, remembered on this browser.</li>
+        <li><strong>⬇ Export PDF</strong> — downloads a formatted pricing summary matching the current theme.</li>
+      </ul>
+      <p class="help-note">Assumptions to validate: the two annual value-driver figures you enter (name them in Feature 1 / Feature 2 labels) and the onboarding cost. Confirm actuals with the customer before quoting.</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2><span class="section-ico">◧</span> Deal Inputs</h2>
+
+    <div class="subhead">Deal Metadata</div>
+    <div class="field">
+      <label><span>Account / Deal name</span><i class="info" tabindex="0" data-tip="Optional — names the deal on the PDF and in the shared summary. e.g. &quot;Atlas Logistics — 3-yr renewal&quot;.">i</i></label>
+      <input type="text" class="text" id="account" placeholder="e.g. Atlas Logistics — 3-yr renewal" />
+    </div>
+    <div class="field">
+      <div class="dual">
+        <div>
+          <label><span>Account Executive</span><i class="info" tabindex="0" data-tip="Optional — the rep's name, shown on the exported PDF.">i</i></label>
+          <input type="text" class="text" id="rep" placeholder="Rep name" />
+        </div>
+        <div>
+          <label><span>Target close</span><i class="info" tabindex="0" data-tip="Optional — expected close date, shown on the exported PDF.">i</i></label>
+          <input type="date" class="date" id="close" />
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label><span>Currency</span><i class="info" tabindex="0" data-tip="Formats every dollar figure and the exported PDF in your chosen currency.">i</i></label>
+      <select class="select" id="currency">
+        <option value="USD" selected>USD — $</option>
+        <option value="EUR">EUR — €</option>
+        <option value="GBP">GBP — £</option>
+      </select>
+    </div>
+
+    <div class="subhead">Economics</div>
+    <div class="field">
+      <label><span>Next Best Alternative (NPR)</span><i class="info" tabindex="0" data-tip="The customer's next best alternative — here FleetTrack Pro at $40,000/yr. Your price is anchored against this, not built from cost.">i</i><span class="val" id="lblNpr"></span></label>
+      <input type="range" id="npr" min="0" max="120000" step="1000" value="40000" title="Arrow keys adjust by step · Home/End jump to min/max" />
+      <div class="hint">Competitor (FleetTrack Pro) annual price</div>
+    </div>
+
+    <div class="field">
+      <label><span>Feature 1 label</span><i class="info" tabindex="0" data-tip="Name your first differentiator — e.g. &quot;Fuel savings&quot;, &quot;AI route optimization&quot;, or &quot;Prod maintenance&quot;. This label flows through every table, chart, and export.">i</i></label>
+      <input type="text" class="text" id="f1name" value="Fuel savings" />
+    </div>
+    <div class="field">
+      <label><span>Feature 1 — annual value <span class="val" id="lblF1"></span></span></label>
+      <div class="num"><input type="number" id="f1val" value="12000" step="500" min="0" title="Annual value delivered by feature 1" /></div>
+      <div class="hint" id="f1hint">Annual $ value delivered by feature 1</div>
+    </div>
+
+    <div class="field">
+      <label><span>Feature 2 label</span><i class="info" tabindex="0" data-tip="Name your second differentiator — e.g. &ldquo;Labor savings&rdquo; or &ldquo;Compliance automation&rdquo;. Appears everywhere alongside feature 1.">i</i></label>
+      <input type="text" class="text" id="f2name" value="Labor savings" />
+    </div>
+    <div class="field">
+      <label><span>Feature 2 — annual value <span class="val" id="lblF2"></span></span></label>
+      <div class="num"><input type="number" id="f2val" value="5000" step="100" min="0" title="Annual value delivered by feature 2" /></div>
+      <div class="hint" id="f2hint">Annual $ value delivered by feature 2</div>
+    </div>
+
+    <div class="field">
+      <label><span>One-time onboarding cost</span><i class="info" tabindex="0" data-tip="Switching/implementation friction the customer pays. It's subtracted from Year-1 value — the reason your price ceiling is lower in year one.">i</i><span class="val" id="lblFriction"></span></label>
+      <input type="range" id="friction" min="0" max="20000" step="250" value="3000" title="Arrow keys adjust by step · Home/End jump to min/max" />
+      <div class="hint">Switching / implementation friction</div>
+    </div>
+
+    <div class="field">
+      <label><span>Value capture</span><i class="info" tabindex="0" data-tip="Share of the net differentiation value your price keeps. 30–40% is the value-based sweet spot — leave most of the value with the customer to make the deal a clear win.">i</i><span class="val" id="lblCapture"></span></label>
+      <input type="range" id="capture" min="10" max="60" step="1" value="30" title="Recommended zone 30–40% of net differentiation value" />
+      <div class="hint">% of net differentiation value to keep (target 30–40%)</div>
+    </div>
+
+    <div class="field">
+      <label><span>3-year commitment</span><i class="info" tabindex="0" data-tip="Offer a 3-year contract at −10% list price from Year 2 in exchange for revenue certainty. Shows the incentive to the right when enabled.">i</i></label>
+      <label class="checkrow" id="commitRow" title="Offer a multi-year commitment at a discounted list price from Year 2 onward">
+        <input type="checkbox" id="commitment" />
+        <div><div class="cl">3-year commitment offer</div><div class="cs">Lock-in for 3 yrs → −10% list from Yr 2</div></div>
+        <span class="cval" id="commitVal">off</span>
+      </label>
+    </div>
+
+    <div class="subhead">Scenario Presets</div>
+    <div class="field">
+      <label class="presethead" style="margin-bottom:10px"><span>Save / load scenarios</span><i class="info" tabindex="0" data-tip="Store any set of inputs as a named preset in this browser (localStorage). Useful for comparing deals or picking up where you left off.">i</i></label>
+      <div class="scen-inline">
+        <input type="text" class="text" id="presetName" placeholder="Name this scenario…" />
+        <button class="btn primary" id="savePresetBtn" title="Save current inputs to a named preset">Save</button>
+      </div>
+      <div style="margin-top:8px">
+        <select class="select" id="presetSelect" title="Saved scenarios are stored locally in your browser"></select>
+      </div>
+      <div class="btn-row">
+        <button class="btn small" id="loadPresetBtn">Load</button>
+        <button class="btn small danger" id="delPresetBtn">Delete</button>
+        <button class="btn small" id="resetBtn" style="margin-left:auto">Reset</button>
+      </div>
+      <div class="hint">Tip: arrow keys fine-tune sliders · Shift+arrow steps smaller in some browsers</div>
+    </div>
+  </aside>
+
+  <div class="results">
+    <div class="card">
+      <h2><span class="section-ico">◧</span> EVE Math Breakdown<i class="info" tabindex="0" data-tip="The core calculation: Gross Differentiation Value (your two feature values combined) minus one-time switching friction = Net Differentiation Value. Your price ceiling is Next-Best-Alternative price + this net value.">i</i></h2>
+      <div class="grid">
+        <div class="stat green"><div class="k">Gross Differentiation Value</div><div class="v" id="gdv"></div><div class="sub" id="gdvSub">Feature 1 + Feature 2 / yr</div></div>
+        <div class="stat"><div class="k">Switching Friction</div><div class="v" id="fricV"></div><div class="sub">One-time at onboarding</div></div>
+        <div class="stat accent"><div class="k">Net Diff. Value (Yr 1)</div><div class="v" id="ndv1"></div><div class="sub">Gross minus friction</div></div>
+        <div class="stat accent"><div class="k">Net Diff. Value (Yr 2+)</div><div class="v" id="ndv2"></div><div class="sub">steady state, no friction</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="section-ico">◈</span> Target Price Range<i class="info" tabindex="0" data-tip="The recommended annual list price keeps 30–40% of the net differentiation value and sits on top of the competitor's price. Ceiling = the most you could ever charge before the customer is better off with the competitor.">i</i></h2>
+      <div class="range-row">
+        <div class="feat"><div class="lbl">EVE ceiling · Yr 1</div><div class="price" id="ceil1"></div><div class="cap">NPR + NDV</div></div>
+        <div class="feat"><div class="lbl">Recommended annual list</div><div class="price"><span id="recLow"></span> – <span id="recHigh"></span></div><div class="cap">30–40% of NDV</div></div>
+        <div class="feat"><div class="lbl">EVE ceiling · Yr 2+</div><div class="price" id="ceil2"></div><div class="cap">Steady state</div></div>
+      </div>
+      <table class="table">
+        <thead><tr><th>Metric</th><th>30% capture</th><th>40% capture</th></tr></thead>
+        <tbody>
+          <tr><td>Premium over NPR</td><td id="p30"></td><td id="p40"></td></tr>
+          <tr><td>Annual list price</td><td id="l30"></td><td id="l40"></td></tr>
+          <tr><td>Value kept by customer</td><td id="v30"></td><td id="v40"></td></tr>
+        </tbody>
+      </table>
+      <div class="ladder-head">Capture ladder — anchor before you negotiate</div>
+      <p class="ladder-exp">Capture = the <em>share of net differentiation value</em> your price keeps. Each row prices the deal at a different capture level so you can see, at a glance, how the list price and the customer's retained value move together. <strong>Guide:</strong> 30–40% captures the sweet spot — you make a premium on the value you create, while the customer keeps the majority of the benefit (that's what makes the deal an obvious win). Below 25% you're leaving money on the table; above 50% the economics start to look like your price, not their value — expect hard pushback and churn risk. In negotiation, this ladder is your anchor: start near the high end, and every concession you trade is a step down the ladder you can frame in dollars the customer keeps.</p>
+      <table class="table ladder">
+        <thead><tr><th>Capture</th><th>Premium over NPR</th><th>Annual list price</th><th>Customer value kept</th></tr></thead>
+        <tbody id="ladderBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="section-ico">◈</span> Negotiation Headroom<i class="info" tabindex="0" data-tip="How much you can give away before the deal stops being a clear win. The split bar shows the value pie (captured vs kept); the discount figure shows how far you can drop before breaching the 30% floor.">i</i></h2>
+      <div class="split">
+        <div class="split-bar">
+          <div class="seg seg-capt" id="splitCapt"></div>
+          <div class="seg seg-keep" id="splitKeep"></div>
+        </div>
+        <div class="split-legend">
+          <span>Captured by us (price premium) <b id="splitCaptLbl"></b></span>
+          <span>Kept by customer <b id="splitKeepLbl"></b></span>
+        </div>
+      </div>
+      <div class="neg-grid">
+        <div class="neg"><div class="neg-k">Discount headroom to 30% floor</div><div class="neg-v" id="discHead"></div><div class="neg-sub" id="discHeadPct"></div></div>
+        <div class="neg"><div class="neg-k">Effective list price · Yr 1</div><div class="neg-v" id="effList"></div><div class="neg-sub">at chosen capture</div></div>
+        <div class="neg"><div class="neg-k">Commitment incentive</div><div class="neg-v green" id="commitIncentive"></div><div class="neg-sub">3-yr lock · −10% list Yr 2+</div></div>
+      </div>
+      <div class="field" style="margin:20px 0 0">
+        <label><span>Proposed discount (what-if)</span><i class="info" tabindex="0" data-tip="Enter a discount off your effective Year-1 list price to see the resulting price, effective capture, and value kept — all live.">i</i><span class="val" id="lblDisc"></span></label>
+        <input type="range" id="disc" min="0" max="30" step=".5" value="0" title="Percentage off list price — what-if negotiation planning" />
+        <div class="hint" id="discRes">No discount applied</div>
+      </div>
+      <div class="warn-box" id="warnBox" hidden>
+        <div class="warn-title">Heads-up before you quote</div>
+        <ul class="warn-list" id="warnList"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="section-ico">◈</span> 5-Year Forecast &amp; Sensitivity<i class="info" tabindex="0" data-tip="The multi-year ROI story for the customer — and how your recommendation moves if the feature-1 value assumption is off by ±20%. Great for negotiation prep and CFO conversations.">i</i></h2>
+      <div class="fc-chart" id="fcChart"></div>
+      <div class="fc-note"><strong>What is <em>NDV</em>?</strong> Net Differentiation Value = Gross Differentiation Value (your two feature values combined) minus one-time switching friction. It's the economic value you deliver beyond the competitor — and the size of the pie you price against.</div>
+      <div class="fc-note"><strong>Why Yr 1 is lower:</strong> Year 1 deducts the onboarding friction, so its bar is shorter. Years 2+ carry no friction, so NDV is the full value. Per year, captured premium = NDV × your value-capture %, and customer value kept = NDV minus that premium.</div>
+      <div class="fc-note">Stacked bar = annual savings (NDV), split into <span style="color:var(--accent)">■ captured</span> vs <span style="color:var(--green)">■ customer value kept</span>. Commitment pricing applies from Yr 2 when enabled.</div>
+      <table class="table">
+        <thead><tr><th>Year</th><th>Savings (NDV)</th><th>Our price</th><th>Captured premium</th><th>Customer value kept</th></tr></thead>
+        <tbody id="fcBody"></tbody>
+        <tfoot id="fcFoot"><tr><th>5-yr total</th><th id="fcTotNdv"></th><th>—</th><th id="fcTotPrem"></th><th id="fcTotKeep"></th></tr></tfoot>
+      </table>
+      <div class="fc-note" id="fcTotHead"></div>
+      <h2 style="margin-top:26px"><span class="section-ico">◈</span> Feature-1 Assumption Sensitivity</h2>
+      <table class="table">
+        <thead><tr><th id="tornHeader">Feature-1 savings scenario</th><th>GDV</th><th>NDV Yr1</th><th>30% price</th><th>40% price</th></tr></thead>
+        <tbody id="tornBody"></tbody>
+      </table>
+    </div>
+
+    <div class="pitch">
+      <h2><span class="section-ico">✦</span> Payback &amp; C-Suite Pitch<i class="info" tabindex="0" data-tip="Ready-to-use talking points for the exec conversation — payback timing, the value-framing logic, and why your price leaves room to negotiate profitably.">i</i></h2>
+      <ul class="pnl">
+        <li class="pnl-item"><div class="badge">1</div><div>
+          <p><em>Onboarding recovered in ~<span id="payMonths"></span> months</em> — from the customer's net savings after our price.</p>
+          <div class="tip">True payback = one-time friction ÷ (value delivered − the price premium). Gross savings alone would understate how long the customer nets back their investment.</div>
+        </div></li>
+        <li class="pnl-item"><div class="badge">2</div><div>
+          <p><em>Value framing:</em> we keep <span id="capInPitch"></span> of the <span id="grossInPitch"></span>/yr engine, leaving the customer ~<span id="custKeepPitch"></span> in pocket.</p>
+          <div class="tip">Position price relative to what you displace (NPR + value), not the sticker.</div>
+        </div></li>
+        <li class="pnl-item"><div class="badge">3</div><div>
+          <p><em>Defensibility:</em> no switching friction remains on renewal and you sit well under the <span id="ceilPitch"></span> ceiling — headroom for concessions that stay profitable.</p>
+          <div class="tip">Never discount below the 30% floor unless it buys a multi-year commitment.</div>
+        </div></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="foot">EVE model — inputs recalculate live. For internal deal-team use.</div>
+
+<div class="printsheet">
+  <div class="p-head">
+    <div><h1>Economic Value Estimation — Pricing Summary</h1>
+      <div style="font-size:10pt;color:#444" id="pSub">Mid-Market SaaS Commercial Logistics</div>
+    </div>
+    <div class="meta">Prepared: <span id="pDate"></span><br /><span id="pMeta"></span></div>
+  </div>
+
+  <div class="p-meta">
+    <div class="p-meta-item"><div class="lbl">Next Best Alternative (NPR)</div><div class="val" id="pNpr"></div></div>
+    <div class="p-meta-item"><div class="lbl">Gross Diff. Value / yr</div><div class="val" id="pGdv"></div></div>
+    <div class="p-meta-item"><div class="lbl">Switching Friction</div><div class="val" id="pFric"></div></div>
+    <div class="p-meta-item"><div class="lbl">Value Capture</div><div class="val" id="pCap"></div></div>
+  </div>
+
+  <h2>1 · Economic Value Estimation (EVE) Math</h2>
+  <table>
+    <tr><th>Component</th><th>Year 1</th><th>Year 2+</th></tr>
+    <tr><td>Gross Differentiation Value (<span id="pGdvLabel">feature 1 + feature 2</span>)</td><td id="pT1g"></td><td id="pT2g"></td></tr>
+    <tr><td>Less: switching / onboarding friction</td><td id="pT1f"></td><td id="pT2f"></td></tr>
+    <tr><td><strong>Net Differentiation Value (NDV)</strong></td><td id="pT1n"></td><td id="pT2n"></td></tr>
+  </table>
+  <div style="font-size:9pt;color:#555;margin-top:2mm">EVE price ceiling (Year 1) = NPR + NDV = <strong id="pCeil1"></strong> · Year 2+ ceiling = <strong id="pCeil2"></strong></div>
+
+  <h2>2 · Recommended Target Price (capturing 30–40% of NDV)</h2>
+  <table>
+    <tr><th>Metric</th><th>30% capture</th><th>40% capture</th></tr>
+    <tr><td>Premium over NPR</td><td id="pP30"></td><td id="pP40"></td></tr>
+    <tr><td>Annual list price</td><td id="pL30"></td><td id="pL40"></td></tr>
+    <tr><td>Value kept by customer</td><td id="pV30"></td><td id="pV40"></td></tr>
+  </table>
+  <div style="font-size:11pt;font-weight:700;margin-top:3mm">Recommended annual list price: <span id="pRec"></span></div>
+
+  <h2>3 · 5-Year Forecast</h2>
+  <table>
+    <tr><th>Year</th><th>Savings (NDV)</th><th>Our price</th><th>Customer value kept</th></tr>
+    <tbody id="pFcBody"></tbody>
+  </table>
+  <div style="font-size:9pt;color:#555;margin-top:2mm" id="pCommitNote"></div>
+
+  <h2>4 · Strategic C-Suite Pitch Points</h2>
+  <ul class="pitch-list">
+    <li><div class="n">1</div><div><p><strong>Payback:</strong> onboarding recovered in ~<span id="pPay"></span> months from the customer's net savings after our price.</p><div class="tip">True payback = one-time friction ÷ (value delivered − price premium).</div></div></li>
+    <li><div class="n">2</div><div><p><strong>Value framing:</strong> we keep <span id="pCap2"></span> of the <span id="pGdv2"></span>/yr engine, leaving the customer ~<span id="pKeep"></span> in pocket.</p><div class="tip">Position price relative to what you displace (NPR + value), not the sticker.</div></div></li>
+    <li><div class="n">3</div><div><p><strong>Defensibility:</strong> no switching friction on renewal, priced under the <span id="pCeil3"></span> ceiling — headroom for profitable concessions.</p><div class="tip">Never discount below the 30% floor unless it buys a multi-year commitment.</div></div></li>
+  </ul>
+
+  <div class="p-foot">EVE model — internal deal-team use · values recalculated at export time</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const CURR = { USD: {s:'$', i:'USD'}, EUR: {s:'€', i:'EUR'}, GBP: {s:'£', i:'GBP'} };
+  let fmt = new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 });
+  function setFmt(c) { fmt = new Intl.NumberFormat('en-US', { style:'currency', currency:c, maximumFractionDigits:0 }); }
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  const PRESETS_KEY = 'eve-presets-v2';
+
+  function state() {
+    return {
+      npr: +$('npr').value, f1val: +$('f1val').value, f2val: +$('f2val').value,
+      fric: +$('friction').value, cap: (+$('capture').value)/100,
+      commit: $('commitment').checked, currency: $('currency').value,
+      account: $('account').value, rep: $('rep').value, close: $('close').value,
+      f1: $('f1name').value, f2: $('f2name').value, disc: +$('disc').value
+    };
+  }
+
+  function feats() {
+    const s = state();
+    return {
+      f1: (s.f1 && s.f1.trim()) || 'Feature 1',
+      f2: (s.f2 && s.f2.trim()) || 'Feature 2'
+    };
+  }
+
+  function compute() {
+    const s = state();
+    const npr = s.npr, f1val = s.f1val, f2val = s.f2val, fric = s.fric, cap = s.cap;
+    const commitDisc = 0.10; // −10% list from Yr 2 under 3-yr commitment
+
+    const gdv   = f1val + f2val;
+    const ndv1  = Math.max(0, gdv - fric);
+    const ndv2  = gdv;
+    const ceil1 = npr + ndv1;
+    const ceil2 = npr + ndv2;
+
+    const p30 = ndv1 * 0.30, p40 = ndv1 * 0.40;
+    const l30 = npr + p30,   l40 = npr + p40;
+
+    // year-1 at chosen capture
+    const premY1 = ndv1 * cap;
+    const effListY1 = npr + premY1;
+    const keepY1 = Math.max(0, ndv1 - premY1);
+
+    // commitment benefit (per year, Yr 2+ price reduction vs non-commit)
+    const noCommitY2 = npr + ndv2 * cap;
+    const commitY2   = npr + ndv2 * cap * (1 - commitDisc);
+    const commitBenefit = Math.max(0, noCommitY2 - commitY2);
+
+    // discount headroom down to the 30% floor (on Yr1 premium)
+    const floorPrem = ndv1 * 0.30;
+    const discHead = Math.max(0, premY1 - floorPrem);
+    const discHeadPct = effListY1 > 0 ? (discHead / effListY1) * 100 : 0;
+
+    // true payback: friction repaid from the customer's NET savings
+    // (value delivered minus the premium they pay above the competitor price)
+    const netCustSaveY1 = Math.max(0, gdv - premY1);
+    const payMonths = netCustSaveY1 > 0 ? Math.ceil((fric / netCustSaveY1) * 12) : null;
+
+    // forecast years 1..5
+    const fc = [];
+    for (let y = 1; y <= 5; y++) {
+      const ndv = y === 1 ? ndv1 : ndv2;
+      let price = npr + ndv * cap;
+      if (y > 1 && s.commit) price *= (1 - commitDisc);
+      const prem = price - npr;
+      const keep = Math.max(0, ndv - prem);
+      fc.push({ y, ndv, price, prem, keep });
+    }
+
+    // ---- labels ----
+    const { f1, f2 } = feats();
+    $('lblNpr').textContent      = fmt.format(npr);
+    $('lblF1').textContent       = fmt.format(f1val);
+    $('lblF2').textContent       = fmt.format(f2val);
+    $('lblFriction').textContent = fmt.format(fric);
+    $('lblCapture').textContent  = Math.round(cap * 100) + '%';
+    $('commitVal').textContent   = s.commit ? '−10%' : 'off';
+    $('f1hint').textContent      = 'Annual $ value delivered by ' + f1;
+    $('f2hint').textContent      = 'Annual $ value delivered by ' + f2;
+    $('gdvSub').textContent      = f1 + ' + ' + f2 + ' / yr';
+
+    // ---- EVE math ----
+    $('gdv').textContent   = fmt.format(gdv);
+    $('fricV').textContent = fmt.format(fric);
+    $('ndv1').textContent  = fmt.format(ndv1);
+    $('ndv2').textContent  = fmt.format(ndv2);
+
+    // ---- price range ----
+    $('ceil1').textContent   = fmt.format(ceil1);
+    $('ceil2').textContent   = fmt.format(ceil2);
+    $('recLow').textContent  = '~' + fmt.format(l30);
+    $('recHigh').textContent = '~' + fmt.format(l40);
+    $('p30').textContent = fmt.format(p30);
+    $('p40').textContent = fmt.format(p40);
+    $('l30').textContent = fmt.format(l30);
+    $('l40').textContent = fmt.format(l40);
+    $('v30').textContent = fmt.format(Math.max(0, gdv - p30));
+    $('v40').textContent = fmt.format(Math.max(0, gdv - p40));
+    $('ladderBody').innerHTML = [25, 30, 35, 40, 45, 50].map(capLv => {
+      const premL = ndv1 * (capLv / 100), listL = npr + premL, keepL = Math.max(0, gdv - premL);
+      const active = Math.round(cap * 100) === capLv ? ' class="active"' : '';
+      return `<tr${active}><td>${capLv}%</td><td>${fmt.format(premL)}</td><td>${fmt.format(listL)}</td><td>${fmt.format(keepL)}</td></tr>`;
+    }).join('') + (Math.round(cap * 100) % 5 ? `<tr class="active"><td>${Math.round(cap * 100)}% (current)</td><td>${fmt.format(premY1)}</td><td>${fmt.format(effListY1)}</td><td>${fmt.format(Math.max(0, gdv - premY1))}</td></tr>` : '');
+
+    // ---- negotiation ----
+    const totalSplit = Math.max(1, premY1 + keepY1);
+    $('splitCapt').style.width = (premY1 / totalSplit * 100) + '%';
+    $('splitKeep').style.width = (keepY1 / totalSplit * 100) + '%';
+    $('splitCaptLbl').textContent = fmt.format(premY1) + ' · ' + Math.round(premY1/totalSplit*100) + '%';
+    $('splitKeepLbl').textContent = fmt.format(keepY1) + ' · ' + Math.round(keepY1/totalSplit*100) + '%';
+    $('discHead').textContent     = fmt.format(discHead);
+    $('discHeadPct').textContent  = discHeadPct.toFixed(1) + '% of effective list · discount to 30% floor';
+    $('effList').textContent      = fmt.format(effListY1);
+    $('commitIncentive').textContent = s.commit ? fmt.format(commitBenefit) + ' /yr' : '—';
+    if (!s.commit) $('commitIncentive').parentElement.querySelector('.neg-sub').textContent = 'enable 3-yr commitment above';
+
+    // ---- proposed discount what-if ----
+    const discPct = (+$('disc').value || 0) / 100;
+    const discList = effListY1 * (1 - discPct);
+    const discPrem = discList - npr;
+    const discCapPct = ndv1 > 0 ? (discPrem / ndv1) * 100 : 0;
+    const discKeep = Math.max(0, gdv - discPrem);
+    $('lblDisc').textContent = Math.round(discPct * 100) + '%';
+    $('discRes').textContent = discPct === 0
+      ? 'Set a discount to model the negotiation — result appears here.'
+      : 'Price ' + fmt.format(discList) + ' · effective capture ' + discCapPct.toFixed(1) + '% · customer keeps ' + fmt.format(discKeep) + '/yr';
+
+// ---- validation guardrails ----
+    $('warnList').innerHTML = '';
+    function addWarn(msg, tone) {
+      const li = document.createElement('li');
+      li.className = 'warn-tone-' + (tone || 'amber');
+      li.textContent = msg;
+      $('warnList').appendChild(li);
+    }
+    if (gdv <= 0) addWarn('No differentiators — Gross Differentiation Value is zero. Add feature value before pricing.');
+    if (ndv1 <= 0) addWarn('Year-1 net value is zero (friction ≥ value). The customer has no incentive to switch in year 1.', 'red');
+    if (effListY1 >= ceil1 - 1 && ndv1 > 0) addWarn('Your Year-1 list approaches the EVE ceiling — check the customer still has a clear reason to switch.', 'red');
+    if (discPct > 0 && discCapPct < 10) addWarn('At this discount your captured value drops below 10% of NDV — get the long-term commitment before conceding further.', 'red');
+    if (fric > gdv && gdv > 0) addWarn('Onboarding cost exceeds first-year value — propose a longer payback or reduced implementation fee.', 'amber');
+    $('warnBox').hidden = $('warnList').children.length === 0;
+
+    // ---- forecast table + chart ----
+    renderForecast(fc, s.commit);
+
+    // ---- sensitivity (feature 1) ----
+    renderTornado(npr, f1val, f2val, fric, f1);
+
+    // ---- pitch ----
+    $('payMonths').textContent    = payMonths === null ? '—' : payMonths;
+    $('capInPitch').textContent   = Math.round(cap * 100) + '%';
+    $('grossInPitch').textContent = fmt.format(gdv);
+    $('custKeepPitch').textContent = fmt.format(Math.max(0, gdv - premY1));
+    $('ceilPitch').textContent    = fmt.format(ceil1);
+
+    // ---- print sheet ----
+    const acct = s.account || 'Mid-Market SaaS Commercial Logistics';
+    $('pSub').textContent = acct;
+    const parts = [s.rep ? 'Rep: ' + s.rep : null, s.close ? 'Target close: ' + s.close : null].filter(Boolean);
+    $('pMeta').textContent = parts.length ? parts.join(' · ') : 'Scenario: FleetTrack Pro vs. Our Solution';
+    $('pNpr').textContent   = fmt.format(npr);
+    $('pGdv').textContent   = fmt.format(gdv);
+    $('pFric').textContent  = fmt.format(fric);
+    $('pCap').textContent   = Math.round(cap * 100) + '%';
+    $('pGdvLabel').textContent = f1 + ' + ' + f2;
+    $('pT1g').textContent   = fmt.format(gdv);
+    $('pT2g').textContent   = fmt.format(gdv);
+    $('pT1f').textContent   = fmt.format(fric);
+    $('pT2f').textContent   = fmt.format(0);
+    $('pT1n').textContent   = fmt.format(ndv1);
+    $('pT2n').textContent   = fmt.format(ndv2);
+    $('pCeil1').textContent = fmt.format(ceil1);
+    $('pCeil2').textContent = fmt.format(ceil2);
+    $('pP30').textContent   = fmt.format(p30);
+    $('pP40').textContent   = fmt.format(p40);
+    $('pL30').textContent   = fmt.format(l30);
+    $('pL40').textContent   = fmt.format(l40);
+    $('pV30').textContent   = fmt.format(Math.max(0, gdv - p30));
+    $('pV40').textContent   = fmt.format(Math.max(0, gdv - p40));
+    $('pRec').textContent   = '~' + fmt.format(l30) + ' – ' + fmt.format(l40);
+    $('pPay').textContent   = payMonths === null ? '—' : payMonths;
+    $('pCap2').textContent  = Math.round(cap * 100) + '%';
+    $('pGdv2').textContent  = fmt.format(gdv);
+    $('pKeep').textContent  = fmt.format(Math.max(0, gdv - premY1));
+    $('pCeil3').textContent = fmt.format(ceil1);
+    $('pFcBody').innerHTML = fc.map(r =>
+      `<tr><td>Year ${r.y}</td><td>${fmt.format(r.ndv)}</td><td>${fmt.format(r.price)}</td><td>${fmt.format(r.keep)}</td></tr>`
+    ).join('');
+    $('pCommitNote').textContent = s.commit
+      ? 'Commitment pricing active: −10% list price from Year 2 (3-year lock).'
+      : 'Forecast shown at chosen capture without commitment discount.';
+  }
+
+  function renderForecast(fc, commit) {
+    const chart = $('fcChart');
+    chart.innerHTML = '';
+    const maxVal = Math.max(...fc.map(r => r.ndv));
+    fc.forEach(r => {
+      const col = document.createElement('div');
+      col.className = 'fc-col';
+      col.title = `Year ${r.y} — savings ${fmt.format(r.ndv)}, price ${fmt.format(r.price)}`;
+      const wrap = document.createElement('div');
+      wrap.className = 'fc-bar-wrap';
+      const hCap = Math.max(2, (r.prem / maxVal) * 170);
+      const hKeep = Math.max(2, (r.keep / maxVal) * 170);
+      const b1 = document.createElement('div'); b1.className = 'fc-bar fc-capt'; b1.style.height = hCap + 'px';
+      const b2 = document.createElement('div'); b2.className = 'fc-bar fc-keep'; b2.style.height = hKeep + 'px';
+      wrap.appendChild(b1); wrap.appendChild(b2);
+      const val = document.createElement('div'); val.className = 'fc-val'; val.textContent = fmt.format(r.price);
+      const yr = document.createElement('div'); yr.className = 'fc-year'; yr.textContent = 'Y' + r.y;
+      col.appendChild(wrap); col.appendChild(val); col.appendChild(yr);
+      chart.appendChild(col);
+    });
+    $('fcBody').innerHTML = fc.map(r =>
+      `<tr><td>Year ${r.y}</td><td>${fmt.format(r.ndv)}</td><td>${fmt.format(r.price)}</td><td>${fmt.format(r.prem)}</td><td>${fmt.format(r.keep)}</td></tr>`
+    ).join('');
+    const totNdv = fc.reduce((a, r) => a + r.ndv, 0);
+    const totPrem = fc.reduce((a, r) => a + r.prem, 0);
+    const totKeep = fc.reduce((a, r) => a + r.keep, 0);
+    $('fcTotNdv').textContent = fmt.format(totNdv);
+    $('fcTotPrem').textContent = fmt.format(totPrem);
+    $('fcTotKeep').textContent = fmt.format(totKeep);
+    $('fcTotHead').innerHTML = '<strong>5-year total:</strong> the customer gets <strong>' + fmt.format(totNdv) + '</strong> of value; we capture <strong>' + fmt.format(totPrem) + '</strong> for <strong>' + fmt.format(totKeep) + '</strong> left in their pocket over the term.';
+  }
+
+  function renderTornado(npr, f1val, f2val, fric, f1) {
+    $('tornHeader').textContent = f1 + ' savings scenario';
+    const rows = [
+      { lbl: f1 + ' −20% (low case)', m: -0.20 },
+      { lbl: f1 + ' as modeled',      m:  0    },
+      { lbl: f1 + ' +20% (upside)',   m:  0.20 },
+    ];
+    $('tornBody').innerHTML = rows.map(r => {
+      const gdv  = f1val * (1 + r.m) + f2val;
+      const ndv1 = Math.max(0, gdv - fric);
+      const l30  = npr + ndv1 * 0.30;
+      const l40  = npr + ndv1 * 0.40;
+      return `<tr><td>${r.lbl}</td><td>${fmt.format(gdv)}</td><td>${fmt.format(ndv1)}</td><td>${fmt.format(l30)}</td><td>${fmt.format(l40)}</td></tr>`;
+    }).join('');
+  }
+
+  // ---- presets ----
+  function loadPresets() {
+    try { return JSON.parse(localStorage.getItem(PRESETS_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function savePresets(p) { localStorage.setItem(PRESETS_KEY, JSON.stringify(p)); }
+  function renderPresetOptions() {
+    const presets = loadPresets();
+    const sel = $('presetSelect');
+    sel.innerHTML = '';
+    const names = Object.keys(presets);
+    if (!names.length) {
+      const o = document.createElement('option'); o.textContent = 'No saved scenarios yet'; o.disabled = true; o.selected = true;
+      sel.appendChild(o);
+      return;
+    }
+    names.forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n;
+      sel.appendChild(o);
+    });
+  }
+  $('savePresetBtn').addEventListener('click', () => {
+    const name = $('presetName').value.trim();
+    if (!name) { toast('Enter a scenario name first'); return; }
+    const presets = loadPresets();
+    presets[name] = state();
+    savePresets(presets);
+    renderPresetOptions();
+    $('presetSelect').value = name;
+    toast('Saved "' + name + '"');
+  });
+  $('loadPresetBtn').addEventListener('click', () => {
+    const presets = loadPresets();
+    const name = $('presetSelect').value;
+    const p = presets[name];
+    if (!p) { toast('Nothing to load'); return; }
+    applyState(p);
+    toast('Loaded "' + name + '"');
+  });
+  $('delPresetBtn').addEventListener('click', () => {
+    const presets = loadPresets();
+    const name = $('presetSelect').value;
+    if (!presets[name]) { toast('Nothing to delete'); return; }
+    delete presets[name];
+    savePresets(presets);
+    renderPresetOptions();
+    toast('Deleted "' + name + '"');
+  });
+
+  function applyState(p) {
+    // migrate legacy preset keys (fuel/labor → f1val/f2val)
+    const fv1 = p.f1val !== undefined ? p.f1val : p.fuel;
+    const fv2 = p.f2val !== undefined ? p.f2val : p.labor;
+    $('npr').value = p.npr; $('f1val').value = fv1; $('f2val').value = fv2;
+    $('friction').value = p.fric; $('capture').value = Math.round(p.cap * 100);
+    $('commitment').checked = !!p.commit;
+    if (p.currency) $('currency').value = p.currency;
+    $('f1name').value = p.f1 || 'Fuel savings';
+    $('f2name').value = p.f2 || 'Labor savings';
+    $('account').value = p.account || ''; $('rep').value = p.rep || ''; $('close').value = p.close || '';
+    if (p.disc) $('disc').value = p.disc;
+    setFmt($('currency').value);
+    compute();
+  }
+
+  // ---- bind inputs ----
+  ['npr','f1val','f2val','friction','capture','disc'].forEach(id => $(id).addEventListener('input', compute));
+  ['currency','account','rep','close','commitment','f1name','f2name'].forEach(id => {
+    const el = $(id);
+    el.addEventListener(id === 'currency' ? 'change' : 'input', () => {
+      if (id === 'currency') setFmt(el.value);
+      compute();
+    });
+  });
+
+  $('resetBtn').addEventListener('click', () => {
+    applyState({ npr:40000, f1val:12000, f2val:5000, fric:3000, cap:0.30, commit:false, currency:'USD', f1:'Fuel savings', f2:'Labor savings', account:'', rep:'', close:'', disc:0 });
+    toast('Reset to defaults');
+  });
+
+  // ---- help toggle ----
+  const helpBtn = $('helpBtn'), helpPanel = $('helpPanel');
+  helpBtn.addEventListener('click', () => {
+    const open = helpPanel.hasAttribute('hidden');
+    helpPanel.toggleAttribute('hidden');
+    helpBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    helpBtn.classList.toggle('active', open);
+  });
+
+  // ---- theme ----
+  const themeBtn = $('themeBtn');
+  const savedTheme = localStorage.getItem('eve-theme') || 'dark';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    themeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  paintThemeIcon(savedTheme);
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('eve-theme', next);
+  });
+
+  // ---- PDF export ----
+  $('printBtn').addEventListener('click', () => {
+    $('pDate').textContent = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    const theme = document.documentElement.getAttribute('data-theme');
+    document.body.setAttribute('data-print', theme === 'dark' ? 'dark' : 'light');
+    compute();
+    setTimeout(() => window.print(), 60);
+  });
+
+  // ---- copy markdown ----
+  function buildMarkdown() {
+    const s = state();
+    const npr = s.npr, f1val = s.f1val, f2val = s.f2val, fric = s.fric, cap = s.cap;
+    const { f1, f2 } = feats();
+    const gdv = f1val + f2val;
+    const ndv1 = Math.max(0, gdv - fric), ndv2 = gdv;
+    const ceil1 = npr + ndv1, ceil2 = npr + ndv2;
+    const l30 = npr + ndv1 * 0.30, l40 = npr + ndv1 * 0.40;
+    const premY1 = ndv1 * cap;
+    const discHead = Math.max(0, premY1 - ndv1 * 0.30);
+    const netCustSaveY1 = Math.max(0, gdv - premY1);
+    const payMonths = netCustSaveY1 > 0 ? Math.ceil((fric / netCustSaveY1) * 12) : '—';
+    const acct = s.account || 'Mid-Market SaaS Commercial Logistics';
+
+    const lines = [];
+    lines.push('# EVE Pricing Summary');
+    lines.push('');
+    lines.push('**' + acct + '** · ' + s.currency + ' · ' + (s.rep ? 'Rep: ' + s.rep : 'Rep: —') + (s.close ? ' · Close: ' + s.close : ''));
+    lines.push('');
+    lines.push('## Inputs');
+    lines.push('- Next Best Alternative (NPR): ' + fmt.format(npr));
+    lines.push('- ' + f1 + ': ' + fmt.format(f1val) + '/yr');
+    lines.push('- ' + f2 + ': ' + fmt.format(f2val) + '/yr');
+    lines.push('- One-time onboarding friction: ' + fmt.format(fric));
+    lines.push('- Value capture: ' + Math.round(cap * 100) + '%' + (s.commit ? ' (3-yr commitment, −10% list from Yr 2)' : ''));
+    lines.push('');
+    lines.push('## EVE Math');
+    lines.push('- Gross Differentiation Value: ' + fmt.format(gdv) + '/yr');
+    lines.push('- Net Differentiation Value (Yr 1): ' + fmt.format(ndv1));
+    lines.push('- Net Differentiation Value (Yr 2+): ' + fmt.format(ndv2) + '/yr');
+    lines.push('- EVE ceiling (Yr 1): ' + fmt.format(ceil1) + ' = NPR + NDV');
+    lines.push('- EVE ceiling (Yr 2+): ' + fmt.format(ceil2));
+    lines.push('');
+    lines.push('## Recommended Target Price (30–40% of NDV)');
+    lines.push('| Metric | 30% capture | 40% capture |');
+    lines.push('| --- | --- | --- |');
+    lines.push('| Premium over NPR | ' + fmt.format(ndv1 * 0.30) + ' | ' + fmt.format(ndv1 * 0.40) + ' |');
+    lines.push('| Annual list price | ' + fmt.format(l30) + ' | ' + fmt.format(l40) + ' |');
+    lines.push('| Value kept by customer | ' + fmt.format(Math.max(0, gdv - ndv1 * 0.30)) + ' | ' + fmt.format(Math.max(0, gdv - ndv1 * 0.40)) + ' |');
+    lines.push('');
+    lines.push('**Recommended annual list: ~' + fmt.format(l30) + ' – ' + fmt.format(l40) + '**');
+    lines.push('');
+    lines.push('## Negotiation Headroom');
+    lines.push('- Discount headroom to 30% floor: ' + fmt.format(discHead));
+    lines.push('- Effective list price (Yr 1): ' + fmt.format(npr + premY1));
+    lines.push('- Customer value kept: ~' + fmt.format(Math.max(0, gdv - premY1)) + '/yr');
+    if (s.disc > 0) {
+      const dList = (npr + premY1) * (1 - s.disc / 100);
+      lines.push('- Proposed ' + s.disc + '% discount → price: ' + fmt.format(dList));
+    }
+    lines.push('');
+    lines.push('## C-Suite Pitch Points');
+    lines.push('1. **Payback:** onboarding recovered in ~' + payMonths + ' months from the customer\'s net savings after our price (friction ÷ (value delivered − price premium)).');
+    lines.push('2. **Value framing:** we keep ' + Math.round(cap * 100) + '% of the ' + fmt.format(gdv) + '/yr engine, leaving the customer ~' + fmt.format(Math.max(0, gdv - premY1)) + ' in pocket.');
+    lines.push('3. **Defensibility:** no switching friction on renewal, priced under the ' + fmt.format(ceil1) + ' ceiling — headroom for profitable concessions.');
+    lines.push('');
+    lines.push('_Generated ' + new Date().toLocaleString() + ' · EVE Pricing Calculator_');
+    return lines.join('\n');
+  }
+  $('copyBtn').addEventListener('click', () => {
+    const md = buildMarkdown();
+    const done = () => toast('Markdown copied to clipboard');
+    const fail = () => toast('Copy failed — select & copy manually');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(md).then(done, fail);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('Markdown copied to clipboard'); } catch { fail(); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  // ---- CSV export ----
+  function downloadFile(name, content, mime) {
+    const blob = new Blob([content], { type: mime + ';charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+  $('csvBtn').addEventListener('click', () => {
+    const s = state();
+    const npr = s.npr, f1val = s.f1val, f2val = s.f2val, fric = s.fric, cap = s.cap;
+    const commitDisc = 0.10;
+    const gdv = f1val + f2val;
+    const ndv1 = Math.max(0, gdv - fric), ndv2 = gdv;
+    const ceil1 = npr + ndv1, ceil2 = npr + ndv2;
+    const l30 = npr + ndv1 * 0.30, l40 = npr + ndv1 * 0.40;
+    const premY1 = ndv1 * cap, effListY1 = npr + premY1;
+    const keepY1 = Math.max(0, ndv1 - premY1);
+    const floorPrem = ndv1 * 0.30;
+    const discHead = Math.max(0, premY1 - floorPrem);
+    const discHeadPct = effListY1 > 0 ? discHead / effListY1 * 100 : 0;
+    const noCommitY2 = npr + ndv2 * cap, commitY2 = npr + ndv2 * cap * (1 - commitDisc);
+    const commitBenefit = Math.max(0, noCommitY2 - commitY2);
+    const netCustSaveY1 = Math.max(0, gdv - premY1);
+    const payMonths = netCustSaveY1 > 0 ? Math.ceil(fric / netCustSaveY1 * 12) : null;
+    const discPct = s.disc / 100;
+    const discList = effListY1 * (1 - discPct);
+    const discPrem = discList - npr;
+    const discCapPct = ndv1 > 0 ? discPrem / ndv1 * 100 : 0;
+    const discKeep = Math.max(0, gdv - discPrem);
+    const fc = [];
+    for (let y = 1; y <= 5; y++) {
+      const ndv = y === 1 ? ndv1 : ndv2;
+      let price = npr + ndv * cap;
+      if (y > 1 && s.commit) price *= (1 - commitDisc);
+      fc.push({ y, ndv, price, prem: price - npr, keep: Math.max(0, ndv - (price - npr)) });
+    }
+    const rows = [
+      ['Section', 'Metric', 'Value (' + s.currency + ')'],
+      ['Deal', 'Account', s.account],
+      ['Deal', 'Rep', s.rep],
+      ['Deal', 'Target close', s.close],
+      ['Input', 'Next Best Alternative (NPR)', npr],
+      ['Input', (s.f1 || 'Feature 1') + ' value', f1val],
+      ['Input', (s.f2 || 'Feature 2') + ' value', f2val],
+      ['Input', 'Onboarding friction', fric],
+      ['Input', 'Value capture (%)', cap * 100],
+      ['Input', '3-year commitment', s.commit ? 'Yes' : 'No'],
+      ['EVE', 'Gross Differentiation Value', gdv],
+      ['EVE', 'Net Differentiation Value Yr 1', ndv1],
+      ['EVE', 'Net Differentiation Value Yr 2+', ndv2],
+      ['EVE', 'Ceiling Yr 1 (NPR + NDV)', ceil1],
+      ['EVE', 'Ceiling Yr 2+', ceil2],
+      ['Pricing', 'Recommended list at 30% capture', l30],
+      ['Pricing', 'Recommended list at 40% capture', l40],
+      ['Pricing', 'Effective list at chosen capture', effListY1],
+      ['Pricing', 'Premium over NPR at chosen capture', premY1],
+      ['Pricing', 'Customer value kept (Yr 1)', keepY1],
+      ['Negotiation', 'Discount headroom to 30% floor', discHead],
+      ['Negotiation', 'Discount headroom (% of list)', discHeadPct],
+      ['Negotiation', 'Commitment benefit (Yr 2+, /yr)', commitBenefit],
+      ['What-if', 'Discounted price at ' + s.disc + '% off', discList],
+      ['What-if', 'Effective capture at discount (%)', discCapPct],
+      ['What-if', 'Customer keeps at discount (Yr 1)', discKeep],
+      ['Payback', 'Payback (months from net savings)', payMonths === null ? '' : payMonths]
+    ];
+    fc.forEach(r => {
+      rows.push(['Forecast', 'Year ' + r.y + ' NDV', r.ndv]);
+      rows.push(['Forecast', 'Year ' + r.y + ' Premium', r.prem]);
+      rows.push(['Forecast', 'Year ' + r.y + ' Customer kept', r.keep]);
+    });
+    const csv = rows.map(r => r.map(v => {
+      const x = String(v == null ? '' : v);
+      return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x;
+    }).join(',')).join('\n');
+    const safe = (s.account || 'eve-summary').replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-').toLowerCase();
+    downloadFile(safe + '-eve.csv', csv, 'text/csv');
+    toast('CSV exported');
+  });
+
+  // ---- shareable link ----
+  function encodeState(obj) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  }
+  function decodeState(str) {
+    try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return null; }
+  }
+  $('linkBtn').addEventListener('click', () => {
+    const q = new URLSearchParams(location.search);
+    q.set('evl', encodeState(state()));
+    const url = location.origin + location.pathname + '?' + q.toString();
+    const done = () => toast('Shareable link copied');
+    const fail = () => toast('Copy failed — link in address bar');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, fail);
+    } else {
+      window.prompt('Copy this shareable link (paste into your bar for Slack/Notion):', url);
+      done();
+    }
+  });
+
+  setFmt($('currency').value);
+  renderPresetOptions();
+  compute();
+  const urlState = decodeState(new URLSearchParams(location.search).get('evl'));
+  if (urlState && urlState.npr !== undefined) {
+    applyState(Object.assign({}, urlState));
+    toast('Loaded scenario from link');
+  }
+</script>
+</body>
+</html>

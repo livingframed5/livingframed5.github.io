@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Projects / Work — Portfolio</title>
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --panel: #131a2a;
+    --panel2: #1a2238;
+    --border: #263048;
+    --ink: #e7ecf6;
+    --muted: #8b95ad;
+    --accent: #6d8bff;
+    --green: #2dd4a7;
+    --orange: #f5a04b;
+    --grad: linear-gradient(135deg, #4f6bf5, #6d8bff);
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fc;
+    --panel: #ffffff;
+    --panel2: #f0f3fb;
+    --border: #dde4f0;
+    --ink: #1b2437;
+    --muted: #5a6577;
+    --accent: #3452e0;
+    --green: #0e9f74;
+    --orange: #d97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(60% 50% at 20% -10%, rgba(79,107,245,.18), transparent 60%),
+                radial-gradient(50% 40% at 90% 0%, rgba(45,212,167,.12), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 56px 24px 80px; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; margin: 12px 0 8px; }
+  .sub { color: var(--muted); font-size: 16px; max-width: 620px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 40px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 32px rgba(0,0,0,.22); }
+  .card .ico {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--grad);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 20px; font-weight: 800;
+  }
+  .card h2 { font-size: 18px; font-weight: 700; }
+  .card p { font-size: 13px; color: var(--muted); flex: 1; }
+  .card .tag { display: inline-block; font-size: 11px; font-weight: 600; color: var(--accent); }
+  .cart {
+    background: var(--panel2);
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    display: flex; flex-direction: column; gap: 8px;
+    color: var(--muted);
+  }
+  .cart h2 { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .cart p { font-size: 13px; }
+  .foot { margin-top: 48px; color: var(--muted); font-size: 13px; text-align: center; }
+  .theme {
+    position: fixed; top: 20px; right: 20px; z-index: 2;
+    width: 40px; height: 40px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--panel);
+    color: var(--ink); cursor: pointer; font-size: 16px;
+  }
+</style>
+</head>
+<body>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span> Portfolio</div>
+    <h1>Projects / Work</h1>
+    <p class="sub">A collection of tools I've built. Each one is a self-contained project — open it, try it, and see what it does before reading a word of explanation.</p>
+
+    <div class="grid">
+      <a class="card" href="eve-pricing-calculator.html">
+        <div class="ico">◧</div>
+        <h2>EVE Pricing Calculator</h2>
+        <p>An interactive economic value estimation model for mid-market SaaS deals. Prices your solution against the customer's next-best alternative, recommends a defensible annual price, and maps your negotiation headroom.</p>
+        <span class="tag">Interactive tool →</span>
+      </a>
+
+      <div class="cart">
+        <div class="ico">＋</div>
+        <h2>Your next project</h2>
+        <p>This spot is waiting for whatever you build next. Drop a link here and I'll turn it into a card like the one above.</p>
+      </div>
+    </div>
+
+    <div class="foot">Made with curiosity · built and hosted with GitHub Pages</div>
+  </div>
+
+<script>
+  const btn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('pf-theme', next);
+  });
+</script>
+</body>
+</html>
