@@ -1,32 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Projects / Work — Portfolio</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
   :root {
-    --bg: #0b0f1a;
-    --panel: #131a2a;
-    --panel2: #1a2238;
-    --border: #263048;
-    --ink: #e7ecf6;
-    --muted: #8b95ad;
-    --accent: #6d8bff;
-    --green: #2dd4a7;
-    --orange: #f5a04b;
-    --grad: linear-gradient(135deg, #4f6bf5, #6d8bff);
-  }
-  [data-theme="light"] {
     --bg: #f6f8fc;
     --panel: #ffffff;
-    --panel2: #f0f3fb;
-    --border: #dde4f0;
-    --ink: #1b2437;
-    --muted: #5a6577;
-    --accent: #3452e0;
-    --green: #0e9f74;
-    --orange: #d97706;
+    --border: #e6e9f2;
+    --ink: #111827;
+    --muted: #6b7280;
+    --accent: #6d5ef2;
+    --accent2: #22d3ee;
+    --grad: linear-gradient(135deg, #6d5ef2, #22d3ee);
+    --shadow: 0 1px 2px rgba(17,24,39,.04), 0 12px 32px rgba(60,60,140,.08);
+    --halo: rgba(109,94,242,.14);
+  }
+  [data-theme="dark"] {
+    --bg: #0c0f1c;
+    --panel: #141827;
+    --border: #232a40;
+    --ink: #eef1f9;
+    --muted: #9aa3bd;
+    --accent: #8b7dff;
+    --accent2: #38e5ff;
+    --grad: linear-gradient(135deg, #8b7dff, #38e5ff);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px rgba(0,0,0,.35);
+    --halo: rgba(139,125,255,.16);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -35,91 +38,159 @@
     color: var(--ink);
     line-height: 1.55;
     min-height: 100vh;
+    transition: background .3s ease, color .3s ease;
+    -webkit-font-smoothing: antialiased;
   }
-  body::before {
-    content: '';
+  .bg {
     position: fixed;
     inset: 0;
-    background: radial-gradient(60% 50% at 20% -10%, rgba(79,107,245,.18), transparent 60%),
-                radial-gradient(50% 40% at 90% 0%, rgba(45,212,167,.12), transparent 60%);
+    background:
+      radial-gradient(38rem 30rem at 8% -8%, var(--halo), transparent 65%),
+      radial-gradient(34rem 26rem at 92% 4%, rgba(34,211,238,.10), transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
-  .wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 56px 24px 80px; }
-  .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
-  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-  h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; margin: 12px 0 8px; }
-  .sub { color: var(--muted); font-size: 16px; max-width: 620px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 40px; }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 22px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  .wrap { position: relative; z-index: 1; max-width: 1020px; margin: 0 auto; padding: 88px 24px 96px; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; background: transparent;
   }
-  .card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 32px rgba(0,0,0,.22); }
-  .card .ico {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: var(--grad);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 20px; font-weight: 800;
-  }
-  .card h2 { font-size: 18px; font-weight: 700; }
-  .card p { font-size: 13px; color: var(--muted); flex: 1; }
-  .card .tag { display: inline-block; font-size: 11px; font-weight: 600; color: var(--accent); }
-  .cart {
-    background: var(--panel2);
-    border: 1px dashed var(--border);
-    border-radius: 18px;
-    padding: 22px;
-    display: flex; flex-direction: column; gap: 8px;
-    color: var(--muted);
-  }
-  .cart h2 { font-size: 18px; font-weight: 700; color: var(--ink); }
-  .cart p { font-size: 13px; }
-  .foot { margin-top: 48px; color: var(--muted); font-size: 13px; text-align: center; }
+  .brand { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; color: #fff; font-size: 14px; box-shadow: 0 6px 16px rgba(109,94,242,.35); }
   .theme {
-    position: fixed; top: 20px; right: 20px; z-index: 2;
     width: 40px; height: 40px; border-radius: 12px;
     border: 1px solid var(--border); background: var(--panel);
-    color: var(--ink); cursor: pointer; font-size: 16px;
+    color: var(--ink); cursor: pointer; font-size: 15px;
+    box-shadow: var(--shadow);
+    transition: transform .15s ease;
   }
+  .theme:hover { transform: translateY(-1px) rotate(8deg); }
+
+  .hero { display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); padding: 7px 14px; border: 1px solid var(--border);
+    border-radius: 999px; background: var(--panel); box-shadow: var(--shadow);
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--grad); }
+  h1 {
+    font-size: clamp(40px, 7vw, 68px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
+  }
+  h1 .stroke { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub {
+    color: var(--muted); font-size: 17px; max-width: 560px;
+  }
+
+  .flags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .flag { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 7px 13px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); }
+  .flag i { font-style: normal; color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 64px; }
+  .card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 26px;
+    text-decoration: none;
+    color: inherit;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .22s cubic-bezier(.22,1,.36,1), border-color .22s ease, box-shadow .22s ease;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--grad); transform: scaleX(0); transform-origin: left;
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .card:hover { transform: translateY(-5px); border-color: transparent; box-shadow: 0 20px 48px rgba(60,60,140,.18); }
+  .card:hover::before { transform: scaleX(1); }
+  .card .ico {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: var(--grad);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 800;
+    box-shadow: 0 8px 20px rgba(109,94,242,.3);
+  }
+  .card h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+  .card p { font-size: 14px; color: var(--muted); flex: 1; }
+  .card .tag {
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    padding: 6px 12px; border-radius: 999px; background: var(--halo);
+  }
+  .cardshine {
+    position: absolute; inset: 0; opacity: 0; transition: opacity .25s ease;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
+  }
+  .card:hover .cardshine { opacity: 1; }
+
+  .newcard {
+    border: 1.5px dashed var(--border);
+    background: transparent;
+    box-shadow: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 10px; padding: 26px; color: var(--muted);
+    border-radius: 20px; min-height: 220px;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .newcard:hover { border-color: var(--accent); color: var(--accent); }
+  .newcard .plus {
+    width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+    border: 1.5px solid currentColor; font-size: 20px; font-weight: 600;
+  }
+  .newcard h3 { font-size: 16px; font-weight: 700; color: var(--ink); }
+
+  .foot { margin-top: 72px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); font-size: 13.5px; }
+  .foot .hash { color: var(--accent); font-weight: 600; }
 </style>
 </head>
 <body>
-  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
+  <div class="bg"></div>
+  <nav>
+    <div class="brand"><span class="mark">✦</span> livingframed<small style="color:var(--muted);font-weight:600">.dev</small></div>
+    <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
+  </nav>
+
   <div class="wrap">
-    <div class="badge"><span class="dot"></span> Portfolio</div>
-    <h1>Projects / Work</h1>
-    <p class="sub">A collection of tools I've built. Each is self-contained — open it, use it, and see what it can do.</p>
-
-    <div class="grid">
-      <a class="card" href="eve-pricing-calculator.html">
-        <div class="ico">◧</div>
-        <h2>EVE Pricing Calculator</h2>
-        <p>An interactive economic value estimation model for mid-market SaaS deals. Prices your solution against the customer's next-best alternative, recommends a defensible annual price, and maps your negotiation headroom.</p>
-        <span class="tag">Interactive tool →</span>
-      </a>
-
-      <div class="cart">
-        <div class="ico">＋</div>
-        <h2>Your next project</h2>
-        <p>This spot is waiting for whatever you build next. Drop a link here and I'll turn it into a card like the one above.</p>
+    <div class="hero">
+      <span class="eyebrow"><span class="dot"></span> Portfolio — Projects &amp; Work</span>
+      <h1>Things I've <span class="stroke">built.</span></h1>
+      <p class="sub">A collection of self-contained tools I've designed and built from scratch. Open one, click around, and see what makes it tick.</p>
+      <div class="flags">
+        <span class="flag"><i>✦</i> Interactive tools</span>
+        <span class="flag"><i>✦</i> Self-contained HTML</span>
+        <span class="flag"><i>✦</i> Value-focused design</span>
       </div>
     </div>
 
-    <div class="foot">Made with curiosity · built and hosted with GitHub Pages</div>
+    <div class="grid">
+      <a class="card" href="eve-pricing-calculator.html">
+        <div class="cardshine"></div>
+        <div class="ico">◧</div>
+        <h2>EVE Pricing Calculator</h2>
+        <p>An interactive economic value estimation model for mid-market SaaS deals. It prices your solution against the customer's next-best alternative, recommends a defensible annual price, and maps your negotiation headroom.</p>
+        <span class="tag">Interactive tool →</span>
+      </a>
+
+      <div class="newcard">
+        <div class="plus">＋</div>
+        <h3>Your next project</h3>
+        <p>This spot is waiting for whatever you build next.</p>
+      </div>
+    </div>
+
+    <div class="foot"><span class="hash">✦</span> Built &amp; hosted with GitHub Pages <span class="hash">✦</span></div>
   </div>
 
 <script>
   const btn = document.getElementById('themeBtn');
-  const saved = localStorage.getItem('pf-theme') || 'dark';
+  const saved = localStorage.getItem('pf-theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
   btn.textContent = saved === 'dark' ? '🌙' : '☀️';
   btn.addEventListener('click', () => {
