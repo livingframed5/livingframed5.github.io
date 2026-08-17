@@ -884,7 +884,26 @@ $('daygrid').addEventListener('change',e=>{
 });
 function customMealFor(day,name){
   const r={id:uid(),name:name.trim(),cat:'Custom',custom:true,serves:1,mins:0,cost:0,ing:'',steps:''};
+  const pu=purchaseFor(r.name);
+  if(pu){const u=Math.round((Number(pu.price)/Math.max(1,Number(pu.qty)||1))/Math.max(1,r.serves||1)*100)/100;r.cost=u;}
   db.recipes.push(r);db.plan[day]=r.id;save();render('plan');
+}
+function purchaseFor(name){
+  const nS=String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  if(!nS)return null;
+  const tw=normMeal(nS);
+  let best=null,bestScore=0;
+  (db.purchases||[]).forEach(p=>{
+    const pnS=String(p.name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if(!pnS)return;
+    const pn=normMeal(pnS);
+    let sc=0;
+    if(pnS===nS)sc=20;
+    else if(pnS.includes(nS)||nS.includes(pnS))sc+=8;
+    tw.forEach(w=>{if(pn.includes(w))sc++;});
+    if(sc>bestScore||(sc===bestScore&&sc>0&&String(p.date||'')>String(best&&best.date||''))){bestScore=sc;best=p;}
+  });
+  return bestScore>=2?best:null;
 }
 $('daygrid').addEventListener('click',e=>{
   const add=e.target.closest('[data-dayadd]');if(add){
