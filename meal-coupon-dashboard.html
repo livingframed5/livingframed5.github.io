@@ -421,6 +421,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
     </div>
     <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <label class="chip" style="cursor:pointer"><input type="checkbox" id="scanSyncPrices" checked> Sync to Price Compare</label>
+      <label class="chip" style="cursor:pointer"><input type="checkbox" id="scanSyncMeals" checked> Pull prices into meal plan</label>
       <label class="chip" style="cursor:pointer"><input type="checkbox" id="scanLogTrip" checked> Log trip in Budget</label>
       <button class="ghost" id="scanClear" style="margin-left:auto">Clear rows</button>
       <button class="act" id="scanAdd">+ Add to catalog</button>
@@ -742,6 +743,25 @@ function bestStoreFor(item){
     if(!best||eff<best.eff||(eff===best.eff&&Number(p)<best.price))best={store:s,price:Number(p),eff};
   });
   return best;
+}
+function normMeal(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\b(s|es)\b/g,' ').split(' ').filter(w=>w.length>2).map(w=>w.endsWith('s')?w.slice(0,-1):w);}
+function matchRecipe(text){
+  const t=String(text||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  if(!t)return null;
+  const tw=normMeal(t);
+  let best=null,bestScore=0;
+  db.recipes.forEach(r=>{
+    const rn=normMeal(r.name);
+    if(!rn.length)return;
+    let sc=0;
+    const tn=t,rnS=String(r.name).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if(rnS===tn)sc=20;
+    else if(rnS.includes(tn)||tn.includes(rnS))sc+=8;
+    tw.forEach(w=>{if(rn.includes(w))sc++;});
+    if(sc>bestScore){bestScore=sc;best=r;}
+  });
+  if(bestScore>=2)return best;
+  return null;
 }
 
 /* ---------- theme ---------- */
@@ -1455,6 +1475,7 @@ $('scanAdd').addEventListener('click',()=>{
   const date=$('scanDate').value||dayStr(0);
   if(!store){alert('Pick a store first.');return;}
   const added=[];
+  const mealsSynced=[];
   scanRows.forEach(r=>{
     const name=String(r.name||'').trim();const price=Number(r.price);const qty=Math.max(1,Number(r.qty)||1);
     if(!name||!(isFinite(price)&&price>=0))return;
@@ -1467,6 +1488,12 @@ $('scanAdd').addEventListener('click',()=>{
         (db.prices[it.id]=db.prices[it.id]||{})[store]=u;
       }
     }
+    if($('scanSyncMeals').checked){
+      const rcp=matchRecipe(name);
+      if(rcp){const per=Math.round((price/qty)/Math.max(1,rcp.serves||1)*100)/100;
+        rcp.cost=per;mealsSynced.push(rcp.name);
+      }
+    }
   });
   if(!added.length){alert('Add a name and a price on at least one row first.');return;}
   if($('scanLogTrip').checked){
@@ -1474,7 +1501,9 @@ $('scanAdd').addEventListener('click',()=>{
     db.spends.push({id:uid(),date,store,amt,note:'Receipt scan'});
   }
   save();scanRows=[];renderScanRows();renderScan();listBadge();
-  setStatus('Added <b>'+added.length+'</b> item(s) to the catalog'+(added.some(r=>matchItem(r.name))?' and synced matching prices.':' — no price matches triggered.'));
+  if(typeof renderPlan==='function'&&cur==='plan')renderPlan();
+  const synced=added.some(r=>matchItem(r.name));
+  setStatus('Added <b>'+added.length+'</b> item(s) to the catalog'+(synced?' and synced matching prices':'')+(mealsSynced.length?' · updated meal cost for <b>'+esc(mealsSynced.join(', '))+'</b>':'')+(synced||mealsSynced.length?' — check the Meal Plan & Price Compare.':' — check the Meal Plan.'));
 });
 if(typeof window==='undefined'||!('BarcodeDetector' in window))$('scanNote').textContent='Note: this browser has no visual barcode scanning — receipt text OCR still works, and you can type names below.';
 
