@@ -109,6 +109,10 @@ td.ctlcell{width:92px;white-space:nowrap;text-align:right}
 .day select:focus{outline:none;border-color:var(--accent)}
 .day .cost{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
 .day .cost b{color:var(--green)}
+.day .addbtn{display:inline-flex;align-items:center;gap:4px;margin-top:7px;width:100%;justify-content:center;font-size:11.5px;font-weight:700;color:var(--accent);background:transparent;border:1px dashed var(--edge);border-radius:9px;padding:4px 10px;cursor:pointer}
+.day .addbtn:hover{border-color:var(--accent);color:var(--txt)}
+.day .qadd{margin-top:7px;display:flex;flex-direction:column;gap:6px}
+.day .qadd .inp{width:100%}
 
 .recgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:14px;margin-top:6px}
 .rec{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:15px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s}
@@ -812,10 +816,18 @@ function renderPlan(){
   $('daygrid').innerHTML=DAYS.map(([d,label])=>{
     const rid=db.plan[d]||'';
     const r=db.recipes.find(x=>x.id===rid);
-    const opts=['<option value="">— none —</option>'].concat(db.recipes.map(x=>`<option value="${x.id}" ${x.id===rid?'selected':''}>${esc(x.name)} · ${fm(x.cost)}</option>`)).join('');
+    const opts=['<option value="">— none —</option>'].concat(db.recipes.map(x=>`<option value="${x.id}" ${x.id===rid?'selected':''}>${esc(x.name)}${x.custom?' · custom':''} · ${fm(x.cost)}</option>`)).join('');
     return `<div class="day ${r?'done':''}">
       <div class="d"><span>${label}</span>${r?'<span style="color:var(--green);font-size:12px">✓</span>':''}</div>
       <select data-day="${d}">${opts}</select>
+      <button type="button" class="addbtn" data-dayadd="${d}">+ Add custom</button>
+      <div class="qadd" data-qadd="${d}" style="display:none">
+        <input class="inp" data-qname="${d}" placeholder="e.g. Leftover lasagna">
+        <div style="display:flex;gap:6px">
+          <button type="button" class="ghost" data-qsave="${d}">Add</button>
+          <button type="button" class="ghost" data-qcancel="${d}">✕</button>
+        </div>
+      </div>
       <div class="cost"><span>${r?esc(r.cat):'—'}</span><b>${r?fm(r.cost*r.serves):'—'}</b></div>
     </div>`;
   }).join('');
@@ -849,6 +861,35 @@ $('printBtn').addEventListener('click',()=>{window.print();});
 $('daygrid').addEventListener('change',e=>{
   const sel=e.target.closest('select[data-day]');if(!sel)return;
   db.plan[sel.dataset.day]=sel.value;save();render('plan');
+});
+function customMealFor(day,name){
+  const r={id:uid(),name:name.trim(),cat:'Custom',custom:true,serves:1,mins:0,cost:0,ing:'',steps:''};
+  db.recipes.push(r);db.plan[day]=r.id;save();render('plan');
+}
+$('daygrid').addEventListener('click',e=>{
+  const add=e.target.closest('[data-dayadd]');if(add){
+    const d=add.dataset.dayadd;
+    document.querySelectorAll('[data-qadd]').forEach(x=>{x.style.display=x.dataset.qadd===d?'flex':'none';});
+    const inp=document.querySelector('[data-qname="'+d+'"]');if(inp)inp.focus();
+    return;
+  }
+  const save=e.target.closest('[data-qsave]');if(save){
+    const d=save.dataset.qsave;
+    const inp=document.querySelector('[data-qname="'+d+'"]');
+    const name=inp?inp.value.trim():'';
+    if(name)customMealFor(d,name);
+    return;
+  }
+  const canc=e.target.closest('[data-qcancel]');if(canc){
+    const q=canc.closest('[data-qadd]');if(q)q.style.display='none';
+  }
+});
+$('daygrid').addEventListener('keydown',e=>{
+  const inp=e.target.closest('[data-qname]');if(!inp)return;
+  if(e.key==='Enter'){
+    const d=inp.dataset.qname,name=inp.value.trim();
+    if(name)customMealFor(d,name);
+  }
 });
 function addPantry(){
   const v=$('pantryInp').value.trim();if(!v)return;
@@ -1513,20 +1554,22 @@ $('resetData').addEventListener('click',()=>{
 
 /* ---------- SYNC (Supabase) ---------- */
 const SROW='main';
-let sync={ts:0,dev:'',en:false,url:'https://mvqvbxovcbexuxufelcq.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cXZieG92Y2JleHV4dWZlbGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5Mjg0MjYsImV4cCI6MjEwMjUwNDQyNn0.MN4zsTDi3RaRjoQPw041aNRRYMQt-WUNDE49tak-pmA',secret:'',lastEdit:0};
+let sync={ts:0,dev:'',en:false,url:'https://mvqvbxovcbexuxufelcq.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cXZieG92Y2JleHV4dWZlbGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5Mjg0MjYsImV4cCI6MjEwMjUwNDQyNn0.MN4zsTDi3RaRjoQPw041aNRRYMQt-WUNDE49tak-pmA',secret:'',lastEdit:0,dirty:false};
 try{const s=JSON.parse(localStorage.getItem('pf-sync'));if(s&&typeof s==='object')Object.keys(s).forEach(k=>{if(k in sync&&(s[k]!==''||sync[k]===''))sync[k]=s[k];});}catch(e){}
 let DEV='';
 try{DEV=localStorage.getItem('pf-dev')||'';}catch(e){}
 if(!DEV){DEV=Math.random().toString(36).slice(2,10);try{localStorage.setItem('pf-dev',DEV);}catch(e){}}
-let pullBusy=false,sTimer=null;
+let pullBusy=false,sTimer=null,pushBusy=false;
 const shortDev=d=>String(d||'other').slice(0,5);
 function persistMeta(){try{localStorage.setItem('pf-sync',JSON.stringify(sync));}catch(e){}}
 function setSync(m){const el=$('syncStatus');if(el)el.textContent=' '+String(m||'');const st=$('syncStat');if(st)st.textContent=String(m||'');}
 function queueSync(){
   if(!sync.en)return;
   sync.lastEdit=Date.now();
+  sync.dirty=true;
+  persistMeta();
   clearTimeout(sTimer);
-  sTimer=setTimeout(doPush,2000);
+  sTimer=setTimeout(doPush,1500);
 }
 function syncHeaders(){
   return {apikey:sync.key,Authorization:'Bearer '+sync.key,'Content-Type':'application/json','X-App-Secret':sync.secret};
@@ -1540,6 +1583,8 @@ function normalizeRemote(d){
 }
 async function doPush(){
   if(!sync.en||!sync.url||!sync.key||!sync.secret||!window.fetch)return;
+  if(pushBusy)return;
+  pushBusy=true;
   const ts=Date.now();
   try{
     const r=await fetch(sync.url+'/rest/v1/dashboard_sync?on_conflict=id',{
@@ -1547,9 +1592,10 @@ async function doPush(){
       headers:Object.assign(syncHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify([{id:SROW,data:JSON.parse(JSON.stringify(db)),ts,dev:DEV}])
     });
-    if(r.ok){sync.ts=ts;persistMeta();setSync('Synced just now ✓');}
-    else setSync('Push failed ('+r.status+')');
-  }catch(e){setSync('Push error — '+String(e&&e.message||e));}
+    if(r.ok){sync.ts=ts;sync.dirty=false;persistMeta();setSync('Synced just now ✓');}
+    else{setSync('Push failed ('+r.status+') — will retry');sTimer=setTimeout(doPush,8000);}
+  }catch(e){setSync('Push error — '+String(e&&e.message||e)+' — will retry');sTimer=setTimeout(doPush,8000);}
+  finally{pushBusy=false;}
 }
 async function doPull(){
   if(!sync.en||!sync.url||!sync.key||!sync.secret||pullBusy||!window.fetch)return;
@@ -1558,17 +1604,22 @@ async function doPull(){
     const r=await fetch(sync.url+'/rest/v1/dashboard_sync?id=eq.'+SROW+'&select=data,ts,dev&limit=1',{headers:syncHeaders()});
     if(!r.ok){setSync('Pull failed ('+r.status+')');return;}
     const rows=await r.json();
-    if(!rows||!rows.length){setSync('Cloud is empty — edits will push on their next save');return;}
+    if(!rows||!rows.length){
+      if(sync.dirty){doPush();return;}
+      setSync('Cloud is empty — edits will push on their next save');return;
+    }
     const row=rows[0],sTs=Number(row.ts)||0,sDev=row.dev||'';
+    if(sync.dirty){
+      doPush();return;
+    }
     if(sTs>sync.ts){
       db=normalizeRemote(row.data||{});
-      sync.ts=sTs;sync.dev=sDev;persistMeta();
+      sync.ts=sTs;sync.dev=sDev;sync.dirty=false;persistMeta();
       try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}
       if($('syncUrl'))fillSync();
       showTab(cur);listBadge();if(typeof renderScan==='function')renderScan();
       setSync('Loaded newest copy from '+shortDev(sDev)+' ✓');
-    }else if(sTs<sync.ts){doPush();}
-    else setSync('In sync ✓');
+    }else setSync('In sync ✓');
   }catch(e){setSync('Pull error — '+String(e&&e.message||e));}
   finally{pullBusy=false;}
 }
@@ -1587,6 +1638,12 @@ function initSync(){
   if(sync.url&&sync.key&&sync.secret)setTimeout(()=>doPull(),400);
   setInterval(()=>{if(!pullBusy&&!sTimer&&Date.now()-sync.lastEdit>5000)doPull();},20000);
 }
+function flushSync(){
+  if(!sync.en||!sync.dirty||!window.fetch)return;
+  clearTimeout(sTimer);
+  doPush();
+}
+if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('pagehide',flushSync);
 
 render('plan');
 listBadge();
