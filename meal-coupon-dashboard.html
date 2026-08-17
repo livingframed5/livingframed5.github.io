@@ -981,6 +981,7 @@ function renderRecipes(){
         <span class="chip grid2" id="fCostSum" style="margin-left:auto">est. ${fm(0)} for the batch</span>
       </div>`;
     $('fCostSum').textContent='est. '+fm((+r.serves||4)*(+r.cost||0))+' for the batch';
+    try{$('recForm').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
     ['fServes','fCost'].forEach(id=>$(id).addEventListener('input',()=>{
       $('fCostSum').textContent='est. '+fm((+$('fServes').value||0)*(+$('fCost').value||0))+' for the batch';
     }));
