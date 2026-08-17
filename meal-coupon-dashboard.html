@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Planner &amp; Coupon Saver</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee); --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 16px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',Inter,system-ui,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease;min-height:100vh}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:92px 26px 80px}
+nav.top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:.15s;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:10px 2px 18px;margin-bottom:8px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-0.025em;margin:12px 0 4px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+.tabrow{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px;padding:12px 14px;background:var(--panel);border:1px solid var(--edge);border-radius:16px;box-shadow:var(--shadow)}
+.chip{border:1px solid var(--edge);background:var(--panel2);color:var(--muted);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;user-select:none}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+.chip.grid2{display:grid;place-items:center;line-height:1}
+
+.ctl{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:12px 16px;margin:16px 0 6px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.ctl .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+input.inp,select.inp,textarea.inp{background:var(--panel);border:1px solid var(--edge);color:var(--txt);border-radius:10px;padding:8px 11px;font-size:13px;font-family:inherit;transition:border-color .15s,box-shadow .15s;min-width:0}
+input.inp:focus,select.inp:focus,textarea.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+textarea.inp{resize:vertical;line-height:1.5}
+.num{width:96px}
+input.inp:disabled{opacity:.45}
+
+button.act{background:var(--grad);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:filter .15s;font-family:inherit}
+button.act:hover{filter:brightness(1.1)}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--edge);padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+button.ghost:hover{border-color:var(--accent)}
+button.mini{width:30px;height:28px;border:1px solid var(--edge);background:var(--panel2);color:var(--muted);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:.15s;font-family:inherit}
+button.mini:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+button.mini.del:hover:not(:disabled){border-color:var(--rose);color:var(--rose)}
+button.mini:disabled{opacity:.35;cursor:not-allowed}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin:18px 0 6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-top:4px;word-break:break-word}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi .v.good{color:var(--green)} .kpi .v.bad{color:var(--rose)} .kpi .v.warn{color:var(--amber)}
+.kpi .v.tiny{font-size:15px;line-height:1.35}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.card h3 .mini{font-weight:600;font-size:11px;color:var(--muted)}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span7{grid-column:span 7}.span5{grid-column:span 5}.span6{grid-column:span 6}.span4{grid-column:span 4}.span3{grid-column:span 3}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.03em}
+.badge.good{background:rgba(5,150,105,.12);color:var(--green)}
+.badge.warn{background:rgba(217,119,6,.14);color:var(--amber)}
+.badge.bad{background:rgba(225,29,72,.12);color:var(--rose)}
+.badge.mut{background:var(--panel2);color:var(--muted)}
+.badge.grad{background:var(--grad);color:#fff}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+.tbl-scroll{overflow:auto;max-height:62vh;border:1px solid var(--edge);border-radius:12px}
+.tbl-scroll table{border-collapse:separate;border-spacing:0}
+.tbl-scroll thead th{background:var(--panel);position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--edge)}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px;border-bottom:1px solid var(--edge);white-space:nowrap}
+tbody td{padding:7px 8px;border-bottom:1px solid var(--edge);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+td.ctlcell{width:92px;white-space:nowrap;text-align:right}
+.best{font-weight:800;color:var(--green)}
+.worst{font-weight:800;color:var(--rose)}
+.mono{font-family:var(--mono)}
+.rt{text-align:right}.ct{text-align:center}
+
+.daygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-top:4px}
+.day{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:11px 12px;box-shadow:var(--shadow)}
+.day.done{border-color:rgba(5,150,105,.45);background:linear-gradient(180deg,rgba(5,150,105,.05),transparent)}
+.day .d{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.day select{width:100%;font-size:12.5px;padding:6px 8px;border-radius:9px;border:1px solid var(--edge);background:var(--panel2);color:var(--txt);font-family:inherit}
+.day select:focus{outline:none;border-color:var(--accent)}
+.day .cost{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
+.day .cost b{color:var(--green)}
+
+.recgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:14px;margin-top:6px}
+.rec{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:15px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s}
+.rec:hover{transform:translateY(-2px)}
+.rec .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rec h4{font-size:15px;font-weight:800;letter-spacing:-0.01em}
+.rec .meta{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rec .meta b{color:var(--green);font-size:12.5px}
+.rec .pre{font-size:12.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--edge);border-radius:10px;padding:8px 10px;max-height:110px;overflow:hidden;position:relative;white-space:pre-line}
+.rec .foot{display:flex;gap:8px;margin-top:auto}
+
+.form{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-bottom:14px}
+.form h3{grid-column:span 12;display:flex;align-items:center;gap:10px}
+.form .f{display:flex;flex-direction:column;gap:5px}
+.form .f label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form .f.half{grid-column:span 3}.form .f.third{grid-column:span 4}.form .f.all{grid-column:span 12}
+.form .actions{grid-column:span 12;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.cpn{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;margin-top:6px}
+.coupon{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.coupon::before{content:'';position:absolute;top:0;bottom:0;left:0;width:4px;background:var(--grad)}
+.coupon.used::before{background:var(--green)}
+.coupon.expired::before{background:var(--rose)}
+.coupon .row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.coupon .it{font-size:14px;font-weight:800;line-height:1.3}
+.coupon .vals{font-size:12px;color:var(--muted);margin-top:3px}
+.coupon .vals b{color:var(--green)}
+.coupon .exp{font-size:11.5px;margin-top:7px;display:flex;justify-content:space-between;align-items:center}
+.coupon .tip{font-size:19px;font-weight:800;letter-spacing:-0.02em;color:var(--green);white-space:nowrap}
+
+.list{display:flex;flex-direction:column;gap:0}
+.srow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--edge);font-size:13.5px}
+.srow:last-child{border-bottom:none}
+.srow .qty{font-weight:800;color:var(--accent);min-width:26px}
+.srow .nm{font-weight:600}
+.bar{height:26px;border-radius:99px;background:var(--panel2);overflow:hidden;margin:10px 0 6px;position:relative}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--grad);transition:width .4s}
+.bar i.over{background:linear-gradient(135deg,var(--rose),var(--amber))}
+.bar .lbl{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;letter-spacing:.02em}
+
+.spend{margin-top:8px}
+.spend .row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--edge)}
+.spend .row .amt{font-weight:800;color:var(--rose);white-space:nowrap;margin-left:auto}
+
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--edge);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center}
+footer a{color:var(--accent);font-weight:600;cursor:pointer}
+
+section.tpage{display:none}
+section.tpage.on{display:block;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.empty{color:var(--muted);font-size:13px;padding:14px 4px}
+.aisle{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:13px 0 3px;display:flex;align-items:center;gap:8px}
+.aisle::after{content:'';flex:1;height:1px;background:var(--edge)}
+.storeplan{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.storetile{background:var(--panel2);border:1px solid var(--edge);border-radius:12px;padding:11px 13px}
+.storetile h4{font-size:12.5px;font-weight:800;display:flex;justify-content:space-between;gap:8px}
+.storetile h4 .t{color:var(--green);font-weight:800;white-space:nowrap}
+.storetile ul{list-style:none;margin-top:6px}
+.storetile li{font-size:12.5px;padding:2.5px 0;display:flex;justify-content:space-between;gap:8px}
+.storetile .nm{min-width:0}
+.storetile .px{color:var(--muted);white-space:nowrap}
+.storetile.miss{opacity:.72}
+.atlow{font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.04em;margin-top:2px}
+.radar{display:flex;flex-direction:column;gap:6px}
+.radar .it{display:flex;gap:8px;align-items:baseline;font-size:13px;flex-wrap:wrap}
+.radar .st{font-size:11px;color:var(--muted)}
+.pantrychip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--edge);background:var(--panel2);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.pantrychip b{color:var(--accent)}
+.qty2{font-size:10px;color:var(--muted);font-weight:600}
+.effsub{font-size:11px;color:var(--green);font-weight:700}
+.strike{color:var(--muted);text-decoration:line-through;font-size:12px}
+@media (max-width:1000px){.span8,.span7,.span5,.span6,.span4,.span3{grid-column:span 12}.form .f.half,.form .f.third{grid-column:span 6}}
+@media (max-width:640px){.wrap{padding:84px 14px 60px}nav.top{padding:12px 14px}.form .f.half,.form .f.third{grid-column:span 12}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<nav class="top">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</nav>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Interactive Prototype · Kitchen &amp; Coupons</span>
+  <h1>Meal Planner &amp; <b>Coupon Saver</b></h1>
+  <div class="tag">Plan the week · track coupons · price-shop the stores · stay on budget</div>
+</header>
+
+<div class="tabrow" role="tablist">
+  <span class="chip on" data-tab="plan">▤ Meal Planner</span>
+  <span class="chip" data-tab="recipes">▥ Recipe Library</span>
+  <span class="chip" data-tab="coupons">✂ Coupons</span>
+  <span class="chip" data-tab="prices">◈ Price Compare</span>
+  <span class="chip" data-tab="other">๑ Household</span>
+  <span class="chip" data-tab="list">☑ Shopping List <b id="listTabN" style="font-size:11px;opacity:.75"></b></span>
+  <span class="chip" data-tab="scan">▣ Receipts</span>
+  <span class="chip" data-tab="budget">₴ Budget</span>
+</div>
+
+<!-- ============ MEAL PLANNER ============ -->
+<section class="tpage on" id="tab-plan">
+  <div class="ctl">
+    <div class="grp"><label>Week</label><span class="chip grid2 on" style="min-width:44px">Sun 11</span></div>
+    <div class="grp" style="margin-left:auto">
+      <button class="ghost" id="clearPlanBtn">Clear week</button>
+      <button class="act" id="printBtn">Print shopping list</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="planKpis"></div>
+
+  <div class="grid">
+    <div class="card span7">
+      <h3>Weekly plan <span class="mini">pick a recipe per day</span></h3>
+      <div class="sub">Every change auto-saves · the generators below respect your chips</div>
+      <div class="toggleRow" style="margin-bottom:12px">
+        <span class="chip" id="genQuick" title="Pick recipes under 30 min">⚡ Quick ≤30m</span>
+        <span class="chip" id="genBudget" title="Stay inside your budget">₴ Budget-first</span>
+        <span class="chip" id="genNoRepeat" title="Avoid the same category twice a week">↻ No repeats</span>
+        <button class="ghost" id="autoFillBtn" style="margin-left:auto">Auto-fill week</button>
+      </div>
+      <div class="daygrid" id="daygrid"></div>
+    </div>
+
+    <div class="card span5">
+      <h3>From the pantry <span class="mini">say what you already have</span></h3>
+      <div class="sub">Matched ingredients are crossed off and kept out of the buy list</div>
+      <div id="pantryChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="inp" id="pantryInp" placeholder="e.g. eggs, milk, rice" style="flex:1">
+        <button class="ghost" id="pantryAdd">Add</button>
+      </div>
+      <div class="list" id="haveList"></div>
+    </div>
+
+    <div class="card span7">
+      <h3>Store-split shopping plan <span class="mini">buy it where it costs least</span></h3>
+      <div class="sub">Routed from your prices + active coupons · one list per store</div>
+      <div class="storeplan" id="storePlan"></div>
+    </div>
+
+    <div class="card span5">
+      <h3>Buy list <span class="mini">aisle-grouped · summed across the week</span></h3>
+      <div class="sub" id="shopEst"></div>
+      <div id="shopList" style="max-height:430px;overflow-y:auto"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECIPE LIBRARY ============ -->
+<section class="tpage" id="tab-recipes">
+  <div class="ctl">
+    <div class="grp"><label>Search</label><input class="inp" id="recSearch" placeholder="tacos, chicken, pasta…" style="width:210px"></div>
+    <div class="grp" id="recCats"><span class="chip on" data-cat="all">All</span></div>
+    <div class="grp" style="margin-left:auto;gap:8px">
+      <span class="chip grid2" id="recCount">0 recipes</span>
+      <button class="act" id="newRecBtn">+ New recipe</button>
+    </div>
+  </div>
+
+  <div class="form" id="recForm" style="display:none"></div>
+  <div class="recgrid" id="recGrid"></div>
+</section>
+
+<!-- ============ COUPONS ============ -->
+<section class="tpage" id="tab-coupons">
+  <div class="ctl">
+    <div class="grp"><label>Status</label><div id="cpnStatusChips" style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="chip on" data-cf="all">All</span>
+      <span class="chip" data-cf="active">Active</span>
+      <span class="chip" data-cf="soon">Expiring soon</span>
+      <span class="chip" data-cf="used">Used</span>
+      <span class="chip" data-cf="expired">Expired</span>
+    </div></div>
+  </div>
+  <div class="ctl">
+    <div class="grp"><label>Store</label><div id="cpnStoreChips" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+    <div class="grp" style="margin-left:auto"><span class="chip grid2" id="cpnCount">0 coupons</span></div>
+  </div>
+
+  <div class="kpis" id="cpnKpis"></div>
+
+  <div class="form" id="cpnForm">
+    <h3>＋ Add a coupon</h3>
+    <div class="f half"><label>Store</label><input class="inp" id="cpnStore" placeholder="Kroger"></div>
+    <div class="f half"><label>Item / detail</label><input class="inp" id="cpnItem" placeholder="Ground beef, $1 off, 20% off…"></div>
+    <div class="f third"><label>Value saved ($)</label><input class="inp num" id="cpnVal" type="number" min="0" step="0.01" placeholder="1.00"></div>
+    <div class="f third"><label>Expires</label><input class="inp" id="cpnExp" type="date"></div>
+    <div class="f third" style="justify-content:flex-end;align-items:flex-end"><button class="act" id="cpnAdd" style="width:100%;padding:9px">Add coupon</button></div>
+  </div>
+
+  <div class="cpn" id="cpnGrid"></div>
+</section>
+
+<!-- ============ PRICE COMPARE ============ -->
+<section class="tpage" id="tab-prices">
+  <div class="ctl">
+    <div class="grp"><label>Location</label><select class="inp" id="locSel" style="max-width:190px"></select></div>
+    <div class="grp"><label>Stores</label><div id="storeChips" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"></div></div>
+    <div class="grp"><label>View</label>
+      <span class="chip" id="cpnChip">✂ With coupons</span>
+      <span class="chip" id="unitChip">#/unit</span>
+    </div>
+    <div class="grp" style="margin-left:auto"><input class="inp" id="newStore" placeholder="Add store…" style="width:140px"><button class="ghost" id="addStoreBtn">Add</button></div>
+  </div>
+
+  <div class="kpis" id="priceKpis"></div>
+
+  <div class="card span12" id="radarCard" style="margin-top:14px;display:none">
+    <h3>Deal radar <span class="mini">items at their lowest recorded price — stock-up signal</span></h3>
+    <div class="radar" id="dealRadar"></div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Unit prices by store <span class="mini">green = cheapest · red = priciest</span></h3>
+    <div class="sub">Specific cuts &amp; brands (lean %, size) · Costco bulk priced per labeled quantity · best-deal column recomputes live</div>
+    <div class="tbl-scroll">
+      <table id="priceTable"></table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="inp" id="newItem" placeholder="Item name, e.g. Ground beef (2 lb)" style="flex:1;min-width:220px">
+      <button class="act" id="addItemBtn">+ Add item</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOUSEHOLD ============ -->
+<section class="tpage" id="tab-other">
+  <div class="ctl">
+    <div class="grp"><label>Location</label><select class="inp" id="otherLocSel" style="max-width:190px"></select></div>
+    <div class="grp"><label>Stores</label><div id="otherChips" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"></div></div>
+    <div class="grp"><label>View</label>
+      <span class="chip" id="otherCpnChip">✂ With coupons</span>
+      <span class="chip" id="otherUnitChip">#/unit</span>
+    </div>
+    <div class="grp" style="margin-left:auto"><input class="inp" id="otherNewStore" placeholder="Add store…" style="width:140px"><button class="ghost" id="otherAddStoreBtn">Add</button></div>
+  </div>
+
+  <div class="kpis" id="otherKpis"></div>
+
+  <div class="card span12" id="otherRadarCard" style="margin-top:14px;display:none">
+    <h3>Deal radar <span class="mini">household items at their lowest recorded price — stock-up</span></h3>
+    <div class="radar" id="otherDealRadar"></div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Household prices by store <span class="mini">green = cheapest · red = priciest</span></h3>
+    <div class="sub">Laundry, paper goods, cleaning &amp; personal care — per-unit math included</div>
+    <div class="tbl-scroll">
+      <table id="otherTable"></table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="inp" id="newOtherItem" placeholder="Item, e.g. Toilet paper 12 roll" style="flex:1;min-width:220px">
+      <button class="act" id="addOtherBtn">+ Add item</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHOPPING LIST ============ -->
+<section class="tpage" id="tab-list">
+  <div class="ctl">
+    <div class="grp"><label>Status</label><span class="chip grid2" id="listCount">0 items — pick with the ✓ boxes in Price Compare or Household</span></div>
+    <div class="grp" style="margin-left:auto">
+      <button class="ghost" id="listClear">Clear list</button>
+      <button class="act" id="listPrint">Print shopping list</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="listKpis"></div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Your shopping list <span class="mini">grouped by the store with the best price</span></h3>
+    <div class="sub">Checked items land here — grocery and household combined. Prices are the best effective price after coupons.</div>
+    <div id="listGrouped"></div>
+  </div>
+</section>
+
+<!-- ============ RECEIPT SCANNER ============ -->
+<section class="tpage" id="tab-scan">
+  <div class="ctl">
+    <div class="grp"><label>Store</label><select class="inp" id="scanStore" style="max-width:190px"></select></div>
+    <div class="grp"><label>Date</label><input type="date" class="inp" id="scanDate"></div>
+    <div class="grp" style="margin-left:auto">
+      <input type="file" id="scanFiles" accept="image/*" multiple style="display:none">
+      <input type="file" id="scanCam" accept="image/*" capture="environment" style="display:none">
+      <button class="ghost" id="scanCamBtn">📷 Camera</button>
+      <button class="act" id="scanPick">Upload receipt / product photos</button>
+    </div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Scan <span class="mini">receipt → line items · product photo → barcode</span></h3>
+    <div class="sub">Drop a receipt photo to read the items and prices (first scan downloads the OCR engine, needs internet once). Photos of products are read via their barcode — fill in the name if it isn't recognized automatically.</div>
+    <pre id="scanStatus" style="white-space:pre-wrap;background:#f6f6f6;border:1px dashed var(--muted);border-radius:8px;padding:10px;font-size:12px;min-height:44px;margin:0 0 10px">Ready — upload a receipt or product photos to get started.</pre>
+    <div class="sub" id="scanNote" style="font-size:11px"></div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Review scanned lines <span class="mini">fix anything before it's saved</span></h3>
+    <div class="tbl-scroll">
+      <table id="scanTable"></table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <label class="chip" style="cursor:pointer"><input type="checkbox" id="scanSyncPrices" checked> Sync to Price Compare</label>
+      <label class="chip" style="cursor:pointer"><input type="checkbox" id="scanLogTrip" checked> Log trip in Budget</label>
+      <button class="ghost" id="scanClear" style="margin-left:auto">Clear rows</button>
+      <button class="act" id="scanAdd">+ Add to catalog</button>
+    </div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Purchase catalog <span class="mini">quantity &amp; price paid, from your scans</span></h3>
+    <div class="kpis" id="scanKpis"></div>
+    <div class="tbl-scroll">
+      <table id="scanCatalog"></table>
+    </div>
+    <div style="margin-top:12px">
+      <button class="ghost" id="scanClearAll">Clear all purchases</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BUDGET ============ -->
+<section class="tpage" id="tab-budget">
+  <div class="kpis" id="budgetKpis"></div>
+
+  <div class="grid">
+    <div class="card span6">
+      <h3>Planned vs budget <span class="mini">this week's planned meals vs monthly budget</span></h3>
+      <div class="sub" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase">Monthly budget $</label>
+        <input class="inp num" id="budgetInp" type="number" min="0" step="1">
+      </div>
+      <div id="budgetBar"></div>
+      <div class="list" id="budgetNotes"></div>
+    </div>
+
+    <div class="card span6">
+      <h3>Spend ledger <span class="mini">log every grocery trip</span></h3>
+      <div class="sub">Coupon savings offset the total automatically</div>
+      <div class="form" style="box-shadow:none;border:none;padding:0 0 10px 0;display:grid;grid-template-columns:repeat(12,1fr);gap:10px">
+        <div class="f half"><label>Date</label><input class="inp" id="spnDate" type="date"></div>
+        <div class="f half"><label>Store</label><input class="inp" id="spnStore" placeholder="Kroger"></div>
+        <div class="f third"><label>Amount $</label><input class="inp num" id="spnAmt" type="number" min="0" step="0.01"></div>
+        <div class="f third"><label>Note</label><input class="inp" id="spnNote" placeholder="Weekly run"></div>
+        <div class="f third" style="justify-content:flex-end;align-items:flex-end"><button class="act" id="spnAdd" style="width:100%;padding:9px">Log spend</button></div>
+      </div>
+      <div class="spend" id="spendList"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span><span style="color:var(--accent);font-weight:600">✦</span> Built by Whitney Smith · Kitchen &amp; Coupons · <a id="exportBtn">Backup JSON</a> · <a id="importBtn">Restore</a> · <a id="syncToggle">☁ Sync</a><span id="syncStatus"></span><input type="file" id="fileInp" accept="application/json,.json" style="display:none"></span>
+  <span>Data lives in this browser · <a id="resetData">Reset / re-seed data</a></span>
+</footer>
+
+<!-- ============ SYNC SETTINGS ============ -->
+<div class="card span12" id="syncPanel" style="display:none;margin-top:14px">
+  <h3>☁ Multi-device sync <span class="mini">one catalog on every device</span></h3>
+  <div class="sub">Data currently lives only in this browser. Sync stores a copy in your free Supabase project so desktop &amp; phone stay in step — newest edit wins, and offline edits re-push when you're back online.</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">
+    <label class="chip" style="cursor:pointer"><input type="checkbox" id="syncEn"> Enable sync</label>
+    <span class="chip grid2" id="syncStat">Not configured</span>
+    <button class="ghost" id="syncSave">Save &amp; test</button>
+    <button class="ghost" id="syncPush">Push now</button>
+    <button class="ghost" id="syncPull">Pull now</button>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+    <input class="inp" id="syncUrl" placeholder="Project URL" style="flex:2;min-width:260px">
+    <input class="inp" id="syncKey" placeholder="Anon / public key" style="flex:2;min-width:260px">
+    <input class="inp" id="syncSecret" placeholder="App secret (type the same one in the SQL)" type="password" style="flex:1;min-width:180px">
+  </div>
+  <div class="sub" style="margin-top:12px"><b>Setup (5 min, free):</b> 1) create a project at <b>supabase.com</b> · 2) open <b>SQL Editor</b> and run the SQL below, replacing <b>YOUR_SECRET</b> with the secret you type above · 3) paste the Project URL &amp; anon key, tick Enable, then <b>Save &amp; test</b>.</div>
+  <pre style="white-space:pre-wrap;background:#f6f6f6;border:1px dashed var(--muted);border-radius:8px;padding:10px;font-size:11px;line-height:1.5;margin:10px 0">create table if not exists dashboard_sync (
+  id text primary key,
+  data jsonb,
+  ts bigint,
+  dev text
+);
+alter table dashboard_sync enable row level security;
+drop policy if exists dash_app on dashboard_sync;
+create policy dash_app on dashboard_sync for all
+  using ((current_setting('request.headers', true)::json ->> 'x-app-secret') = 'YOUR_SECRET')
+  with check ((current_setting('request.headers', true)::json ->> 'x-app-secret') = 'YOUR_SECRET');
+grant all on dashboard_sync to anon, authenticated;</pre>
+  <div class="sub">Every device uses the same Project URL, anon key, and secret — stored only in each device's own browser, never in this page.</div>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   Meal Planner & Coupon Saver — single-file app
+   ============================================================ */
+const KEY='meal-coupon-dash-v4';
+const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
+const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
+const LOCATIONS={
+ 'Boise, ID':['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],
+ 'Seattle, WA':['Safeway','Costco','Walmart','Fred Meyer','Whole Foods'],
+ 'Austin, TX':['HEB','Costco','Walmart','Kroger','Whole Foods'],
+ 'Chicago, IL':['Jewel-Osco','Costco','Walmart','Meijer','Whole Foods'],
+ 'Boston, MA':['Stop & Shop','Costco','Walmart','Whole Foods','Market Basket'],
+ 'Custom':[]
+};
+const ITEM_ALIASES={
+ i1:['ground beef','93% lean','93 lean'], i2:['ground beef','80/20','80 lean'],
+ i3:['chicken thigh','thigh'], i4:['chicken breast','breast'],
+ i5:['spaghetti','barilla','penne','ziti','pasta'], i6:['mozzarella'],
+ i7:['parmesan'], i8:['milk'], i9:['black bean','beans'],
+ i10:['tortilla','quesadilla'], i11:['broccoli'], i12:['marinara','pasta sauce','tomato sauce'],
+ i13:['sour cream'], i14:['egg','eggs'],
+ o1:['toilet paper','cottonelle'], o2:['paper towel','bounty'],
+ o3:['laundry','detergent','tide'], o4:['dish soap','dawn'],
+ o5:['trash bag','glad'], o6:['cleaner','clorox'], o7:['shampoo','pantene'],
+ o8:['body wash','dove'], o9:['toothpaste','crest'], o10:['dryer sheet','bounce']
+};
+const AISLES=['Produce','Meat & Seafood','Dairy & Eggs','Bakery & Grains','Pantry & Canned','Frozen','Spices & Oils','Other'];
+
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fm=v=>'$'+Number(v||0).toFixed(2);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const parseQty=t=>{const m=String(t).match(/([\d.\/]+)\s*/);return m?m[1]:'1';};
+const numQty=q=>{const top=parseFloat(q.split('/')[0])||0,bot=parseFloat(q.split('/')[1])||0;return bot?top/bot:top;};
+const dayStr=offset=>{const d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10);};
+const daysUntil=iso=>{if(!iso)return 0;return Math.ceil((new Date(iso)-new Date())/864e5);};
+const isoDays=iso=>{if(!iso)return '';const d=new Date(iso);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+
+/* ---------- seed ---------- */
+function seedRecipes(){return [
+ {id:'r1',name:'Spaghetti with Meat Sauce',cat:'Pasta',serves:5,mins:45,cost:1.80,
+  ing:'1 lb ground beef\n1 onion\n3 cloves garlic\n1 jar tomato sauce\n1 can diced tomatoes\n1 lb spaghetti\n1 tsp Italian seasoning\nparmesan\nolive oil',
+  steps:'Brown beef over medium-high, breaking it up (about 8 min).\nAdd onion 3-4 min, then garlic 1 min.\nPour in sauce + tomatoes + seasoning + a pinch of sugar. Simmer low 20 min.\nCook spaghetti al dente, toss with sauce, finish with parmesan.'},
+ {id:'r2',name:'Sheet-Pan Chicken Fajitas',cat:'Chicken',serves:5,mins:35,cost:2.10,
+  ing:'1.5 lb chicken thighs\n3 bell peppers\n1 onion\n2 tbsp oil\n1 packet fajita seasoning\n10 tortillas\nsour cream\ncilantro\nlime',
+  steps:'Preheat 425F. Slice chicken and veg thin, toss with oil + seasoning.\nSpread in a single layer on a sheet pan.\nRoast 20 min until chicken hits 165F.\nWarm tortillas and build your own fajitas.'},
+ {id:'r3',name:'Slow-Cooker Beef Stew',cat:'Slow Cooker',serves:6,mins:480,cost:2.40,
+  ing:'2 lb beef chuck\n4 carrots\n1 lb potatoes\n2 stalks celery\n1 onion\n4 cups beef broth\n3 tbsp flour\n1 tsp thyme\nsalt\npepper',
+  steps:'Toss beef cubes in flour + salt + pepper. Brown in batches over high.\nAdd everything to the slow cooker, stir once.\nCook LOW 8 hours. Thicken with a flour-water slurry, cook 20 more min.'},
+ {id:'r4',name:'Turkey Meatball Stir-Fry',cat:'Quick',serves:5,mins:25,cost:2.00,
+  ing:'24 frozen turkey meatballs\n1 head broccoli\n2 bell peppers\n1/4 cup teriyaki sauce\n2 tbsp honey\n2 tsp cornstarch\n2 cups rice',
+  steps:'Start rice. Stir-fry broccoli + peppers on high 3-4 min.\nAdd meatballs, cook until browned and 165F.\nWhisk teriyaki + honey, stir in; thicken with cornstarch slurry 2 min. Serve over rice.'},
+ {id:'r5',name:'Homemade Pizza Night',cat:'Kid-friendly',serves:5,mins:35,cost:1.70,
+  ing:'2 pkg pizza dough\n1 cup pizza sauce\n3 cups mozzarella\npepperoni\nolive oil\nflour',
+  steps:'Preheat 450F with a pan inside to get crisp.\nStretch dough on a floured surface, transfer to parchment.\nThin layer of sauce, then cheese and toppings.\nBake 12-15 min until bubbly and golden.'},
+ {id:'r6',name:'Taco Bar',cat:'Beef',serves:5,mins:20,cost:1.50,
+  ing:'1 lb ground beef\n1 packet taco seasoning\n10 taco shells\nshredded lettuce\ndiced tomatoes\nshredded cheese\nsour cream\navocado\nsalsa',
+  steps:'Brown the beef over medium-high, drain grease.\nAdd seasoning + 3/4 cup water, simmer until thick.\nSet out shells + every topping; everyone builds their own.'},
+ {id:'r7',name:'Roast Chicken Dinner',cat:'Chicken',serves:5,mins:90,cost:2.20,
+  ing:'1 whole chicken\n3 tbsp butter\n2 tbsp herbs\n3 lb potatoes\n1 head broccoli\n3 tbsp olive oil\nsalt\npepper',
+  steps:'Preheat 425F. Pat chicken dry, rub with butter + herbs + salt.\nToss potatoes in oil around the bird.\nRoast ~80 min until thigh reads 165F. Rest 10 min.\nRoast broccoli in oil 12 min while the chicken rests.'},
+ {id:'r8',name:'Baked Ziti',cat:'Pasta',serves:6,mins:45,cost:1.60,
+  ing:'1 lb ziti\n1 jar marinara\n1 can crushed tomatoes\n15 oz ricotta\n2 cups mozzarella\n1 cup parmesan\n1 egg\n1/4 cup parsley',
+  steps:'Preheat 375F. Cook ziti 2 min under package time.\nMix ricotta + egg + parmesan + parsley.\nToss pasta with sauce, fold in ricotta, top with mozzarella.\nBake 25 min until bubbling. Broil 2 min for spots.'},
+ {id:'r9',name:'Chicken Burgers + Oven Fries',cat:'Chicken',serves:5,mins:25,cost:1.80,
+  ing:'1.5 lb ground chicken\n1/2 cup breadcrumbs\n1 egg\n2 tsp garlic powder\n5 burger buns\n1 lb potatoes',
+  steps:'Mix chicken + breadcrumbs + egg + seasonings lightly; form 5 patties.\nRoast fries at 425F on a sheet pan 20 min.\nCook patties over medium 6-7 min per side to 165F.\nToast buns, assemble with toppings.'},
+ {id:'r10',name:'Shrimp Pad Thai',cat:'Seafood',serves:5,mins:25,cost:2.75,
+  ing:'12 oz rice noodles\n1 lb shrimp\n2 eggs\n1/3 cup soy sauce\n3 tbsp lime juice\n2 tbsp sugar\n1 tbsp peanut butter\n3 cloves garlic\n1/4 cup peanuts',
+  steps:'Soak noodles in hot water until pliable.\nWhisk soy + lime + sugar + peanut butter + 1/4 cup water.\nWok on high: garlic, then shrimp 2-3 min. Scramble eggs.\nAdd noodles + sauce, toss 2-3 min. Top with peanuts + lime.'},
+ {id:'r11',name:'Overnight Oats with Berries',cat:'Breakfast',serves:4,mins:5,cost:1.20,
+  ing:'2 cups rolled oats\n2 cups milk\n1/2 cup Greek yogurt\n2 tbsp honey\n2 cups mixed berries\n1/2 tsp cinnamon',
+  steps:'Stir everything together in a bowl or jars.\nCover and refrigerate overnight (at least 4 hrs).\nTop with berries + a drizzle of honey before eating.'},
+ {id:'r12',name:'Veggie Egg Scramble',cat:'Breakfast',serves:4,mins:15,cost:0.90,
+  ing:'8 large eggs\n1 bell pepper\n1/2 onion\n1 cup spinach\n1/4 cup shredded cheddar\n2 tbsp butter\nsalt\npepper',
+  steps:'Whisk eggs with salt + pepper.\nSaute pepper + onion in butter 3 min, add spinach until wilted.\nPour in eggs, scramble until just set; fold in cheese at the end.'},
+ {id:'r13',name:'Cilantro Lime Rice',cat:'Sides',serves:6,mins:25,cost:0.45,
+  ing:'2 cups jasmine rice\n2 cups water\n2 limes\n1/2 cup cilantro\n2 tbsp butter\n1 tsp salt',
+  steps:'Rinse rice, cook per package with water + salt.\nFluff, stir in butter, lime zest + juice, and chopped cilantro.'},
+ {id:'r14',name:'Garlic Parmesan Roasted Potatoes',cat:'Sides',serves:5,mins:45,cost:0.70,
+  ing:'3 lb potatoes\n4 cloves garlic\n1/2 cup grated parmesan\n3 tbsp olive oil\n1 tsp paprika\nsalt\npepper\n2 tbsp parsley',
+  steps:'Preheat 425F. Cut potatoes into wedges.\nToss with oil, garlic, parmesan, paprika, salt + pepper.\nRoast 35-40 min until golden, turning once; toss with parsley.'},
+ {id:'r15',name:'Lemon Herb Chicken',cat:'Chicken',serves:5,mins:40,cost:2.10,
+  ing:'6 chicken thighs\n2 lemons\n3 cloves garlic\n3 tbsp olive oil\n1 tsp rosemary\n1 tsp thyme\nsalt\npepper',
+  steps:'Marinate chicken in lemon juice + zest, garlic, oil, herbs for 20 min.\nBake at 400F 30-35 min until 165F.\nRest 5 min; serve with lemon wedges.'},
+ {id:'r16',name:'Honey Garlic Chicken Thighs',cat:'Chicken',serves:5,mins:30,cost:1.90,
+  ing:'6 boneless chicken thighs\n1/3 cup honey\n4 cloves garlic\n1/4 cup soy sauce\n1 tbsp apple cider vinegar\n1/2 tsp ginger\n1 tbsp oil',
+  steps:'Whisk honey, garlic, soy, vinegar, ginger for the sauce.\nSear thighs in oil 4 min per side.\nPour in sauce, simmer 8-10 min until sticky and chicken hits 165F.'},
+ {id:'r17',name:'Slow-Cooker Salsa Chicken',cat:'Slow Cooker',serves:6,mins:240,cost:1.30,
+  ing:'2 lb boneless chicken breast\n1 jar salsa\n1 packet taco seasoning\n1 lime\ncilantro',
+  steps:'Put chicken in the slow cooker, cover with salsa + seasoning.\nCook LOW 4-5 hours.\nShred and squeeze lime over; great over rice or in tacos.'},
+ {id:'r18',name:'White Chicken Chili',cat:'Slow Cooker',serves:6,mins:300,cost:1.60,
+  ing:'1.5 lb chicken breast\n2 cans white beans\n1 can green chiles\n1 onion\n4 cups chicken broth\n2 tsp cumin\n1 tsp oregano\n1 cup sour cream',
+  steps:'Add everything but sour cream to the slow cooker.\nCook LOW 5-6 hours, shred the chicken.\nStir in sour cream at the end; top with cheese.'},
+ {id:'r19',name:'Black Bean Quesadillas',cat:'Quick',serves:5,mins:20,cost:1.20,
+  ing:'10 flour tortillas\n2 cans black beans\n2 cups shredded cheddar\n1 bell pepper\n1/2 onion\n2 tbsp oil\nsalsa',
+  steps:'Mash beans lightly; saute pepper + onion 3 min.\nLayer beans, veg, cheese between two tortillas.\nCrisp in oil over medium 2-3 min per side; slice and serve with salsa.'},
+ {id:'r20',name:'Creamy Tomato Pasta',cat:'Pasta',serves:5,mins:25,cost:1.75,
+  ing:'1 lb penne\n1 jar Rao’s marinara\n1/2 cup heavy cream\n1/4 cup parmesan\n2 cloves garlic\n1 tbsp butter\nbasil',
+  steps:'Cook penne al dente.\nWarm marinara + garlic + cream; simmer 5 min.\nToss pasta in sauce with butter + parmesan; top with basil.'}
+];}
+function seedCoupons(){return [
+ {id:uid(),store:'Albertsons',item:'just4U · 93% lean ground beef',value:1.50,exp:dayStr(4),used:false},
+ {id:uid(),store:'Albertsons',item:'Weekly ad · Barilla spaghetti BOGO',value:2.10,exp:dayStr(2),used:false},
+ {id:uid(),store:'Albertsons',item:'just4U · Rao’s marinara',value:3.00,exp:dayStr(6),used:false},
+ {id:uid(),store:'Albertsons',item:'Paper coupon · Tillamook mozzarella',value:1.00,exp:dayStr(-3),used:true},
+ {id:uid(),store:'Costco',item:'Monthly book · Kirkland chicken thighs',value:4.00,exp:dayStr(9),used:false},
+ {id:uid(),store:'Costco',item:'Monthly book · Kirkland Grade A eggs',value:3.50,exp:dayStr(5),used:false},
+ {id:uid(),store:'Costco',item:'Online · 2-day delivery promo',value:8.00,exp:dayStr(13),used:false},
+ {id:uid(),store:'Costco',item:'Monthly book · Rao’s marinara (12-pk)',value:5.00,exp:dayStr(20),used:false},
+ {id:uid(),store:'Walmart',item:'Online pickup · $5 off $35 order',value:5.00,exp:dayStr(12),used:false},
+ {id:uid(),store:'Walmart',item:'Marketside 93% lean beef digital',value:1.00,exp:dayStr(8),used:false},
+ {id:uid(),store:'WinCo Foods',item:'WinCo digital · store-brand milk',value:0.75,exp:dayStr(5),used:false},
+ {id:uid(),store:'WinCo Foods',item:'WinCo bulk aisle · spices 10% off',value:1.50,exp:dayStr(9),used:false},
+ {id:uid(),store:'WinCo Foods',item:'WinCo flyer · free item coupon',value:2.50,exp:dayStr(-1),used:true},
+ {id:uid(),store:'Fred Meyer',item:'Fred Meyer digital · boneless chicken breast',value:2.00,exp:dayStr(7),used:false},
+ {id:uid(),store:'Fred Meyer',item:'Fred Meyer Rewards · produce',value:1.00,exp:dayStr(3),used:false},
+ {id:uid(),store:'Fred Meyer',item:'Fred Meyer coupon · Rao’s marinara',value:2.50,exp:dayStr(12),used:false}
+];}
+function seedItems(){return [
+ {id:'i1',name:'Ground beef 93% lean (2 lb)',unit:'lb',base:2,aisle:'Meat & Seafood'},
+ {id:'i2',name:'Ground beef 80/20 (2 lb)',unit:'lb',base:2,aisle:'Meat & Seafood'},
+ {id:'i3',name:'Chicken thighs, bone-in (3 lb)',unit:'lb',base:3,aisle:'Meat & Seafood'},
+ {id:'i4',name:'Chicken breast, boneless skinless (2 lb)',unit:'lb',base:2,aisle:'Meat & Seafood'},
+ {id:'i5',name:'Spaghetti · Barilla (16 oz ×2)',unit:'oz',base:32,aisle:'Pantry & Canned'},
+ {id:'i6',name:'Shredded mozzarella · Tillamook / store (16 oz)',unit:'oz',base:16,aisle:'Dairy & Eggs'},
+ {id:'i7',name:'Parmesan wedge (8 oz)',unit:'oz',base:8,aisle:'Dairy & Eggs'},
+ {id:'i8',name:'Whole milk (1 gal)',unit:'gal',base:1,aisle:'Dairy & Eggs'},
+ {id:'i9',name:'Black beans · store brand (15 oz ×4)',unit:'oz',base:60,aisle:'Pantry & Canned'},
+ {id:'i10',name:'Corn tortillas (30 ct)',unit:'ct',base:30,aisle:'Bakery & Grains'},
+ {id:'i11',name:'Broccoli florets (2 lb)',unit:'lb',base:2,aisle:'Produce'},
+ {id:'i12',name:'Marinara · Rao’s (24 oz ×2)',unit:'oz',base:48,aisle:'Pantry & Canned'},
+ {id:'i13',name:'Sour cream · store brand (16 oz)',unit:'oz',base:16,aisle:'Dairy & Eggs'},
+ {id:'i14',name:'Eggs, large Grade A (dozen)',unit:'ct',base:12,aisle:'Dairy & Eggs'}
+];}
+function seedPrices(){return {
+ i1:{Kroger:11.99,Albertsons:12.49,Costco:9.99,Walmart:10.98,Aldi:10.49,'WinCo Foods':9.49,'Fred Meyer':11.49},
+ i2:{Kroger:8.99,Albertsons:9.49,Costco:7.99,Walmart:7.98,Aldi:7.59,'WinCo Foods':7.29,'Fred Meyer':8.79},
+ i3:{Kroger:5.49,Albertsons:5.99,Costco:4.50,Walmart:4.98,Aldi:4.79,'WinCo Foods':4.79,'Fred Meyer':5.29},
+ i4:{Kroger:8.98,Albertsons:9.98,Costco:5.99,Walmart:7.48,Aldi:7.29,'WinCo Foods':7.19,'Fred Meyer':8.79},
+ i5:{Kroger:2.78,Albertsons:3.18,Costco:1.99,Walmart:2.38,Aldi:2.18,'WinCo Foods':2.09,'Fred Meyer':2.68},
+ i6:{Kroger:3.99,Albertsons:4.29,Costco:1.99,Walmart:3.48,Aldi:3.29,'WinCo Foods':3.29,'Fred Meyer':4.29},
+ i7:{Kroger:6.49,Albertsons:6.99,Costco:4.29,Walmart:5.98,Aldi:5.49,'WinCo Foods':5.29,'Fred Meyer':6.29},
+ i8:{Kroger:3.79,Albertsons:3.99,Costco:3.09,Walmart:3.49,Aldi:3.29,'WinCo Foods':3.19,'Fred Meyer':3.69},
+ i9:{Kroger:3.55,Albertsons:3.96,Costco:2.92,Walmart:3.16,Aldi:2.76,'WinCo Foods':2.99,'Fred Meyer':3.49},
+ i10:{Kroger:2.49,Albertsons:2.79,Costco:1.99,Walmart:2.27,Aldi:1.85,'WinCo Foods':1.99,'Fred Meyer':2.39},
+ i11:{Kroger:5.58,Albertsons:5.99,Costco:4.99,Walmart:4.98,Aldi:4.79,'WinCo Foods':4.59,'Fred Meyer':5.29},
+ i12:{Kroger:13.98,Albertsons:14.98,Costco:9.99,Walmart:12.98,Aldi:null,'WinCo Foods':12.49,'Fred Meyer':13.49},
+ i13:{Kroger:1.99,Albertsons:2.49,Costco:1.69,Walmart:1.89,Aldi:1.59,'WinCo Foods':1.69,'Fred Meyer':2.29},
+ i14:{Kroger:2.99,Albertsons:3.49,Costco:2.49,Walmart:2.68,Aldi:2.49,'WinCo Foods':2.19,'Fred Meyer':2.89}
+};}
+
+function seedOther(){return [
+ {id:'o1',name:'Toilet paper · Cottonelle (12 rolls)',unit:'roll',base:12,aisle:'Household'},
+ {id:'o2',name:'Paper towels · Bounty (6 rolls)',unit:'roll',base:6,aisle:'Household'},
+ {id:'o3',name:'Laundry detergent · Tide HE (92 loads)',unit:'load',base:92,aisle:'Household'},
+ {id:'o4',name:'Dish soap · Dawn Platinum (28 oz)',unit:'oz',base:28,aisle:'Household'},
+ {id:'o5',name:'Trash bags · Glad 13 gal (80 ct)',unit:'ct',base:80,aisle:'Household'},
+ {id:'o6',name:'All-purpose cleaner · Clorox (32 oz)',unit:'oz',base:32,aisle:'Household'},
+ {id:'o7',name:'Shampoo · Pantene (12.6 oz)',unit:'oz',base:12.6,aisle:'Household'},
+ {id:'o8',name:'Body wash · Dove (18 oz)',unit:'oz',base:18,aisle:'Household'},
+ {id:'o9',name:'Toothpaste · Crest (4.6 oz)',unit:'oz',base:4.6,aisle:'Household'},
+ {id:'o10',name:'Dryer sheets · Bounce (200 ct)',unit:'ct',base:200,aisle:'Household'}
+];}
+function seedOtherPrices(){return {
+ o1:{Kroger:11.99,Albertsons:12.49,Costco:14.99,Walmart:10.98,Aldi:10.29,'WinCo Foods':10.49,'Fred Meyer':12.29},
+ o2:{Kroger:6.49,Albertsons:6.99,Costco:9.49,Walmart:5.98,Aldi:5.79,'WinCo Foods':5.89,'Fred Meyer':6.79},
+ o3:{Kroger:8.99,Albertsons:9.99,Costco:12.99,Walmart:8.48,Aldi:7.99,'WinCo Foods':8.29,'Fred Meyer':9.49},
+ o4:{Kroger:3.99,Albertsons:4.49,Costco:5.99,Walmart:3.88,Aldi:3.69,'WinCo Foods':3.79,'Fred Meyer':4.29},
+ o5:{Kroger:7.99,Albertsons:8.99,Costco:9.99,Walmart:7.48,Aldi:7.19,'WinCo Foods':7.39,'Fred Meyer':8.49},
+ o6:{Kroger:3.29,Albertsons:3.49,Costco:4.49,Walmart:3.18,Aldi:2.99,'WinCo Foods':3.09,'Fred Meyer':3.49},
+ o7:{Kroger:5.49,Albertsons:5.99,Costco:6.99,Walmart:5.28,Aldi:4.99,'WinCo Foods':5.09,'Fred Meyer':5.89},
+ o8:{Kroger:4.99,Albertsons:5.49,Costco:6.99,Walmart:4.78,Aldi:4.49,'WinCo Foods':4.69,'Fred Meyer':5.29},
+ o9:{Kroger:3.49,Albertsons:3.79,Costco:5.49,Walmart:3.38,Aldi:3.19,'WinCo Foods':3.29,'Fred Meyer':3.79},
+ o10:{Kroger:6.49,Albertsons:6.99,Costco:8.99,Walmart:6.28,Aldi:5.99,'WinCo Foods':6.19,'Fred Meyer':6.89}
+};}
+
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){const d=JSON.parse(raw);
+      const dd=Object.assign({recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Boise, ID',stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:seedPrices(),other:seedOther(),otherPrices:seedOtherPrices(),pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]},d);
+      ['Albertsons','Costco'].forEach(s=>{if(!dd.stores.includes(s))dd.stores.push(s);});
+      seedCoupons().forEach(sc=>{if(!dd.coupons.some(c=>c.item===sc.item))dd.coupons.push(sc);});
+      Object.keys(seedPrices()).forEach(iid=>{const pr=seedPrices()[iid];
+        if(dd.items.some(it=>it.id===iid)){pr&&Object.keys(pr).forEach(st=>{
+          if(!dd.prices[iid])dd.prices[iid]={};
+          if(dd.prices[iid][st]===undefined)dd.prices[iid][st]=pr[st];});}});
+      seedOther().forEach(o=>{if(!dd.other||!dd.other.some(x=>x.id===o.id))dd.other=(dd.other||[]).concat([o]);});
+      Object.keys(seedOtherPrices()).forEach(iid=>{const pr=seedOtherPrices()[iid];
+        if((dd.other||[]).some(it=>it.id===iid)){pr&&Object.keys(pr).forEach(st=>{
+          if(!dd.otherPrices[iid])dd.otherPrices[iid]={};
+          if(dd.otherPrices[iid][st]===undefined)dd.otherPrices[iid][st]=pr[st];});}});
+      return dd;
+    }
+  }catch(e){}
+  return {
+    recipes:seedRecipes(), plan:{}, coupons:seedCoupons(),
+    stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'], items:seedItems(), prices:seedPrices(),
+    other:seedOther(), otherPrices:seedOtherPrices(),
+    location:'Boise, ID', pantry:[], history:{},
+    budget:500, slist:[], purchases:[], spends:[
+      {id:uid(),date:dayStr(-7),store:'Walmart',amt:84.32,note:'Weekly run'},
+      {id:uid(),date:dayStr(-3),store:'Fred Meyer',amt:23.10,note:'Coupon run'},
+      {id:uid(),date:dayStr(-1),store:'WinCo Foods',amt:51.77,note:'Bulk pantry'}
+    ]
+  };
+}
+let db=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){} if(typeof queueSync==='function')queueSync();}
+function matchItem(text){
+  const t=String(text||'').toLowerCase();
+  let best=null,bestS=0;
+  db.items.concat(db.other||[]).forEach(it=>{
+    let sc=0;(ITEM_ALIASES[it.id]||[]).forEach(a=>{if(t.includes(String(a).toLowerCase()))sc++;});
+    if(sc>bestS){bestS=sc;best=it;}
+  });
+  return bestS?best:null;
+}
+function couponValueFor(itemId,store){
+  let v=0;
+  db.coupons.forEach(c=>{if(c.used||cpnStatus(c)==='expired')return;if(store&&c.store&&c.store!==store)return;
+    const m=matchItem(c.item);if(m&&m.id===itemId)v+=Number(c.value||0);});
+  return v;
+}
+function bestStoreFor(item){
+  if(!item)return null;
+  const pr=db.prices[item.id];if(!pr)return null;
+  let best=null;
+  db.stores.forEach(s=>{
+    const p=pr[s];if(!p&&p!==0)return;
+    const eff=Number(p)-couponValueFor(item.id,s);
+    if(!best||eff<best.eff||(eff===best.eff&&Number(p)<best.price))best={store:s,price:Number(p),eff};
+  });
+  return best;
+}
+
+/* ---------- theme ---------- */
+const btn=document.getElementById('themeBtn');
+const tSaved=localStorage.getItem('pf-theme')||'light';
+const MOON='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const SUN='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+function paint(ok){btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ok===true?'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>':'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>');}
+document.documentElement.setAttribute('data-theme',tSaved);paint(tSaved==='dark');
+btn.addEventListener('click',()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);paint(n==='dark');localStorage.setItem('pf-theme',n);});
+
+/* ---------- helpers ---------- */
+const kpi=(k,v,cls,s)=>`<div class="kpi"><div class="k">${k}</div><div class="v ${cls||''}">${v}</div><div class="s">${s||''}</div></div>`;
+const badge=(st)=>({active:`<span class="badge good">Active</span>`,soon:`<span class="badge warn">Expires soon</span>`,used:`<span class="badge mut">Used</span>`,expired:`<span class="badge bad">Expired</span>`}[st]||'');
+
+/* ---------- tab routing ---------- */
+let cur='plan', cpnFilter='all', cpnStoreF='all', recCat='all', recSearch='', editing=null;
+const $=id=>document.getElementById(id);
+const TABS=['plan','recipes','coupons','prices','other','list','scan','budget'];
+function showTab(t){
+  cur=t;
+  document.querySelectorAll('.tabrow .chip').forEach(c=>c.classList.toggle('on',c.dataset.tab===t));
+  document.querySelectorAll('section.tpage').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));
+  render(t);
+}
+document.querySelectorAll('.tabrow .chip').forEach(c=>c.addEventListener('click',()=>showTab(c.dataset.tab)));
+
+function render(t){
+  if(t==='plan')renderPlan();
+  else if(t==='recipes')renderRecipes();
+  else if(t==='coupons')renderCoupons();
+  else if(t==='prices')renderPrices();
+  else if(t==='other')renderOther();
+  else if(t==='list')renderList();
+  else if(t==='scan')renderScan();
+  else if(t==='budget')renderBudget();
+}
+
+/* ---------- MEAL PLANNER ---------- */
+function recipeCost(rid){const r=db.recipes.find(x=>x.id===rid);return r?(r.cost*r.serves):0;}
+function plannedRecipes(){return DAYS.map(([d])=>db.plan[d]).filter(Boolean).map(id=>db.recipes.find(r=>r.id===id)).filter(Boolean);}
+function renderPlan(){
+  const planned=plannedRecipes();
+  const weekCost=planned.reduce((a,r)=>a+(r.cost*r.serves),0);
+  const filled=planned.length;
+  let ings=[];
+  planned.forEach(r=>String(r.ing||'').split('\n').forEach(L=>{
+    const line=L.trim();if(!line)return;
+    const i=line.search(/\s/);const q=i<0?line:line.slice(0,i),it=i<0?'':line.slice(i+1).trim();
+    if(it)ings.push({q,it});
+  }));
+  const map=new Map();
+  ings.forEach(({q,it})=>{const key=it.toLowerCase();const n=numQty(q);
+    if(map.has(key))map.get(key).n+=n;else map.set(key,{it,n,qty:parseQty(q),unit:q.replace(parseQty(q),'').trim()});
+  });
+  const rows=[...map.values()].sort((a,b)=>a.it.localeCompare(b.it));
+  rows.forEach(r=>{r.item=matchItem(r.it);r.have=db.pantry.some(t=>String(r.it).toLowerCase().includes(String(t).toLowerCase()));});
+  const have=rows.filter(r=>r.have);
+  const buy=rows.filter(r=>!r.have);
+  let savd=0;
+  const plan={};
+  buy.forEach(r=>{const b=bestStoreFor(r.item);r.best=b;if(b){savd+=b.eff;}(plan[b?b.store:'No price on file']=plan[b?b.store:'No price on file']||[]).push(r);});
+  let retail=0;buy.forEach(r=>{if(r.best)retail+=r.best.price;});
+  const couponOff=Math.max(0,retail-savd);
+
+  $('planKpis').innerHTML=
+    kpi('Meals planned',filled+' / 7',filled===7?'good':filled>0?'':'warn',filled===7?'full week started':'plan your dinners')+
+    kpi('Est. week cost',fm(weekCost),'',planned.length?Math.round(weekCost/5*100)/100+' ≈ /person' :'')+
+    kpi('To buy',buy.length,'',have.length?'+'+have.length+' already on hand':'no pantry matches')+
+    kpi('Store plan est.',fm(retail),'','− '+fm(couponOff)+' in coupons');
+
+  $('daygrid').innerHTML=DAYS.map(([d,label])=>{
+    const rid=db.plan[d]||'';
+    const r=db.recipes.find(x=>x.id===rid);
+    const opts=['<option value="">— none —</option>'].concat(db.recipes.map(x=>`<option value="${x.id}" ${x.id===rid?'selected':''}>${esc(x.name)} · ${fm(x.cost)}</option>`)).join('');
+    return `<div class="day ${r?'done':''}">
+      <div class="d"><span>${label}</span>${r?'<span style="color:var(--green);font-size:12px">✓</span>':''}</div>
+      <select data-day="${d}">${opts}</select>
+      <div class="cost"><span>${r?esc(r.cat):'—'}</span><b>${r?fm(r.cost*r.serves):'—'}</b></div>
+    </div>`;
+  }).join('');
+
+  $('pantryChips').innerHTML=db.pantry.map((t,i)=>`<span class="pantrychip">${esc(t)} <b data-pdel="${i}" style="cursor:pointer" title="remove">✕</b></span>`).join('')||'<div class="empty" style="font-size:12px">None yet — add what you already have above.</div>';
+
+  $('haveList').innerHTML=have.length?have.map(r=>`<div class="srow"><span class="qty" style="color:var(--green)">${fmtQty(r.n,r.qty)}</span><span class="nm done">${esc(r.it)}</span></div>`).join(''):'<div class="empty" style="font-size:12px">Nothing you have matches this week’s plan.</div>';
+
+  const SO=AISLES.filter(a=>buy.some(r=>r.item&&r.item.aisle===a)).concat(buy.some(r=>!r.item||!r.item.aisle)?['Other']:[]);
+  $('shopList').innerHTML=buy.length?SO.map(a=>`<div class="aisle">${esc(a)}</div>`+buy.filter(r=>r.item?(r.item.aisle===a):a==='Other').map(r=>`<div class="srow"><span class="qty">${fmtQty(r.n,r.qty)}</span><span class="nm">${esc(r.it)}</span>${r.best?`<span class="qty2">at ${esc(r.best.store)}</span>`:''}</div>`).join('')).join(''):'<div class="empty">Pick recipes and they’ll land here, grouped by aisle.</div>';
+
+  $('shopEst').innerHTML='Retail est. <b>'+fm(retail)+'</b> <span class="small-tag">−'+fm(couponOff)+' after coupons</span>';
+
+  $('storePlan').innerHTML=Object.keys(plan).map(st=>{
+    const items=plan[st];
+    const miss=st==='No price on file';
+    const subtotal=miss?0:items.reduce((a,r)=>a+r.best.price,0);
+    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(subtotal)}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.it)}</span><span class="px">${fmtQty(r.n,r.qty)}</span></li>`).join('')}</ul></div>`;
+  }).join('')||'<div class="empty">Plan some meals and the store-by-store plan appears here.</div>';
+}
+function fmtQty(n,q0){
+  const q=n>=4?Math.round(n):(Math.round(n*4)/4);
+  const whole=Math.floor(q);
+  const frac=q-whole;
+  const fx=frac>=0.74?'¾':frac>=0.49?'½':frac>=0.24?'¼':'';
+  return (whole?whole:'')+(fx||'');
+}
+
+$('clearPlanBtn').addEventListener('click',()=>{if(!confirm('Clear the whole week?'))return;db.plan={};save();render('plan');});
+$('printBtn').addEventListener('click',()=>{window.print();});
+$('daygrid').addEventListener('change',e=>{
+  const sel=e.target.closest('select[data-day]');if(!sel)return;
+  db.plan[sel.dataset.day]=sel.value;save();render('plan');
+});
+function addPantry(){
+  const v=$('pantryInp').value.trim();if(!v)return;
+  v.split(/[,;]/).map(x=>x.trim().toLowerCase()).filter(x=>x&&!db.pantry.includes(x)).forEach(x=>db.pantry.push(x));
+  $('pantryInp').value='';save();render('plan');
+}
+$('pantryAdd').addEventListener('click',addPantry);
+$('pantryInp').addEventListener('keydown',e=>{if(e.key==='Enter')addPantry();});
+$('pantryChips').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pdel]');if(!b)return;
+  db.pantry.splice(+b.dataset.pdel,1);save();render('plan');
+});
+let autoQuick=false,autoBudget=false,autoNoRepeat=false;
+$('genQuick').addEventListener('click',e=>{autoQuick=!autoQuick;e.currentTarget.classList.toggle('on',autoQuick);});
+$('genBudget').addEventListener('click',e=>{autoBudget=!autoBudget;e.currentTarget.classList.toggle('on',autoBudget);});
+$('genNoRepeat').addEventListener('click',e=>{autoNoRepeat=!autoNoRepeat;e.currentTarget.classList.toggle('on',autoNoRepeat);});
+function genPool(){
+  let pool=db.recipes.slice();
+  if(autoQuick)pool=pool.filter(r=>r.mins<=30);
+  if(autoBudget)pool=pool.filter(r=>r.cost<=((db.budget||400)/7/5)+0.6);
+  return pool;
+}
+$('autoFillBtn').addEventListener('click',()=>{
+  const used=new Set();
+  DAYS.forEach(([d])=>{const id=db.plan[d];const r=id?db.recipes.find(x=>x.id===id):null;if(r)used.add(r.cat);});
+  DAYS.forEach(([d])=>{
+    if(db.plan[d])return;
+    let pool=genPool();
+    if(autoNoRepeat)pool=pool.filter(r=>!used.has(r.cat));
+    const pick=[...pool].sort((a,b)=>a.cost-b.cost)[0];
+    if(pick){db.plan[d]=pick.id;used.add(pick.cat);}
+  });
+  save();render('plan');
+});
+
+/* ---------- RECIPE LIBRARY ---------- */
+function renderRecipes(){
+  const q=recSearch.trim().toLowerCase();
+  let list=db.recipes.filter(r=>(!q||String(r.name).toLowerCase().includes(q)||String(r.cat).toLowerCase().includes(q)));
+  if(recCat!=='all')list=list.filter(r=>r.cat===recCat);
+  const cats=['all'].concat([...new Set(db.recipes.map(r=>r.cat))]);
+  $('recCats').innerHTML=cats.map(c=>`<span class="chip ${c===recCat?'on':''}" data-cat="${c}">${c}</span>`).join('');
+  $('recCount').textContent=list.length+' recipes';
+  $('recGrid').innerHTML=list.length?list.map(r=>{
+    const mins=r.mins>=120?(r.mins/60).toFixed(0)+' hr':r.mins+' min';
+    return `<div class="rec">
+      <div class="top"><h4>${esc(r.name)}</h4></div>
+      <div class="meta"><span class="badge grad">${esc(r.cat)}</span><span>serves ${r.serves}</span><span>${mins}</span><b>${fm(r.cost)}/serving</b></div>
+      <div class="pre">${esc(String(r.ing||'').split('\n').slice(0,5).join('\n'))}</div>
+      <div class="foot"><button class="ghost" data-edit="${r.id}" style="flex:1">Edit</button><button class="ghost" data-plan="${r.id}" title="Assign in planner" style="flex:1">→ Plan</button><button class="mini del" data-del="${r.id}" title="Delete">✕</button></div>
+    </div>`;
+  }).join(''):'<div class="empty">No recipes match. Try another search or add one.</div>';
+
+  if(editing){
+    const r=db.recipes.find(x=>x.id===editing)||{name:'',cat:CAT_LIST[0],serves:4,mins:30,cost:2.00,ing:'',steps:''};
+    $('recForm').style.display='grid';
+    $('recForm').innerHTML=`
+      <h3>${r.id?'✎ Edit recipe':'＋ New recipe'}<span class="mini" style="margin-left:auto;font-weight:700;color:var(--muted)">${r.id?esc(r.name):'recipe'}</span></h3>
+      <div class="f all"><label>Name</label><input class="inp" id="fName" value="${esc(r.name)}" placeholder="Teriyaki Salmon Bowl"></div>
+      <div class="f third"><label>Category</label><select class="inp" id="fCat">${CAT_LIST.map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="f third"><label>Serves</label><input class="inp num" id="fServes" type="number" min="1" value="${r.serves}"></div>
+      <div class="f half"><label>Minutes</label><input class="inp num" id="fMins" type="number" min="0" value="${r.mins}"></div>
+      <div class="f third"><label>Cost / serving $</label><input class="inp num" id="fCost" type="number" min="0" step="0.05" value="${r.cost}"></div>
+      <div class="f half"><label>Ingredients · one per line (qty + item)</label><textarea class="inp" id="fIng" rows="6">${esc(r.ing||'')}</textarea></div>
+      <div class="f all"><label>Steps · one per line</label><textarea class="inp" id="fSteps" rows="5">${esc(r.steps||'')}</textarea></div>
+      <div class="actions">
+        <button class="act" id="fSave">Save recipe</button>
+        <button class="ghost" id="fCancel">Cancel</button>
+        <span class="chip grid2" id="fCostSum" style="margin-left:auto">est. ${fm(0)} for the batch</span>
+      </div>`;
+    $('fCostSum').textContent='est. '+fm((+r.serves||4)*(+r.cost||0))+' for the batch';
+    ['fServes','fCost'].forEach(id=>$(id).addEventListener('input',()=>{
+      $('fCostSum').textContent='est. '+fm((+$('fServes').value||0)*(+$('fCost').value||0))+' for the batch';
+    }));
+    $('fSave').addEventListener('click',()=>{
+      const name=$('fName').value.trim();if(!name){$('fName').focus();return;}
+      const rec={name,cat:$('fCat').value,serves:+$('fServes').value||4,mins:+$('fMins').value||30,cost:+$('fCost').value||0,ing:$('fIng').value.trim(),steps:$('fSteps').value.trim()};
+      if(r.id){const i=db.recipes.findIndex(x=>x.id===r.id);db.recipes[i]=Object.assign(db.recipes[i],rec);}
+      else db.recipes.push(Object.assign({id:uid()},rec));
+      editing=null;save();renderRecipes();
+    });
+    $('fCancel').addEventListener('click',()=>{editing=null;renderRecipes();});
+  }else{
+    $('recForm').style.display='none';
+  }
+}
+$('recSearch').addEventListener('input',e=>{recSearch=e.target.value;renderRecipes();});
+$('recCats').addEventListener('click',e=>{const c=e.target.closest('.chip[data-cat]');if(!c)return;recCat=c.dataset.cat;renderRecipes();});
+$('newRecBtn').addEventListener('click',()=>{editing='new';renderRecipes();});
+$('recGrid').addEventListener('click',e=>{
+  const d=e.target.closest('[data-del]');if(d){if(confirm('Delete this recipe?')){db.recipes=db.recipes.filter(r=>r.id!==d.dataset.del);save();renderRecipes();}return;}
+  const p=e.target.closest('[data-plan]');if(p){const day=nextEmptyDay();if(day){db.plan[day]=p.dataset.plan;save();showTab('plan');}else{alert('Every day is full — clear a day first.');}return;}
+  const ed=e.target.closest('[data-edit]');if(ed){editing=ed.dataset.edit;renderRecipes();}
+});
+function nextEmptyDay(){for(const [d] of DAYS){if(!db.plan[d])return d;}return null;}
+
+/* ---------- COUPONS ---------- */
+function cpnStatus(c){
+  if(c.used)return 'used';
+  const left=daysUntil(c.exp);
+  if(left<0)return 'expired';
+  if(left<=7)return 'soon';
+  return 'active';
+}
+function renderCoupons(){
+  let list=[...db.coupons];
+  const total=db.coupons.reduce((a,c)=>a+Number(c.value||0),0);
+  const usedTotal=db.coupons.filter(c=>c.used).reduce((a,c)=>a+Number(c.value||0),0);
+  const soon=db.coupons.filter(c=>cpnStatus(c)==='soon');
+  const activeVal=db.coupons.filter(c=>cpnStatus(c)==='active'||cpnStatus(c)==='soon').reduce((a,c)=>a+Number(c.value||0),0);
+  const expNow=db.coupons.filter(c=>cpnStatus(c)==='expired');
+
+  $('cpnKpis').innerHTML=
+    kpi('Total saved',fm(usedTotal),'good',usedTotal?db.coupons.filter(c=>c.used).length+' coupons cashed':'mark coupons as used →')+
+    kpi('Active value',fm(activeVal),'',db.coupons.filter(c=>cpnStatus(c)==='active').length+' at hand')+
+    kpi('Expiring ≤ 7d',soon.length,soon.length>0?'warn':'good',soon.length?soon.map(c=>esc(c.item.split('·')[0].trim())).join(', ').slice(0,38):'nothing urgent')+
+    kpi('Expired',expNow.length,expNow.length?'bad':'',expNow.length?'missed — clip earlier':'none wasted');
+
+  if(cpnFilter!=='all')list=list.filter(c=>cpnStatus(c)===cpnFilter);
+  if(cpnStoreF!=='all')list=list.filter(c=>(c.store||'')===cpnStoreF);
+
+  $('cpnStoreChips').innerHTML='<span class="chip '+(cpnStoreF==='all'?'on':'')+'" data-cfs="all">All stores</span>'+db.stores.map(s=>`<span class="chip ${cpnStoreF===s?'on':''}" data-cfs="${esc(s)}">${esc(s)}</span>`).join('');
+  $('cpnCount').textContent=db.coupons.length+' coupons · '+list.length+' shown';
+
+  $('cpnGrid').innerHTML=list.length?list.map(c=>{
+    const st=cpnStatus(c);
+    const left=daysUntil(c.exp);
+    const expTxt=c.exp?isoDays(c.exp)+(left<0?' · '+Math.abs(left)+'d past':left===0?' · today':left<=7?' · '+left+'d left':''):'no expiry';
+    return `<div class="coupon ${st}">
+      <div class="row">
+        <div>
+          <div class="it">${esc(c.item)}</div>
+          <div class="vals">${esc(c.store||'—')} · worth <b>${fm(c.value)}</b></div>
+        </div>
+        <div class="tip">${fm(c.value)}</div>
+      </div>
+      <div class="exp"><span class="badge">${expTxt}</span>${badge(st)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="ghost" data-use="${c.id}" style="flex:1" ${c.used||st==='expired'?'disabled':''}>${c.used?'Cashed ✓':'Use coupon'}</button>
+        <button class="mini del" data-cdel="${c.id}" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty">No coupons in this view. Add one above.</div>';
+}
+$('cpnAdd').addEventListener('click',()=>{
+  const store=$('cpnStore').value.trim(),item=$('cpnItem').value.trim(),val=parseFloat($('cpnVal').value),exp=$('cpnExp').value;
+  if(!item){$('cpnItem').focus();return;}if(isNaN(val)){ $('cpnVal').focus();return;}
+  db.coupons.unshift({id:uid(),store,item,value:val||0,exp:exp||dayStr(30),used:false});
+  $('cpnStore').value='';$('cpnItem').value='';$('cpnVal').value='';$('cpnExp').value='';
+  save();renderCoupons();
+});
+$('cpnGrid').addEventListener('click',e=>{
+  const u=e.target.closest('[data-use]');if(u){const c=db.coupons.find(x=>x.id===u.dataset.use);if(c){c.used=true;save();renderCoupons();}return;}
+  const d=e.target.closest('[data-cdel]');if(d){db.coupons=db.coupons.filter(x=>x.id!==d.dataset.cdel);save();renderCoupons();}
+});
+$('cpnStatusChips').addEventListener('click',e=>{
+  const c=e.target.closest('.chip[data-cf]');if(!c)return;
+  cpnFilter=c.dataset.cf;
+  [...document.querySelectorAll('#cpnStatusChips .chip')].forEach(x=>x.classList.toggle('on',x===c));
+  renderCoupons();
+});
+$('cpnStoreChips').addEventListener('click',e=>{
+  const c=e.target.closest('.chip[data-cfs]');if(!c)return;
+  cpnStoreF=c.dataset.cfs;
+  [...$('cpnStoreChips').children].forEach(x=>x.classList.toggle('on',x===c));
+  renderCoupons();
+});
+
+/* ---------- PRICE COMPARE ---------- */
+let incCpns=true,incUnit=true;
+function fmRate(r,u){return r===null?'—':'$'+Number(r).toFixed(2)+'/'+esc(u);}
+function recordPrice(iid,store,v){
+  if(v===null)return;
+  db.history=db.history||{};
+  (db.history[iid]=db.history[iid]||{})[store]=(db.history[iid][store]||[]);
+  const a=db.history[iid][store];a.push({d:dayStr(0),p:v});
+  if(a.length>50)a.splice(0,a.length-50);
+}
+function itemLow(it){
+  const h=db.history&&db.history[it.id];if(!h)return null;
+  let lo=null,n=0;
+  Object.keys(h).forEach(st=>{const a=h[st];if(!a)return;
+    a.forEach(x=>{const p=Number(x.p);if(!p&&p!==0)return;if(lo===null||p<lo)lo=p;n++;});});
+  return n>=2?lo:null;
+}
+function renderPrices(){
+  const stores=db.stores.slice(0,8);
+  $('locSel').innerHTML=Object.keys(LOCATIONS).map(n=>`<option value="${esc(n)}" ${(db.location||'Boise, ID')===n?'selected':''}>${esc(n)}</option>`).join('');
+  $('storeChips').innerHTML=stores.map((s,i)=>`<span class="chip grid2 on" style="cursor:default;display:flex;gap:6px;align-items:center">${esc(s)}<button class="mini del" data-sdel="${i}" title="Remove" style="width:20px;height:20px;font-size:10px;border:none;background:transparent;color:var(--muted)">✕</button></span>`).join('');
+  $('cpnChip').classList.toggle('on',incCpns);
+  $('unitChip').classList.toggle('on',incUnit);
+
+  let bestSav=0,savCount=0,bestCart=0,itemCnt=0;
+  const lows=[];
+  const rows=db.items.map(it=>{
+    const base=it.base||1,unit=it.unit||'u';
+    const col=stores.map(s=>{
+      const v=db.prices[it.id]?db.prices[it.id][s]:undefined;
+      const price=(!v&&v!==0)?null:Number(v);
+      const eff=price===null?null:incCpns?Math.max(0,price-couponValueFor(it.id,s)):price;
+      const rate=price===null?null:price/base;
+      return {s,price,eff,rate};
+    });
+    const valid=col.filter(c=>c.price!==null);
+    const best=valid.length?valid.slice().sort((a,b)=>a.eff-b.eff)[0]:null;
+    const worst=valid.length?valid.slice().sort((a,b)=>b.eff-a.eff)[0]:null;
+    if(best&&worst&&valid.length>=2&&worst.eff>best.eff){bestSav+=(worst.eff-best.eff);savCount++;}
+    if(best){bestCart+=best.eff;itemCnt++;}
+    const lo=itemLow(it);
+    const atlow=(lo!==null&&best&&lo<=best.price+0.001);
+    if(atlow)lows.push({it,lo});
+    const hasEff=incCpns&&effShow(it,col);
+    return `<tr>
+      <td class="ct"><input type="checkbox" class="slchk" data-item="${it.id}" ${slistLive().includes(it.id)?'checked':''} title="Add to shopping list"></td>
+      <td><span class="nm">${esc(it.name)}</span>${atlow?`<div class="atlow">▼ At low · ${fm(lo)}</div>`:''}</td>
+      ${col.map((c)=>`<td class="ct"><input class="inp num ct prc" data-item="${it.id}" data-store="${esc(c.s)}" value="${c.price===null?'':c.price}" placeholder="—" style="width:62px;text-align:center">
+        ${incCpns&&c.price!==null&&c.eff<c.price?`<div class="strike small">${fm(c.price)}</div><div class="effsub">${fm(c.eff)} est</div>`:(c.price!==null&&incUnit?`<div class="unit sub">${fmRate(c.rate,unit)}</div>`:'')}</td>`).join('')}
+      <td class="ct">${best?`<div class="best">${fm(best.eff)}</div>${incUnit?`<div class="unit sub">${fmRate(best.rate,unit)}</div>`:''}`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="ct">${best&&worst&&worst.eff>best.eff?`<span class="good" style="font-weight:800">${fm(worst.eff-best.eff)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="ct"><button class="mini del" data-idel="${it.id}" title="Remove item">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  $('priceKpis').innerHTML=
+    kpi('Items compared',itemCnt,'',db.items.length+' in the list')+
+    kpi('Lowest-cart total',fm(bestCart),'good',incCpns?'after coupons':'retail')+
+    kpi('Max potential saving',fm(bestSav),'warn',savCount?'vs priciest store (est.)':'add a second price to start')+
+    kpi('At low',lows.length+'/'+db.items.length,lows.length?'warn':'good','items at lowest ever seen');
+
+  $('radarCard').style.display=lows.length?'':'none';
+  $('dealRadar').innerHTML=lows.length?lows.map(r=>`<div class="it"><span class="nm">${esc(r.it.name)}</span><span class="st">${fm(r.lo)} · stock up now</span></div>`).join(''):'<div class="empty">No items are at their all-time low right now — log prices and watch this space.</div>';
+
+  $('priceTable').innerHTML=`<thead><tr>
+      <th class="ct" title="Add to shopping list">✓</th><th>Item</th>${stores.map(s=>`<th class="ct">${esc(s)}</th>`).join('')}
+      <th class="ct">Best${incCpns?' est.':''}</th><th class="ct">Δ saved</th><th></th>
+    </tr></thead><tbody>${rows}</tbody>`;
+}
+function effShow(it,col){return col.some(c=>c.price!==null&&c.eff<c.price-0.001);}
+$('priceTable').addEventListener('input',e=>{
+  const el=e.target.closest('.prc');if(!el)return;
+  const v=el.value.trim()===''?null:Number(el.value);
+  if(v!==null&&isNaN(v))return;
+  db.prices[el.dataset.item]=db.prices[el.dataset.item]||{};
+  db.prices[el.dataset.item][el.dataset.store]=v??null;
+  if(v===null)delete db.prices[el.dataset.item][el.dataset.store];else recordPrice(el.dataset.item,el.dataset.store,v);
+  save();renderPrices();
+});
+$('priceTable').addEventListener('click',e=>{
+  const d=e.target.closest('[data-idel]');if(!d)return;
+  db.items=db.items.filter(x=>x.id!==d.dataset.idel);delete db.prices[d.dataset.idel];save();renderPrices();
+});
+$('addItemBtn').addEventListener('click',()=>{
+  const name=$('newItem').value.trim();if(!name){$('newItem').focus();return;}
+  db.items.push({id:uid(),name});$('newItem').value='';save();renderPrices();
+});
+$('addStoreBtn').addEventListener('click',()=>{
+  const name=$('newStore').value.trim();if(!name)return;
+  if(db.stores.includes(name)){return;}
+  db.stores.push(name);db.location='Custom';$('newStore').value='';save();renderPrices();renderOther();
+});
+$('locSel').addEventListener('change',e=>{
+  const n=e.target.value;
+  if(LOCATIONS[n]&&LOCATIONS[n].length){db.stores=LOCATIONS[n].slice();db.location=n;}
+  else{db.location='Custom';}
+  save();renderPrices();renderOther();renderCoupons();renderScan();
+});
+$('cpnChip').addEventListener('click',()=>{incCpns=!incCpns;save();renderPrices();renderOther();});
+$('unitChip').addEventListener('click',()=>{incUnit=!incUnit;save();renderPrices();renderOther();});
+$('storeChips').addEventListener('click',e=>{
+  const d=e.target.closest('[data-sdel]');if(!d)return;
+  const idx=+d.dataset.sdel;const name=db.stores[idx];
+  db.stores.splice(idx,1);db.location='Custom';
+  (db.items||[]).concat(db.other||[]).forEach(it=>{{if(db.prices[it.id])delete db.prices[it.id][name];}if(db.otherPrices&&db.otherPrices[it.id])delete db.otherPrices[it.id][name];});
+  save();renderPrices();renderOther();
+});
+
+/* ---------- HOME & OTHER ---------- */
+function renderOther(){
+  const stores=db.stores.slice(0,8);
+  $('otherLocSel').innerHTML=Object.keys(LOCATIONS).map(n=>`<option value="${esc(n)}" ${(db.location||'Boise, ID')===n?'selected':''}>${esc(n)}</option>`).join('');
+  $('otherChips').innerHTML=stores.map((s,i)=>`<span class="chip grid2 on" style="cursor:default;display:flex;gap:6px;align-items:center">${esc(s)}<button class="mini del" data-sdel="${i}" title="Remove" style="width:20px;height:20px;font-size:10px;border:none;background:transparent;color:var(--muted)">✕</button></span>`).join('');
+  $('otherCpnChip').classList.toggle('on',incCpns);
+  $('otherUnitChip').classList.toggle('on',incUnit);
+
+  let bestSav=0,savCount=0,bestCart=0,itemCnt=0;
+  const lows=[];
+  const rows=(db.other||[]).map(it=>{
+    const base=it.base||1,unit=it.unit||'u';
+    const col=stores.map(s=>{
+      const v=db.otherPrices[it.id]?db.otherPrices[it.id][s]:undefined;
+      const price=(!v&&v!==0)?null:Number(v);
+      const eff=price===null?null:incCpns?Math.max(0,price-couponValueFor(it.id,s)):price;
+      const rate=price===null?null:price/base;
+      return {s,price,eff,rate};
+    });
+    const valid=col.filter(c=>c.price!==null);
+    const best=valid.length?valid.slice().sort((a,b)=>a.eff-b.eff)[0]:null;
+    const worst=valid.length?valid.slice().sort((a,b)=>b.eff-a.eff)[0]:null;
+    if(best&&worst&&valid.length>=2&&worst.eff>best.eff){bestSav+=(worst.eff-best.eff);savCount++;}
+    if(best){bestCart+=best.eff;itemCnt++;}
+    const lo=itemLow(it);
+    const atlow=(lo!==null&&best&&lo<=best.price+0.001);
+    if(atlow)lows.push({it,lo});
+    return `<tr>
+      <td class="ct"><input type="checkbox" class="slchk" data-item="${it.id}" ${slistLive().includes(it.id)?'checked':''} title="Add to shopping list"></td>
+      <td><span class="nm">${esc(it.name)}</span>${atlow?`<div class="atlow">▼ At low · ${fm(lo)}</div>`:''}</td>
+      ${col.map((c)=>`<td class="ct"><input class="inp num ct hprc" data-item="${it.id}" data-store="${esc(c.s)}" value="${c.price===null?'':c.price}" placeholder="—" style="width:62px;text-align:center">
+        ${incCpns&&c.price!==null&&c.eff<c.price?`<div class="strike small">${fm(c.price)}</div><div class="effsub">${fm(c.eff)} est</div>`:(c.price!==null&&incUnit?`<div class="unit sub">${fmRate(c.rate,unit)}</div>`:'')}</td>`).join('')}
+      <td class="ct">${best?`<div class="best">${fm(best.eff)}</div>${incUnit?`<div class="unit sub">${fmRate(best.rate,unit)}</div>`:''}`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="ct">${best&&worst&&worst.eff>best.eff?`<span class="good" style="font-weight:800">${fm(worst.eff-best.eff)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="ct"><button class="mini del" data-hdel="${it.id}" title="Remove item">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  $('otherKpis').innerHTML=
+    kpi('Items compared',itemCnt,'',(db.other||[]).length+' on the list')+
+    kpi('Lowest-cart total',fm(bestCart),'good',incCpns?'after coupons':'retail')+
+    kpi('Max potential saving',fm(bestSav),'warn',savCount?'vs priciest store (est.)':'add a second price to start')+
+    kpi('At low',lows.length+'/'+(db.other||[]).length,lows.length?'warn':'good','items at lowest ever seen');
+
+  $('otherRadarCard').style.display=lows.length?'':'none';
+  $('otherDealRadar').innerHTML=lows.length?lows.map(r=>`<div class="it"><span class="nm">${esc(r.it.name)}</span><span class="st">${fm(r.lo)} · stock up now</span></div>`).join(''):'<div class="empty">No household item is at its all-time low right now — log prices and watch this space.</div>';
+
+  $('otherTable').innerHTML=`<thead><tr>
+      <th class="ct" title="Add to shopping list">✓</th><th>Item</th>${stores.map(s=>`<th class="ct">${esc(s)}</th>`).join('')}
+      <th class="ct">Best${incCpns?' est.':''}</th><th class="ct">Δ saved</th><th></th>
+    </tr></thead><tbody>${rows}</tbody>`;
+}
+$('otherTable').addEventListener('input',e=>{
+  const el=e.target.closest('.hprc');if(!el)return;
+  const v=el.value.trim()===''?null:Number(el.value);
+  if(v!==null&&isNaN(v))return;
+  db.otherPrices[el.dataset.item]=db.otherPrices[el.dataset.item]||{};
+  db.otherPrices[el.dataset.item][el.dataset.store]=v??null;
+  if(v===null)delete db.otherPrices[el.dataset.item][el.dataset.store];else recordPrice(el.dataset.item,el.dataset.store,v);
+  save();renderOther();
+});
+$('otherTable').addEventListener('click',e=>{
+  const d=e.target.closest('[data-hdel]');if(!d)return;
+  db.other=db.other.filter(x=>x.id!==d.dataset.hdel);delete db.otherPrices[d.dataset.hdel];save();renderOther();
+});
+$('otherLocSel').addEventListener('change',e=>{
+  const n=e.target.value;
+  if(LOCATIONS[n]&&LOCATIONS[n].length){db.stores=LOCATIONS[n].slice();db.location=n;}
+  else{db.location='Custom';}
+  save();renderOther();renderPrices();renderCoupons();renderScan();
+});
+$('otherCpnChip').addEventListener('click',()=>{incCpns=!incCpns;save();renderOther();renderPrices();});
+$('otherUnitChip').addEventListener('click',()=>{incUnit=!incUnit;save();renderOther();renderPrices();});
+$('otherAddStoreBtn').addEventListener('click',()=>{
+  const name=$('otherNewStore').value.trim();if(!name)return;
+  if(db.stores.includes(name)){$('otherNewStore').value='';return;}
+  db.stores.push(name);db.location='Custom';$('otherNewStore').value='';save();renderOther();renderPrices();
+});
+$('otherChips').addEventListener('click',e=>{
+  const d=e.target.closest('[data-sdel]');if(!d)return;
+  const idx=+d.dataset.sdel;const name=db.stores[idx];
+  db.stores.splice(idx,1);db.location='Custom';
+  (db.items||[]).concat(db.other||[]).forEach(it=>{{if(db.prices[it.id])delete db.prices[it.id][name];}if(db.otherPrices&&db.otherPrices[it.id])delete db.otherPrices[it.id][name];});
+  save();renderOther();renderPrices();
+});
+$('addOtherBtn').addEventListener('click',()=>{
+  const name=$('newOtherItem').value.trim();if(!name){$('newOtherItem').focus();return;}
+  if(!db.other)db.other=[];
+  db.other.push({id:uid(),name});$('newOtherItem').value='';save();renderOther();
+});
+
+/* ---------- SHOPPING LIST ---------- */
+function slistLive(){return (db.slist||[]).filter(id=>(db.items||[]).some(x=>x.id===id)||(db.other||[]).some(x=>x.id===id));}
+function toggleSlist(id,on){
+  db.slist=db.slist||[];
+  const i=db.slist.indexOf(id);
+  if(on&&i<0)db.slist.push(id);
+  if(!on&&i>=0)db.slist.splice(i,1);
+  save();renderList();listBadge();
+}
+function listBadge(){const el=$('listTabN');if(el)el.textContent=slistLive().length?slistLive().length:'';}
+$('priceTable').addEventListener('change',e=>{
+  const cb=e.target.closest('.slchk');if(!cb)return;
+  toggleSlist(cb.dataset.item,cb.checked);if(cur==='prices')renderPrices();
+});
+$('otherTable').addEventListener('change',e=>{
+  const cb=e.target.closest('.slchk');if(!cb)return;
+  toggleSlist(cb.dataset.item,cb.checked);if(cur==='other')renderOther();
+});
+function renderList(){
+  db.slist=db.slist||[];
+  const n=slistLive().length;
+  $('listCount').textContent=n+' items'+(n?'':' — use the ✓ boxes in Price Compare & Household to add rows');
+  let totalRetail=0,totalEff=0;
+  const groups={};
+  slistLive().forEach(id=>{
+    const item=(db.items||[]).find(x=>x.id===id)||(db.other||[]).find(x=>x.id===id);
+    if(!item)return;
+    const isFood=(db.items||[]).some(x=>x.id===id);
+    const map=isFood?db.prices:db.otherPrices;
+    let best=null;
+    db.stores.forEach(s=>{
+      const v=map[item.id]?map[item.id][s]:undefined;
+      const p=(!v&&v!==0)?null:Number(v);
+      if(p===null)return;
+      const eff=incCpns?Math.max(0,p-couponValueFor(item.id,s)):p;
+      if(!best||eff<best.eff||(eff===best.eff&&p<best.price))best={store:s,price:p,eff};
+    });
+    if(best){totalRetail+=best.price;totalEff+=best.eff;}
+    const key=best?best.store:'No price on file';
+    (groups[key]=groups[key]||[]).push({item,best});
+  });
+  $('listKpis').innerHTML=
+    kpi('Items picked',n,'','checked in Price Compare & Household')+
+    kpi('Est. spend',fm(totalEff),'good',incCpns?'after coupons':'retail')+
+    kpi('Coupon savings',fm(Math.max(0,totalRetail-totalEff)),'warn','vs retail prices')+
+    kpi('Stores to visit',Object.keys(groups).length,'','split by best price below');
+  $('listGrouped').innerHTML=Object.keys(groups).map(st=>{
+    const items=groups[st];
+    const miss=st==='No price on file';
+    const sub=miss?0:items.reduce((a,r)=>a+r.best.price,0);
+    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(sub)}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.item.name)}</span><span class="px">${r.best?fm(r.best.eff):'—'}</span></li>`).join('')}</ul></div>`;
+  }).join('')||'<div class="empty">Top up both price tabs and check the ✓ box on anything you need — it will land here, grouped by the best store.</div>';
+  listBadge();
+}
+$('listClear').addEventListener('click',()=>{if(!confirm('Remove everything from the shopping list?'))return;db.slist=[];save();renderList();showTab('list');});
+$('listPrint').addEventListener('click',()=>window.print());
+
+/* ---------- RECEIPT SCANNER ---------- */
+const KNOWN_BARCODES={};
+let scanRows=[],scanStore='';
+function setStatus(t){const el=$('scanStatus');if(el)el.innerHTML=t;}
+function loadTess(){
+  return new Promise((resolve,reject)=>{
+    if(typeof Tesseract!=='undefined')return resolve();
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload=()=>resolve();s.onerror=()=>reject(new Error('Could not load OCR library (offline?)'));
+    document.head.appendChild(s);
+  });
+}
+async function detectCodes(file){
+  if(typeof window==='undefined'||!('BarcodeDetector' in window))return [];
+  try{
+    let bmp=file;
+    if(typeof createImageBitmap==='function'){try{bmp=await createImageBitmap(file);}catch(e){}}
+    const bd=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+    const out=await bd.detect(bmp);
+    return out?out.map(b=>b.rawValue):[];
+  }catch(e){return [];}
+}
+function detectStore(t){const L=t.toLowerCase();return db.stores.find(s=>L.includes(s.toLowerCase()))||'';}
+function detectDate(t){
+  const m=t.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})/);
+  if(!m)return '';
+  const y=m[3].length===2?2000+(+m[3]):+m[3];
+  const a=+m[1],b=+m[2];
+  if(a>12)return y+'-'+String(b).padStart(2,'0')+'-'+String(a).padStart(2,'0');
+  return y+'-'+String(a).padStart(2,'0')+'-'+String(b).padStart(2,'0');
+}
+function parseReceipt(text){
+  if(!text)return [];
+  const skipLine=/subtotal|total|tax|balance|change|due\b|amount|cash|charge|debit|credit|number of items|items? sold|thank|visit|web|store#|tel\b|phone|www|voucher|\bexp\b|auth|app?rov|trans|round|savings|coupon|discount|member|\bqty|barcode|receipt/i;
+  const rows=[];
+  text.split(/\r?\n/).forEach(L=>{
+    L=L.replace(/[^\x20-\x7E]/g,' ').replace(/\s+/g,' ').trim();
+    if(!L||skipLine.test(L))return;
+    const prices=(L.match(/\$?\d{1,3}[.,]\d{2}\b/g)||[]);
+    if(!prices.length)return;
+    const total=+prices[prices.length-1].replace('$','').replace(',','.');
+    if(!isFinite(total)||total<=0)return;
+    let qty=1;
+    const m=L.match(/(\d{1,3})\s*[@x]\s*\$?\d{1,3}[.,]\d{2}/i);
+    if(m&&+m[1]>=1&&+m[1]<=99)qty=+m[1];
+    let name=L.replace(/\$?\d{1,3}[.,]\d{2}\b/g,'').replace(/\s*@\s*\d*/,'').replace(/^[^A-Za-z0-9#]+/,'').replace(/[\s-#]+$/,'').trim();
+    if(!name||/^[\d.]+$/.test(name))return;
+    const qt=name.match(/[\d.]+\s*$/);
+    if(qt&&qt[0].trim()===String(qty))name=name.slice(0,qt.index).trim();
+    if(!name)return;
+    rows.push({name:name.slice(0,48),qty,price:total});
+  });
+  return rows;
+}
+async function processFiles(list){
+  const files=[...list];if(!files.length)return;
+  setStatus('Reading <b>'+files.length+'</b> image(s)…');
+  try{await loadTess();}catch(e){setStatus('<span class="badge bad">'+esc(e.message)+'</span> — barcode scanning may still work.');return;}
+  for(const f of files){
+    try{
+      setStatus('<b>'+esc(f.name)+'</b> — running OCR… <progress id="scanProg" value="0" max="1" style="vertical-align:middle"></progress>');
+      const r=await Tesseract.recognize(f,'eng',{logger:m=>{if(m.status==='recognizing text'){const p=document.getElementById('scanProg');if(p)p.value=m.progress;}}});
+      const text=(r&&r.data&&r.data.text)||'';
+      const codes=await detectCodes(f);
+      if(!text.trim()&&!codes.length){setStatus('<b>'+esc(f.name)+'</b>: nothing readable — retry with a clear, straight-on photo.');continue;}
+      const parsed=parseReceipt(text);
+      parsed.forEach(p=>scanRows.push(p));
+      codes.forEach(c=>scanRows.push({name:KNOWN_BARCODES[c]||('Barcode '+c),qty:1,price:''}));
+      if(!$('scanStore').value){const st=detectStore(text);if(st){scanStore=st;$('scanStore').value=st;}}
+      if(!$('scanDate').value){const dt=detectDate(text);if(dt)$('scanDate').value=dt;}
+      renderScanRows();
+      setStatus('<b>'+esc(f.name)+'</b>: found <b>'+parsed.length+'</b> line item(s) and <b>'+codes.length+'</b> barcode(s). Review below, edit, then Add to catalog.');
+    }catch(e){setStatus('<b>'+esc(f.name)+'</b>: error — '+esc(e.message||e));}
+  }
+}
+function renderScanRows(){
+  const T=$('scanTable');
+  if(!scanRows.length){T.innerHTML='<tr><td class="empty">No rows yet — upload a receipt or product photos above.</td></tr>';return;}
+  T.innerHTML='<thead><tr><th>Item / name</th><th class="ct" style="width:64px">Qty</th><th class="ct" style="width:100px">Price paid</th><th class="ct" style="width:90px">Unit</th><th></th></tr></thead><tbody>'+
+    scanRows.map((r,i)=>`<tr>
+      <td><input class="inp" data-c="name" data-i="${i}" value="${esc(r.name)}" style="min-width:200px"></td>
+      <td class="ct"><input class="inp num" data-c="qty" data-i="${i}" value="${r.qty}" style="width:52px;text-align:center"></td>
+      <td class="ct"><input class="inp num" data-c="price" data-i="${i}" value="${esc(r.price)}" placeholder="0.00" style="width:84px;text-align:center"></td>
+      <td class="ct" style="color:var(--muted);font-size:12px">${r.qty>1&&r.price?fm(r.price/r.qty):'—'}</td>
+      <td class="ct"><button class="mini del" data-srem="${i}" title="Remove">✕</button></td>
+    </tr>`).join('')+'</tbody>';
+}
+$('scanTable').addEventListener('input',e=>{
+  const el=e.target.closest('input[data-i]');if(!el)return;
+  const r=scanRows[+el.dataset.i];if(!r)return;
+  if(el.dataset.c==='qty')r.qty=Math.max(1,+el.value||1);
+  else if(el.dataset.c==='price')r.price=el.value;
+  else r.name=el.value;
+});
+$('scanTable').addEventListener('click',e=>{
+  const d=e.target.closest('[data-srem]');if(!d)return;
+  scanRows.splice(+d.dataset.srem,1);renderScanRows();
+});
+function renderScan(){
+  const n=db.purchases.length;
+  const total=db.purchases.reduce((a,r)=>a+(Number(r.price)||0),0);
+  const distinct=new Set(db.purchases.map(r=>String(r.name).toLowerCase().trim())).size;
+  const trips=new Set(db.purchases.map(r=>r.date+'|'+(r.store||''))).size;
+  const p30=db.purchases.filter(r=>r.date>=dayStr(-30)).reduce((a,r)=>a+(Number(r.price)||0),0);
+  const cur=$('scanStore').value||scanStore||db.stores[0]||'';
+  $('scanStore').innerHTML=db.stores.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  if(cur)$('scanStore').value=cur;
+  if(!$('scanDate').value)$('scanDate').value=dayStr(0);
+  $('scanKpis').innerHTML=
+    kpi('Items logged',n,'',n?'from scans':'scan your first receipt')+
+    kpi('All-time spend',fm(total),'good','across all scanned trips')+
+    kpi('Distinct products',distinct,'','unique names in catalog')+
+    kpi('Last 30 days',fm(p30),'warn','('+trips+' trips total)');
+  const sorted=[...db.purchases].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('scanCatalog').innerHTML=sorted.length?'<thead><tr><th>Date</th><th>Store</th><th>Item</th><th class="ct">Qty</th><th class="ct">Price paid</th><th class="ct">Unit</th><th></th></tr></thead><tbody>'+
+    sorted.map(r=>`<tr>
+      <td><span class="badge">${isoDays(r.date)}</span></td>
+      <td>${esc(r.store||'—')}</td>
+      <td>${esc(r.name)}</td>
+      <td class="ct">${r.qty||1}</td>
+      <td class="ct"><b>${fm(r.price)}</b></td>
+      <td class="ct" style="color:var(--muted);font-size:12px">${(r.qty&&r.qty>1)?fm(r.price/r.qty):'—'}</td>
+      <td class="ct"><button class="mini del" data-pdel="${r.id}" title="Remove">✕</button></td>
+    </tr>`).join('')+'</tbody>':'<tr><td class="empty">Catalog is empty — scan a receipt to log quantity &amp; price paid.</td></tr>';
+}
+$('scanCatalog').addEventListener('click',e=>{
+  const d=e.target.closest('[data-pdel]');if(!d)return;
+  db.purchases=db.purchases.filter(x=>x.id!==d.dataset.pdel);save();renderScan();
+});
+$('scanPick').addEventListener('click',()=>$('scanFiles').click());
+$('scanCamBtn').addEventListener('click',()=>$('scanCam').click());
+$('scanFiles').addEventListener('change',e=>{processFiles(e.target.files);e.target.value='';});
+$('scanCam').addEventListener('change',e=>{processFiles(e.target.files);e.target.value='';});
+$('scanClear').addEventListener('click',()=>{scanRows=[];renderScanRows();setStatus('Rows cleared — ready for the next scan.');});
+$('scanClearAll').addEventListener('click',()=>{if(!confirm('Delete the entire purchase catalog?'))return;db.purchases=[];save();renderScan();});
+$('scanAdd').addEventListener('click',()=>{
+  const store=$('scanStore').value||db.stores[0]||'';
+  const date=$('scanDate').value||dayStr(0);
+  if(!store){alert('Pick a store first.');return;}
+  const added=[];
+  scanRows.forEach(r=>{
+    const name=String(r.name||'').trim();const price=Number(r.price);const qty=Math.max(1,Number(r.qty)||1);
+    if(!name||!(isFinite(price)&&price>=0))return;
+    const rec={id:uid(),date,name,qty,price:Math.round(price*100)/100,store};
+    db.purchases.push(rec);added.push(rec);
+    if($('scanSyncPrices').checked){
+      const it=matchItem(name);
+      if(it){const u=Math.round((price/qty)*100)/100;
+        recordPrice(it.id,store,u);
+        (db.prices[it.id]=db.prices[it.id]||{})[store]=u;
+      }
+    }
+  });
+  if(!added.length){alert('Add a name and a price on at least one row first.');return;}
+  if($('scanLogTrip').checked){
+    const amt=Math.round(added.reduce((a,r)=>a+r.price,0)*100)/100;
+    db.spends.push({id:uid(),date,store,amt,note:'Receipt scan'});
+  }
+  save();scanRows=[];renderScanRows();renderScan();listBadge();
+  setStatus('Added <b>'+added.length+'</b> item(s) to the catalog'+(added.some(r=>matchItem(r.name))?' and synced matching prices.':' — no price matches triggered.'));
+});
+if(typeof window==='undefined'||!('BarcodeDetector' in window))$('scanNote').textContent='Note: this browser has no visual barcode scanning — receipt text OCR still works, and you can type names below.';
+
+/* ---------- BUDGET ---------- */
+function renderBudget(){
+  const budget=db.budget||0;
+  const spent=db.spends.reduce((a,s)=>a+Number(s.amt||0),0);
+  const saved=db.coupons.filter(c=>c.used).reduce((a,c)=>a+Number(c.value||0),0);
+  const effective=spent-saved;
+  const planned=plannedRecipes().reduce((a,r)=>a+(r.cost*r.serves),0);
+  const pct=budget?(planned/budget*100):0;
+
+  $('budgetKpis').innerHTML=
+    kpi('Monthly budget',fm(budget),'', 'editable →')+
+    kpi('Spent',fm(spent),spent>budget?'bad':'', db.spends.length+' trips logged')+
+    kpi('Coupon savings',fm(saved),'good','offsets your spend')+
+    kpi('Effective cost',fm(effective),effective>budget?'bad':'', (effective&&budget)?'≈ '+Math.round(effective/budget*100)+'% of budget':'')+
+    kpi('Planned (week)',fm(planned),planned>budget?'warn':'',plannedRecipes().length+' meals planned');
+
+  $('budgetInp').value=budget||'';
+  $('budgetBar').innerHTML=`<div class="bar"><i style="width:${Math.min(100,pct)}%" class="${pct>100?'over':''}"></i><span class="lbl">${pct>100?'OVER':''} ${Math.round(pct)}% of budget this week</span></div>
+    <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between"><span>Planned meals = ${fm(planned)}</span><span>Remaining = ${fm(budget-effective>=0?budget-effective:0)}${effective>budget?' · over by '+fm(effective-budget):''}</span></div>`;
+
+  const byCat={};
+  db.spends.forEach(s=>{byCat[s.store||'Other']=(byCat[s.store||'Other']||0)+Number(s.amt||0);});
+  $('budgetNotes').innerHTML=Object.keys(byCat).length?`<div class="sub" style="margin-top:8px;font-weight:800;color:var(--txt)">By store</div>`+Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="srow"><span class="nm">${esc(k)}</span><span style="margin-left:auto;font-weight:800">${fm(v)}</span><span style="width:70px;color:var(--muted)">${budget?Math.round(v/budget*100):0}%</span></div>`).join('')
+    :'<div class="empty">Log your first grocery trip to see a breakdown by store.</div>';
+
+  const list=[...db.spends].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('spendList').innerHTML=list.length?list.map(s=>`<div class="row">
+      <span class="badge">${s.date?isoDays(s.date):'—'}</span>
+      <span class="nm">${esc(s.store||'—')}</span>
+      ${s.note?`<span class="s" style="color:var(--muted);font-size:12px">${esc(s.note)}</span>`:''}
+      <span class="amt">${fm(s.amt)}</span>
+      <button class="mini del" data-sdel="${s.id}" title="Delete">✕</button>
+    </div>`).join(''):'<div class="empty">Nothing logged yet.</div>';
+}
+$('budgetInp').addEventListener('change',e=>{db.budget=parseFloat(e.target.value)||0;save();renderBudget();});
+$('spnAdd').addEventListener('click',()=>{
+  const amt=parseFloat($('spnAmt').value);if(isNaN(amt)){$('spnAmt').focus();return;}
+  db.spends.push({id:uid(),date:$('spnDate').value||dayStr(0),store:$('spnStore').value.trim(),amt,note:$('spnNote').value.trim()});
+  $('spnAmt').value='';$('spnStore').value='';$('spnNote').value='';$('spnDate').value='';
+  save();renderBudget();
+});
+$('spendList').addEventListener('click',e=>{
+  const d=e.target.closest('[data-sdel]');if(!d)return;
+  db.spends=db.spends.filter(s=>s.id!==d.dataset.sdel);save();renderBudget();
+});
+
+/* ---------- misc ---------- */
+$('exportBtn').addEventListener('click',()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));
+  a.download='meal-planner-backup-'+dayStr(0)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+});
+$('importBtn').addEventListener('click',()=>$('fileInp').click());
+$('fileInp').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    const base={recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Custom',stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:{},other:seedOther(),otherPrices:{},pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]};
+    db=Object.assign(base,d);
+    if(!Array.isArray(db.stores)||!db.stores.length)db.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
+    db.history=db.history||{};db.pantry=db.pantry||[];db.other=db.other||[];db.otherPrices=db.otherPrices||{};db.slist=db.slist||[];db.purchases=db.purchases||[];
+    save();render('plan');showTab(cur);
+  }catch(err){alert('Could not read that backup: '+err.message);}
+  };
+  r.readAsText(f);e.target.value='';
+});
+$('resetData').addEventListener('click',()=>{
+  if(!confirm('Reset ALL data back to the sample dataset?'))return;
+  localStorage.removeItem(KEY);location.reload();
+});
+
+/* ---------- SYNC (Supabase) ---------- */
+const SROW='main';
+let sync={ts:0,dev:'',en:false,url:'https://mvqvbxovcbexuxufelcq.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cXZieG92Y2JleHV4dWZlbGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5Mjg0MjYsImV4cCI6MjEwMjUwNDQyNn0.MN4zsTDi3RaRjoQPw041aNRRYMQt-WUNDE49tak-pmA',secret:'',lastEdit:0};
+try{const s=JSON.parse(localStorage.getItem('pf-sync'));if(s&&typeof s==='object')Object.keys(s).forEach(k=>{if(k in sync&&(s[k]!==''||sync[k]===''))sync[k]=s[k];});}catch(e){}
+let DEV='';
+try{DEV=localStorage.getItem('pf-dev')||'';}catch(e){}
+if(!DEV){DEV=Math.random().toString(36).slice(2,10);try{localStorage.setItem('pf-dev',DEV);}catch(e){}}
+let pullBusy=false,sTimer=null;
+const shortDev=d=>String(d||'other').slice(0,5);
+function persistMeta(){try{localStorage.setItem('pf-sync',JSON.stringify(sync));}catch(e){}}
+function setSync(m){const el=$('syncStatus');if(el)el.textContent=' '+String(m||'');const st=$('syncStat');if(st)st.textContent=String(m||'');}
+function queueSync(){
+  if(!sync.en)return;
+  sync.lastEdit=Date.now();
+  clearTimeout(sTimer);
+  sTimer=setTimeout(doPush,2000);
+}
+function syncHeaders(){
+  return {apikey:sync.key,Authorization:'Bearer '+sync.key,'Content-Type':'application/json','X-App-Secret':sync.secret};
+}
+function normalizeRemote(d){
+  const base={recipes:[],plan:{},coupons:[],location:'Custom',stores:[],items:[],prices:{},other:[],otherPrices:{},pantry:[],history:{},budget:0,spends:[],slist:[],purchases:[]};
+  const out=Object.assign(base,d||{});
+  if(!Array.isArray(out.stores)||!out.stores.length)out.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
+  out.history=out.history||{};out.pantry=out.pantry||[];out.other=out.other||[];out.otherPrices=out.otherPrices||{};out.slist=out.slist||[];out.purchases=out.purchases||[];
+  return out;
+}
+async function doPush(){
+  if(!sync.en||!sync.url||!sync.key||!sync.secret||!window.fetch)return;
+  const ts=Date.now();
+  try{
+    const r=await fetch(sync.url+'/rest/v1/dashboard_sync?on_conflict=id',{
+      method:'POST',
+      headers:Object.assign(syncHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify([{id:SROW,data:JSON.parse(JSON.stringify(db)),ts,dev:DEV}])
+    });
+    if(r.ok){sync.ts=ts;persistMeta();setSync('Synced just now ✓');}
+    else setSync('Push failed ('+r.status+')');
+  }catch(e){setSync('Push error — '+String(e&&e.message||e));}
+}
+async function doPull(){
+  if(!sync.en||!sync.url||!sync.key||!sync.secret||pullBusy||!window.fetch)return;
+  pullBusy=true;
+  try{
+    const r=await fetch(sync.url+'/rest/v1/dashboard_sync?id=eq.'+SROW+'&select=data,ts,dev&limit=1',{headers:syncHeaders()});
+    if(!r.ok){setSync('Pull failed ('+r.status+')');return;}
+    const rows=await r.json();
+    if(!rows||!rows.length){setSync('Cloud is empty — edits will push on their next save');return;}
+    const row=rows[0],sTs=Number(row.ts)||0,sDev=row.dev||'';
+    if(sTs>sync.ts){
+      db=normalizeRemote(row.data||{});
+      sync.ts=sTs;sync.dev=sDev;persistMeta();
+      try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}
+      if($('syncUrl'))fillSync();
+      showTab(cur);listBadge();if(typeof renderScan==='function')renderScan();
+      setSync('Loaded newest copy from '+shortDev(sDev)+' ✓');
+    }else if(sTs<sync.ts){doPush();}
+    else setSync('In sync ✓');
+  }catch(e){setSync('Pull error — '+String(e&&e.message||e));}
+  finally{pullBusy=false;}
+}
+function fillSync(){$('syncUrl').value=sync.url;$('syncKey').value=sync.key;$('syncSecret').value=sync.secret;$('syncEn').checked=!!sync.en;}
+$('syncToggle').addEventListener('click',()=>{const p=$('syncPanel');const on=p.style.display==='none';p.style.display=on?'':'none';if(on)fillSync();});
+$('syncSave').addEventListener('click',()=>{
+  sync.url=$('syncUrl').value.trim();sync.key=$('syncKey').value.trim();sync.secret=$('syncSecret').value.trim();sync.en=$('syncEn').checked;
+  persistMeta();setSync('Saved.');
+  if(sync.en&&sync.url&&sync.key&&sync.secret){setSync('Testing connection…');setTimeout(()=>{doPull().then(()=>{if(!pullBusy)doPush();});},50);}
+  if(!sync.en)setSync('Sync disabled');
+});
+$('syncPush').addEventListener('click',()=>{if(!sync.en)return setSync('Enable sync first');clearTimeout(sTimer);doPush();});
+$('syncPull').addEventListener('click',()=>{if(!sync.en)return setSync('Enable sync first');doPull();});
+function initSync(){
+  if(!sync.en)return;
+  if(sync.url&&sync.key&&sync.secret)setTimeout(()=>doPull(),400);
+  setInterval(()=>{if(!pullBusy&&!sTimer&&Date.now()-sync.lastEdit>5000)doPull();},20000);
+}
+
+render('plan');
+listBadge();
+initSync();
+</script>
+</body>
+</html>
