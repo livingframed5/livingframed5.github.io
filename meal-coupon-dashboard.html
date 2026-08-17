@@ -1001,6 +1001,7 @@ function renderRecipes(){
       <div class="f third"><label>Serves</label><input class="inp num" id="fServes" type="number" min="1" value="${r.serves}"></div>
       <div class="f half"><label>Minutes</label><input class="inp num" id="fMins" type="number" min="0" value="${r.mins}"></div>
       <div class="f third"><label>Cost / serving $</label><input class="inp num" id="fCost" type="number" min="0" step="0.05" value="${r.cost}"></div>
+      <div class="f all" id="fRecWrap" style="grid-column:span 12;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;background:var(--panel2);border:1px solid var(--edge);border-radius:12px"></div>
       <div class="f half"><label>Ingredients · one per line (qty + item)</label><textarea class="inp" id="fIng" rows="6">${esc(r.ing||'')}</textarea></div>
       <div class="f all"><label>Steps · one per line</label><textarea class="inp" id="fSteps" rows="5">${esc(r.steps||'')}</textarea></div>
       <div class="actions">
@@ -1010,7 +1011,34 @@ function renderRecipes(){
       </div>`;
     $('fCostSum').textContent='est. '+fm((+r.serves||4)*(+r.cost||0))+' for the batch';
     try{$('recForm').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+    let recPu=null;
+    if(r.id)recPu=purchaseFor(r.name);
+    const wrap=$('fRecWrap');
+    const unitTxt=recPu?fm(Math.round((Number(recPu.price)/Math.max(1,Number(recPu.qty)||1))*100)/100):'';
+    const settle=()=>{
+      if(!recPu){return;}
+      const sv=Math.max(1,+$('fServes').value||1);
+      const unit=Math.round((Number(recPu.price)/Math.max(1,Number(recPu.qty)||1))*100)/100;
+      $('fCost').value=Math.round((unit/sv)*100)/100;
+      $('fCostSum').textContent='est. '+fm(unit)+' for the batch';
+    };
+    wrap.innerHTML=recPu
+      ?`<span style="font-size:12.5px;font-weight:700">Receipt: ${esc(recPu.name)} · ${unitTxt} paid</span>
+        <span style="font-size:12px;color:var(--muted)">serves ${r.serves} → ${fm(+r.cost||0)}/serving</span>
+        <label class="chip" style="cursor:pointer;margin-left:auto;display:flex;gap:6px;align-items:center"><input type="checkbox" id="fSettle" checked> Auto-span receipt ÷ serves</label>
+        <button type="button" class="ghost" id="fSettleBtn">Settle from receipt</button>`
+      :`<span style="font-size:12px;color:var(--muted)">No matching receipt scan on file — set Cost / serving manually.</span>`;
+    if(recPu){
+      const sel=$('fSettle'),btn=$('fSettleBtn');
+      sel.addEventListener('change',()=>{if(sel.checked)settle();});
+      btn.addEventListener('click',settle);
+      $('fServes').addEventListener('input',()=>{if(sel.checked)settle();});
+      $('fCost').addEventListener('input',()=>{sel.checked=false;});
+      settle();
+    }
     ['fServes','fCost'].forEach(id=>$(id).addEventListener('input',()=>{
+      const sel=$('fSettle');
+      if(recPu&&sel&&sel.checked){settle();return;}
       $('fCostSum').textContent='est. '+fm((+$('fServes').value||0)*(+$('fCost').value||0))+' for the batch';
     }));
     $('fSave').addEventListener('click',()=>{
