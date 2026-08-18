@@ -578,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p5';
+const APP_VER='v2026.08.17-p6';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1097,13 +1097,14 @@ function pantRenderPreviews(){
 }
 function pantSuggestCat(name){
   const t=String(name||'').toLowerCase();
-  if(/milk|yogurt|cheese|butter|egg|cream/.test(t))return 'Dairy & Eggs';
+  if(/peanut butter|almond butter|jelly|jam/.test(t))return 'Pantry & Canned';
+  if(/milk|yogurt|cheese|butter|egg|cream|ice cream/.test(t))return 'Dairy & Eggs';
   if(/chicken|beef|pork|turkey|fish|shrimp|sausage|bacon|steak|seafood|salmon/.test(t))return 'Meat & Seafood';
   if(/apple|banana|lettuce|tomato|onion|potato|carrot|broccoli|pepper|fruit|berry|produce|spinach|avocado/.test(t))return 'Produce';
-  if(/rice|pasta|bean|flour|oat|bread|tortilla|noodle|can|cereal|granola/.test(t))return 'Pantry & Canned';
+  if(/rice|pasta|bean|flour|oat|bread|tortilla|noodle|can|cereal|granola|flake|muffin|wheat/.test(t))return 'Pantry & Canned';
   if(/frozen|ice cream|pizza|pie/.test(t))return 'Frozen';
   if(/spice|salt|pepper|oil|vinegar|sauce|honey|syrup|seasoning/.test(t))return 'Spices & Oils';
-  if(/snack|chip|cookie|cracker|chocolate|candy/.test(t))return 'Snacks';
+  if(/snack|chip|cookie|cracker|chocolate|candy|pretzel|popcorn/.test(t))return 'Snacks';
   if(/juice|soda|water|tea|coffee|beer|wine|drink/.test(t))return 'Beverages';
   return 'Other';
 }
@@ -1114,38 +1115,46 @@ function readPantImage(file,cb){
   rd.readAsDataURL(file);
 }
 function pantOcrImage(file,cb){
-  const rd=new FileReader();
-  rd.onload=()=>{
-    const img=new Image();
-    img.onload=()=>{
-      try{
-        const max=1400,sc=Math.min(1,max/Math.max(img.width,img.height));
-        const w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
-        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-        const ctx=cv.getContext('2d');
-        ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
-        ctx.drawImage(img,0,0,w,h);
-        const id=ctx.getImageData(0,0,w,h),d=id.data;
-        let min=255,maxPx=0;
-        for(let i=0;i<d.length;i+=4){
-          const g=Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);
-          d[i]=d[i+1]=d[i+2]=g;
-          if(g<min)min=g;if(g>maxPx)maxPx=g;
-        }
-        const range=(maxPx-min)||255;
-        for(let i=0;i<d.length;i+=4){
-          const v=Math.min(255,Math.max(0,Math.round((d[i]-min)*255/range)));
-          d[i]=d[i+1]=d[i+2]=v;
-        }
-        ctx.putImageData(id,0,0);
-        cb(cv.toDataURL('image/jpeg',0.9));
-      }catch(e){cb(null);}
-    };
-    img.onerror=()=>cb(null);
-    img.src=rd.result;
+  const draw=(bmp)=>{
+    try{
+      const max=1600,sc=Math.min(1,max/Math.max(bmp.width,bmp.height));
+      const w=Math.max(1,Math.round(bmp.width*sc)),h=Math.max(1,Math.round(bmp.height*sc));
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      const ctx=cv.getContext('2d');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+      ctx.drawImage(bmp,0,0,w,h);
+      const id=ctx.getImageData(0,0,w,h),d=id.data;
+      for(let i=0;i<d.length;i+=4){
+        const g=Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);
+        d[i]=d[i+1]=d[i+2]=g;
+      }
+      ctx.putImageData(id,0,0);
+      cb(cv.toDataURL('image/jpeg',0.92));
+    }catch(e){cb(null);}
   };
-  rd.onerror=()=>cb(null);
-  rd.readAsDataURL(file);
+  if(typeof createImageBitmap==='function'){
+    createImageBitmap(file,{imageOrientation:'from-image'}).then(bmp=>{draw(bmp);bmp.close&&bmp.close();}).catch(()=>{
+      const rd=new FileReader();
+      rd.onload=()=>{
+        const img=new Image();
+        img.onload=()=>draw(img);
+        img.onerror=()=>cb(null);
+        img.src=rd.result;
+      };
+      rd.onerror=()=>cb(null);
+      rd.readAsDataURL(file);
+    });
+  }else{
+    const rd=new FileReader();
+    rd.onload=()=>{
+      const img=new Image();
+      img.onload=()=>draw(img);
+      img.onerror=()=>cb(null);
+      img.src=rd.result;
+    };
+    rd.onerror=()=>cb(null);
+    rd.readAsDataURL(file);
+  }
 }
 function pantParseLabel(text){
   const out={name:'',brand:'',exp:''};
@@ -1155,8 +1164,8 @@ function pantParseLabel(text){
   if(exp)out.exp=exp;
   const lines=raw.split(/\n/).map(L=>L.trim()).filter(Boolean);
   out.name=pantNameFromLabel(lines);
-  const brandLine=lines.find(L=>L&&out.name!==L&&!/\bnet\s*wt\b|\boz\b|\blbs?\b|count|pieces?|grams?|\bct\b|servings?|expir|best\s*by|use\s*by|ingredients|nutrition|www|\.com|@/.test(L.toLowerCase())
-    &&L.length>=2&&L.length<=28&&L===L.toUpperCase()&&/^[A-Z][A-Z0-9&\s.'-]+$/.test(L)&&!/\d{4}/.test(L));
+  const brandLine=lines.find(L=>L&&out.name!==L&&!/\bnet\s*wt\b|\boz\b|\blbs?\b|count|pieces?|grams?|\bct\b|servings?|expir|best\s*by|use\s*by|ingredients|nutrition|www|\.com|@|refrigerate|preservatives|peanut free|gluten free|dozen|contains|kept|free|made in|no preservatives/.test(L.toLowerCase())
+    &&L.length>=2&&L.length<=28&&L===L.toUpperCase()&&/^[A-Z][A-Z0-9&\s.'-]+$/.test(L)&&!/\d{4}/.test(L)&&!/\d/.test(L)&&pantLineScore(L)<=2);
   if(brandLine)out.brand=brandLine;
   if(out.name&&!out.brand){
     const parts=out.name.split(' ');
@@ -1169,24 +1178,36 @@ function getPantRecognizer(){
   if(!pantOcrPromise)pantOcrPromise=loadTess().catch(()=>{pantOcrPromise=null;throw new Error('offline');});
   return pantOcrPromise;
 }
-const PANT_FOOD_WORDS='egg|milk|cheese|butter|yogurt|cream|chicken|beef|pork|turkey|fish|shrimp|salmon|tuna|sausage|bacon|steak|rice|pasta|noodle|bean|flour|sugar|salt|pepper|oil|vinegar|sauce|marinara|tomato|salsa|spice|seasoning|bread|tortilla|bagel|cereal|granola|oat|cookie|cracker|chip|chocolate|candy|popcorn|pretzel|juice|soda|water|tea|coffee|honey|syrup|peanut|almond|cashew|walnut|fruit|apple|banana|orange|berry|lemon|lime|vegetable|potato|onion|garlic|carrot|broccoli|spinach|lettuce|corn|pea|soup|broth|stock|canned|frozen|pizza|pie|taco|pasta|ramen|soup|stew|chili|queso|salsa|guac|protein|greek|granola|tofu|pancake|waffle|syrup|mustard|ketchup|mayo|ranch|dressing|pickle|olive|avocado|quinoa|oats|seed|wrap|pita|naan|yeast|butter|margarine|jelly|jam|peanut butter'.split('|');
+const PANT_FOOD_WORDS='egg|milk|cheese|butter|yogurt|cream|chicken|beef|pork|turkey|fish|shrimp|salmon|tuna|sausage|bacon|steak|rice|pasta|noodle|bean|flour|sugar|salt|pepper|oil|vinegar|sauce|marinara|tomato|salsa|spice|seasoning|bread|tortilla|bagel|cereal|granola|oat|flake|cookie|cracker|chip|chocolate|candy|popcorn|pretzel|juice|soda|water|tea|coffee|honey|syrup|peanut|almond|cashew|walnut|fruit|apple|banana|orange|berry|lemon|lime|vegetable|potato|onion|garlic|carrot|broccoli|spinach|lettuce|corn|pea|soup|broth|stock|canned|frozen|pizza|pie|taco|ramen|stew|chili|queso|guac|protein|greek|tofu|pancake|waffle|mustard|ketchup|mayo|ranch|dressing|pickle|olive|avocado|quinoa|oats|seed|wrap|pita|naan|yeast|margarine|jelly|jam|mix|muffin|hummus|guacamole|salsa|chips|pretzels|seconds'.split('|');
+function pantFoodHit(w){
+  if(!w)return false;
+  if(PANT_FOOD_WORDS.includes(w))return true;
+  if(w.length>3&&w.endsWith('s')&&PANT_FOOD_WORDS.includes(w.slice(0,-1)))return true;
+  if(w.length>4&&w.endsWith('es')&&PANT_FOOD_WORDS.includes(w.slice(0,-2)))return true;
+  if(w.length>4&&w.endsWith('ies')&&PANT_FOOD_WORDS.includes(w.slice(0,-3)+'y'))return true;
+  return false;
+}
 function pantLineScore(L){
   const t=L.toLowerCase();
   let s=0;
-  if(/net wt|net\s*weight|\boz\b|\blbs?\b|pounds?|grams?|\bkg\b|\bml\b|\blitres?|\bfl\s*oz\b|count|pieces?|servings?|%|calories|best\s*by|use\s*by|sell\s*by|expir|exp\b|www|\.com|@|nutrition|ingredients|distributed|made in|manufactured|barcode|item\s*#|sku|\.\d{3,}/.test(t))s-=12;
-  if(/^\d/.test(t))s-=6;
+  const hasJunk=/net wt|net\s*weight|\boz\b|\blbs?\b|pounds?|grams?|\bkg\b|\bml\b|\blitres?|\bfl\s*oz\b|count|pieces?|servings?|calories|best\s*by|use\s*by|sell\s*by|expir|exp\b|www|\.com|@|nutrition|ingredients|distributed|made in|manufactured|barcode|item\s*#|sku|\.\d{3,}|refregerate|refrigerate|no preservatives|peanut free|gluten free|dozen|contains|cultures/.test(t);
+  if(hasJunk)s-=12;
   const words=t.split(/[^a-z0-9]+/).filter(w=>w&&!/^\d+$/.test(w));
-  let hits=0;words.forEach(w=>{if(PANT_FOOD_WORDS.includes(w))hits++;});
+  let hits=0;words.forEach(w=>{if(pantFoodHit(w))hits++;});
+  const startsDigit=/^\d/.test(t);
+  if(startsDigit&&hits<1)s-=4;
   s+=hits*4;
   if(hits>=2)s+=3;
+  if(hits>=1&&!startsDigit)s+=2;
   const wc=words.length;
   if(wc>=2&&wc<=6)s+=2;
   else if(wc<2)s-=4;
   else if(wc>8)s-=2;
-  if(t!==t.toUpperCase()&&/[A-Z][a-z]/.test(L))s+=1;
+  if(!hasJunk&&mixedCase(L))s+=1;
   if(L.length<3||L.length>45)s-=3;
   return s;
 }
+function mixedCase(L){return /[A-Z]/.test(L)&&/[a-z]/.test(L);}
 function pantNameFromLabel(lines){
   const catalog=(db.purchases||[]).filter(p=>p.name&&!/^barcode\s/i.test(p.name)).map(p=>p.name)
     .concat((db.stock||[]).map(i=>i.name));
@@ -1201,12 +1222,11 @@ function pantNameFromLabel(lines){
     if(bestSc>=Math.min(2,bestN)&&bestSc>=2)return best;
   }
   let best=null,bestSc=-999;
-  lines.forEach((L,idx)=>{
+  lines.forEach((L)=>{
     const sc=pantLineScore(L);
     if(sc>bestSc){bestSc=sc;best=L;}
-    if(sc>0&&idx===0&&bestSc<20)best=L;
   });
-  return (best&&bestSc>=1)?best.replace(/[\s-]+$/,''):'';
+  return (best&&bestSc>=2)?best.replace(/[\s-]+$/,''):'';
 }
 function rawLower(x){return String(x||'').toLowerCase();}
 function pantExtractDate(text){
@@ -1241,7 +1261,15 @@ function pantExtractDate(text){
     if(a>12){const tmp=a;a=b;b=tmp;}
     const v=good(yy,a,b);if(v)return v;
   }
-  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*\/\s*(\d{2,4})\b/i);
+  m=t.match(/\b(\d{1,2})\s+(\d{1,2})\s+(\d{2})\b/);
+  if(m){
+    let a=+m[1],b=+m[2],yy=y(m[3]);
+    if(a>12){const tmp=a;a=b;b=tmp;}
+    const v=good(yy,a,b);if(v)return v;
+  }
+  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s*[,.]?\s*(\d{2,4})\b/i);
+  if(m){const v=good(y(+m[2]),mons[m[1].toLowerCase().slice(0,3)],28);if(v)return v;}
+  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*[\/\s.-]\s*(\d{2,4})\b/i);
   if(m){
     const a=+m[1],b=+m[2];
     let mm=a,dd=28;
@@ -1261,6 +1289,11 @@ function pantExtractDate(text){
     const a=+m[1],b=+m[2];
     if(a>=1&&a<=12&&(b>99||b>=24)){const v=good(y(b),a,28);if(v)return v;}
   }
+  m=t.match(/\b(\d{1,2})\s+(\d{4})\b/);
+  if(m){
+    const a=+m[1],b=+m[2];
+    if(a>=1&&a<=12){const v=good(y(b),a,28);if(v)return v;}
+  }
   return '';
 }
 
@@ -1277,7 +1310,7 @@ function pantSuggestFromFiles(files){
     try{
       await getPantRecognizer();
       let text='';
-      const nOcr=Math.min(2,items.length);
+      const nOcr=Math.min(5,items.length);
       for(let i=0;i<nOcr;i++){
         const it=items[i];
         if(st)st.innerHTML='Reading label… ('+(i+1)+' of '+nOcr+')';
