@@ -515,7 +515,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-t';
+const APP_VER='v2026.08.17-t2';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -883,7 +883,7 @@ function renderPlan(){
           <button type="button" class="ghost" data-qcancel="${d}">✕</button>
         </div>
       </div>
-      <div class="cost"><span>${r?esc(r.cat):'—'}</span><b>${r?fm(r.cost*r.serves):'—'}</b></div>
+      <div class="cost"><span>${r?esc(r.cat):'—'}</span><b>${r?fm(withTax(r.cost*r.serves)):'—'}</b>${r?'<div style="font-size:10px;color:var(--muted)">+'+taxPct()+'% tax</div>':''}</div>
     </div>`;
   }).join('');
 
