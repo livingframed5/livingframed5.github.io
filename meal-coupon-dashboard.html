@@ -578,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p2';
+const APP_VER='v2026.08.17-p3';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1139,34 +1139,34 @@ function pantParseLabel(text){
   }
   return out;
 }
+let pantOcrPromise=null;
+function getPantRecognizer(){
+  if(!pantOcrPromise)pantOcrPromise=loadTess().catch(()=>{pantOcrPromise=null;throw new Error('offline');});
+  return pantOcrPromise;
+}
 function pantSuggestFromFiles(files){
   const list=[...files];if(!list.length)return;
   const st=$('pantScanStatus');if(st)st.innerHTML='Loading <b>'+list.length+'</b> photo(s)…';
-  const loadAll=[];const ocr=[];
-  list.forEach(f=>{
-    loadAll.push(new Promise(res=>readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();res();})));
-    ocr.push(f);
-  });
-  Promise.all(loadAll).then(async ()=>{
+  const loadAll=list.map(f=>new Promise(res=>readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();res(dataUrl);})));
+  Promise.all(loadAll).then(async dataUrls=>{
     try{
-      await loadTess();
+      await getPantRecognizer();
       let text='';
-      for(const f of ocr.slice(0,3)){
-        if(st)st.innerHTML='Reading labels (OCR)…';
-        try{
-          const r=await Tesseract.recognize(f,'eng');
-          text+=((r&&r.data&&r.data.text)||'')+'\n';
-        }catch(e){}
+      for(const url of dataUrls.slice(0,3)){
+        if(st)st.innerHTML='Reading label… ('+(dataUrls.indexOf(url)+1)+' of '+Math.min(3,dataUrls.length)+')';
+        let out=null;
+        try{out=await Tesseract.recognize(url,'eng');}catch(e){}
+        text+=((out&&out.data&&out.data.text)||'')+'\n';
+        const info=pantParseLabel(text);
+        if(info.name&&!$('pantName').value.trim())$('pantName').value=info.name;
+        if(info.brand&&!$('pantBrand').value.trim())$('pantBrand').value=info.brand;
+        if(info.exp&&!$('pantExp').value)$('pantExp').value=info.exp;
+        const nm=$('pantName').value.trim()||info.name||'';
+        if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
       }
-      const info=pantParseLabel(text);
-      if(info.name&&!$('pantName').value.trim())$('pantName').value=info.name;
-      if(info.brand&&!$('pantBrand').value.trim())$('pantBrand').value=info.brand;
-      if(info.exp&&!$('pantExp').value)$('pantExp').value=info.exp;
-      const nm=$('pantName').value.trim()||info.name||'';
-      if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
-      if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. Label read — autofilled name/brand/expiry where found. Adjust, then Save.';
+      if(st)st.innerHTML=('<b>'+esc(list.length)+'</b> photo(s) attached'+(text.trim()?' — label read → name <b>'+esc($('pantName').value)+'</b>, brand '+esc($('pantBrand').value||'…')+', expiry '+esc($('pantExp').value||'…')+'. Adjust, then Save.':' — couldn’t read the label clearly; type the fields and Save.'));
     }catch(err){
-      if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. OCR failed (offline?) — set the fields manually and Save.';
+      if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. OCR unavailable right now — set the fields manually and Save. Try again in a moment.';
     }
   });
 }
