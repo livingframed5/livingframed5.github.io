@@ -184,6 +184,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
 .pcard{position:relative;border:1px solid var(--edge);background:var(--panel2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
 .pcard .pic{width:100%;height:92px;object-fit:cover;border-radius:8px;background:var(--panel);border:1px solid var(--edge)}
+.pcard .photocnt{position:absolute;bottom:8px;right:8px;font-size:10px;font-weight:800;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;border-radius:6px}
 .pcard .pic.emptypic{display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted)}
 .pcard .nm{font-size:13px;font-weight:700;line-height:1.2}
 .pcard .cat{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.05em;text-transform:uppercase}
@@ -420,9 +421,10 @@ section.tpage.on{display:block;animation:pop .25s ease}
     <div class="grp"><label>Search</label><input class="inp" id="pantSearch" placeholder="eggs, rice, pasta…" style="width:190px"></div>
     <div class="grp" id="pantCats"><span class="chip on" data-pcat="all">All</span></div>
     <div class="grp" style="margin-left:auto">
-      <input type="file" id="pantImg" accept="image/*" style="display:none">
+      <input type="file" id="pantImg" accept="image/*" multiple style="display:none">
       <input type="file" id="pantCam" accept="image/*" capture="environment" style="display:none">
       <button class="ghost" id="pantCamBtn">📷 Scan barcode</button>
+      <button class="ghost" id="pantUpTop">🖼 Upload photos</button>
       <button class="act" id="pantAddBtn">＋ Add item</button>
     </div>
   </div>
@@ -431,17 +433,18 @@ section.tpage.on{display:block;animation:pop .25s ease}
 
   <div class="card span12" id="pantForm" style="margin-top:14px;display:none">
     <h3>Add pantry item <span class="mini">scan a barcode or upload a product photo to auto-fill</span></h3>
-    <div class="sub" id="pantScanStatus">Use the camera to scan a barcode, upload a product photo for name + category suggestions, or just type it.</div>
+    <div class="sub" id="pantScanStatus">Upload product photos (multiple OK) — labels are read to autofill name, brand, category &amp; expiry. Scan a barcode, or just type it.</div>
     <div class="form" style="box-shadow:none;border:none;padding:0;display:grid;grid-template-columns:repeat(12,1fr);gap:10px">
-      <div class="f span6"><label>Item name</label><input class="inp" id="pantName" placeholder="e.g. Large eggs, white rice…"></div>
-      <div class="f span6"><label>Category</label><select class="inp" id="pantCat"></select></div>
+      <div class="f span4"><label>Item name</label><input class="inp" id="pantName" placeholder="e.g. Large eggs, white rice…"></div>
+      <div class="f span4"><label>Brand</label><input class="inp" id="pantBrand" placeholder="e.g. Kirkland, Barilla…"></div>
+      <div class="f span4"><label>Category</label><select class="inp" id="pantCat"></select></div>
       <div class="f span3"><label>Qty</label><input class="inp num" id="pantQty" type="number" min="0" step="1" value="1"></div>
       <div class="f span3"><label>Unit</label><input class="inp" id="pantUnit" placeholder="ea / lb / oz / cup…" value="ea"></div>
       <div class="f span3"><label>Expires</label><input type="date" class="inp" id="pantExp"></div>
       <div class="f span3"><label>Barcode</label><input class="inp" id="pantBar" placeholder="optional"></div>
-      <div class="f span12" style="display:flex;gap:8px;align-items:center">
-        <img id="pantPreview" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--edge);display:none">
-        <button class="ghost" id="pantUpBtn">Upload photo</button>
+      <div class="f span12" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div id="pantPreviews" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <button class="ghost" id="pantUpBtn">＋ Attach photos</button>
         <button class="ghost" id="pantScanBar">Scan barcode now</button>
         <button class="act" id="pantSave" style="margin-left:auto">Save item</button>
         <button class="ghost" id="pantCancel">Cancel</button>
@@ -575,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p';
+const APP_VER='v2026.08.17-p2';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1023,7 +1026,7 @@ $('pantryChips').addEventListener('click',e=>{
 
 /* ---------- PANTRY INVENTORY ---------- */
 const PANT_CATS=['Produce','Meat & Seafood','Dairy & Eggs','Bakery & Grains','Pantry & Canned','Frozen','Spices & Oils','Snacks','Beverages','Other'];
-let pantCat='all',pantSearch='',pantEditing=null,pantImgData='',pantBar='';
+let pantCat='all',pantSearch='',pantEditing=null,pantPhotos=[],pantBar='';
 function pantryExpiry(r){return daysUntil(r.exp||'');}
 function pantryFlag(r){
   const e=pantryExpiry(r);
@@ -1058,9 +1061,9 @@ function renderPantry(){
     return `<div class="pcard">
       ${flag?`<span class="${flag.cls}">${flag.t}</span>`:''}
       <div class="minic"><button title="Edit" data-edit="${r.id}">✎</button><button title="Delete" data-pdel2="${r.id}">✕</button></div>
-      ${r.img?`<img class="pic" src="${r.img}" alt="${esc(r.name)}">`:`<div class="pic emptypic">🍞</div>`}
+      ${r.photos&&r.photos.length?`<img class="pic" src="${r.photos[0]}" alt="${esc(r.name)}">${r.photos.length>1?`<span class="photocnt">${r.photos.length}📷</span>`:''}`:(r.img?`<img class="pic" src="${r.img}" alt="${esc(r.name)}">`:`<div class="pic emptypic">🍞</div>`)}
       <span class="cat">${esc(r.cat||'Other')}</span>
-      <span class="nm">${esc(r.name)}</span>
+      <span class="nm">${esc(r.name)}</span>${r.brand?`<span style="font-size:11px;color:var(--muted)">${esc(r.brand)}</span>`:''}
       ${expTxt}
       <div class="qtyrow"><button class="stbtn" data-minus="${r.id}">−</button>
         <input class="inp num" data-qty="${r.id}" value="${r.qty}" title="On-hand quantity">
@@ -1074,14 +1077,23 @@ function pantOpenForm(r){
   $('pantForm').style.display='block';
   $('pantCat').innerHTML=pantCatOptions();
   $('pantName').value=r?r.name:'';
+  $('pantBrand').value=r?(r.brand||''):'';
   $('pantCat').value=r?(r.cat||'Other'):'Other';
   $('pantQty').value=r?r.qty:1;
   $('pantUnit').value=r?(r.unit||'ea'):'ea';
   $('pantExp').value=r?(r.exp||''):'';
   $('pantBar').value=r?(r.barcode||''):'';
-  pantImgData=r?(r.img||''):'';pantBar=r?(r.barcode||''):'';
-  const pv=$('pantPreview');if(pantImgData){pv.src=pantImgData;pv.style.display='block';}else{pv.style.display='none';}
+  pantPhotos=(r?((r.photos&&r.photos.length)?r.photos:(r.img?[r.img]:[])):[]).slice();
+  pantBar=r?(r.barcode||''):'';
+  pantRenderPreviews();
   try{$('pantForm').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+}
+function pantRenderPreviews(){
+  const box=$('pantPreviews');
+  box.innerHTML=pantPhotos.map((p,i)=>`<span style="position:relative;display:inline-block">
+    <img src="${p}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--edge)">
+    <button type="button" data-xphoto="${i}" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:1px solid var(--edge);background:var(--panel);color:var(--red);font-size:11px;cursor:pointer;line-height:1">✕</button></span>`).join('');
+  box.style.display=pantPhotos.length?'flex':'none';
 }
 function pantSuggestCat(name){
   const t=String(name||'').toLowerCase();
@@ -1101,41 +1113,84 @@ function readPantImage(file,cb){
   rd.onload=()=>{cb(rd.result);};
   rd.readAsDataURL(file);
 }
-function pantSuggestFromImage(file){
-  readPantImage(file,async dataUrl=>{
-    const pv=$('pantPreview');pv.src=dataUrl;pv.style.display='block';
-    pantImgData=dataUrl;
-    setStatus?.(null);
-    const st=$('pantScanStatus');if(st)st.innerHTML='Photo loaded — reading label…';
+function pantParseLabel(text){
+  const out={name:'',brand:'',exp:''};
+  const raw=String(text||'').replace(/[^\x20-\x7E\n]/g,' ').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').trim();
+  if(!raw)return out;
+  const expRe=/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|bb)?\s*[:.]?\s*(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2,4})/i;
+  let m=raw.match(expRe);
+  if(m){
+    const a=+m[1],b=+m[2],y=(+m[3]);const yy=y<100?2000+y:y;
+    const mm=a>12?b:a,dd=a>12?a:b;
+    const d=new Date(yy,mm-1,dd);if(!isNaN(d)&&d.getFullYear()===yy)out.exp=d.toISOString().slice(0,10);
+  }
+  const lines=raw.split(/\n/).map(L=>L.trim()).filter(Boolean);
+  const brandLine=lines.find(L=>L.length>=2&&L.length<=32&&L===L.toUpperCase()&&/^[A-Z][A-Z0-9&\s.'-]+$/.test(L)&&!/\d{4}/.test(L));
+  if(brandLine)out.brand=brandLine;
+  const nameRe=lines.find(L=>
+    L.length>=3&&L.length<=45&&L!==brandLine&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase())&&!/^\d/.test(L)&&(L.toLowerCase()!==L)
+  )||lines.find(L=>
+    L.length>=3&&L.length<=45&&L!==brandLine&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase())&&!/^\d/.test(L)
+  );
+  if(nameRe)out.name=nameRe.replace(/[\s-]+$/,'');
+  if(out.name&&!out.brand){
+    const parts=out.name.split(' ');
+    if(parts.length>=2&&parts[0].length>=3&&parts.slice(1).join(' ').length>=3)out.brand=parts[0];
+  }
+  return out;
+}
+function pantSuggestFromFiles(files){
+  const list=[...files];if(!list.length)return;
+  const st=$('pantScanStatus');if(st)st.innerHTML='Loading <b>'+list.length+'</b> photo(s)…';
+  const loadAll=[];const ocr=[];
+  list.forEach(f=>{
+    loadAll.push(new Promise(res=>readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();res();})));
+    ocr.push(f);
+  });
+  Promise.all(loadAll).then(async ()=>{
     try{
       await loadTess();
-      const r=await Tesseract.recognize(file,'eng');
-      const text=(r&&r.data&&r.data.text)||'';
-      const lines=text.split(/\r?\n/).map(L=>L.replace(/[^\x20-\x7E]/g,' ').trim()).filter(Boolean);
-      const name=(lines.find(L=>L.length>=3&&L.length<=40&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|expires|best by|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase()))||'').replace(/[\s-]+$/,'');
-      if(name){$('pantName').value=name;if(!$('pantCat').value||$('pantCat').value==='Other')$('pantCat').value=pantSuggestCat(name);}
-      if(st)st.innerHTML=name?('Label read — <b>'+esc(name)+'</b> filled in. Adjust, then Save.'):'Photo loaded — couldn’t read a clear label name, type it and Save.';
+      let text='';
+      for(const f of ocr.slice(0,3)){
+        if(st)st.innerHTML='Reading labels (OCR)…';
+        try{
+          const r=await Tesseract.recognize(f,'eng');
+          text+=((r&&r.data&&r.data.text)||'')+'\n';
+        }catch(e){}
+      }
+      const info=pantParseLabel(text);
+      if(info.name&&!$('pantName').value.trim())$('pantName').value=info.name;
+      if(info.brand&&!$('pantBrand').value.trim())$('pantBrand').value=info.brand;
+      if(info.exp&&!$('pantExp').value)$('pantExp').value=info.exp;
+      const nm=$('pantName').value.trim()||info.name||'';
+      if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
+      if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. Label read — autofilled name/brand/expiry where found. Adjust, then Save.';
     }catch(err){
-      if(st)st.innerHTML='Photo loaded for the item — set name manually and Save.';
+      if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. OCR failed (offline?) — set the fields manually and Save.';
     }
   });
 }
 function pantSave(){
   const name=$('pantName').value.trim();if(!name){$('pantName').focus();return;}
   const qty=Math.max(0,+$('pantQty').value||0);
-  const rec={name,cat:$('pantCat').value||'Other',qty,unit:$('pantUnit').value.trim()||'ea',exp:$('pantExp').value,barcode:$('pantBar').value.trim(),img:pantImgData};
+  const rec={name,brand:$('pantBrand').value.trim(),cat:$('pantCat').value||'Other',qty,unit:$('pantUnit').value.trim()||'ea',exp:$('pantExp').value,barcode:$('pantBar').value.trim(),photos:pantPhotos.slice(),img:pantPhotos[0]||''};
   if(pantEditing){const i=db.stock.findIndex(x=>x.id===pantEditing);if(i>=0)db.stock[i]=Object.assign(db.stock[i],rec);}
   else db.stock.push(Object.assign({id:uid()},rec));
   save();pantOpenForm(null);$('pantForm').style.display='none';renderPantry();
 }
 $('pantAddBtn').addEventListener('click',()=>pantOpenForm(null));
+$('pantUpTop').addEventListener('click',()=>{$('pantForm').style.display='none';pantOpenForm(null);setTimeout(()=>$('pantImg').click(),60);});
 $('pantCancel').addEventListener('click',()=>{$('pantForm').style.display='none';renderPantry();});
 $('pantSave').addEventListener('click',pantSave);
 $('pantName').addEventListener('input',e=>{if(!$('pantCat').value||$('pantCat').value==='Other')$('pantCat').value=pantSuggestCat(e.target.value);});
 $('pantUpBtn').addEventListener('click',()=>$('pantImg').click());
 $('pantCamBtn').addEventListener('click',()=>$('pantCam').click());
 $('pantScanBar').addEventListener('click',()=>$('pantCam').click());
-$('pantImg').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)pantSuggestFromImage(f);e.target.value='';});
+$('pantPreviews').addEventListener('click',e=>{
+  const x=e.target.closest('[data-xphoto]');if(!x)return;
+  pantPhotos.splice(+x.dataset.xphoto,1);pantRenderPreviews();
+});
+$('pantImg').addEventListener('change',e=>{pantSuggestFromFiles(e.target.files);e.target.value='';});
 $('pantCam').addEventListener('change',async e=>{
   const f=e.target.files&&e.target.files[0];e.target.value='';
   if(!f)return;
@@ -1144,11 +1199,11 @@ $('pantCam').addEventListener('change',async e=>{
   if(codes.length){
     pantBar=codes[0];$('pantBar').value=pantBar;
     const prior=(db.stock||[]).find(s=>s.barcode===pantBar);
-    if(prior){$('pantName').value=prior.name;$('pantCat').value=prior.cat||'Other';$('pantUnit').value=prior.unit||'ea';}
+    if(prior){$('pantName').value=prior.name;$('pantBrand').value=prior.brand||'';$('pantCat').value=prior.cat||'Other';$('pantUnit').value=prior.unit||'ea';}
     if(st)st.innerHTML='Barcode <b>'+esc(pantBar)+'</b> read'+(prior?' — reusing <b>'+esc(prior.name)+'</b> from your pantry. Adjust qty and Save.':' — type the item name and Save; future scans of the same code reuse it.');
   }else{
-    if(st)st.innerHTML='No barcode found in that photo — you can still use it as the item photo.';
-    readPantImage(f,dataUrl=>{pantImgData=dataUrl;const pv=$('pantPreview');pv.src=dataUrl;pv.style.display='block';});
+    if(st)st.innerHTML='No barcode found in that photo — attached it to the item instead.';
+    readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();});
   }
 });
 $('pantSearch').addEventListener('input',e=>{pantSearch=e.target.value;renderPantry();});
