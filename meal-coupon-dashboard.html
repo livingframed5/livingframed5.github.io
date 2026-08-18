@@ -578,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p4';
+const APP_VER='v2026.08.17-p5';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1113,17 +1113,46 @@ function readPantImage(file,cb){
   rd.onload=()=>{cb(rd.result);};
   rd.readAsDataURL(file);
 }
+function pantOcrImage(file,cb){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const max=1400,sc=Math.min(1,max/Math.max(img.width,img.height));
+        const w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
+        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+        const ctx=cv.getContext('2d');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        const id=ctx.getImageData(0,0,w,h),d=id.data;
+        let min=255,maxPx=0;
+        for(let i=0;i<d.length;i+=4){
+          const g=Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);
+          d[i]=d[i+1]=d[i+2]=g;
+          if(g<min)min=g;if(g>maxPx)maxPx=g;
+        }
+        const range=(maxPx-min)||255;
+        for(let i=0;i<d.length;i+=4){
+          const v=Math.min(255,Math.max(0,Math.round((d[i]-min)*255/range)));
+          d[i]=d[i+1]=d[i+2]=v;
+        }
+        ctx.putImageData(id,0,0);
+        cb(cv.toDataURL('image/jpeg',0.9));
+      }catch(e){cb(null);}
+    };
+    img.onerror=()=>cb(null);
+    img.src=rd.result;
+  };
+  rd.onerror=()=>cb(null);
+  rd.readAsDataURL(file);
+}
 function pantParseLabel(text){
   const out={name:'',brand:'',exp:''};
   const raw=String(text||'').replace(/[^\x20-\x7E\n]/g,' ').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').trim();
   if(!raw)return out;
-  const expRe=/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|bb)?\s*[:.]?\s*(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2,4})/i;
-  let m=raw.match(expRe);
-  if(m){
-    const a=+m[1],b=+m[2],y=(+m[3]);const yy=y<100?2000+y:y;
-    const mm=a>12?b:a,dd=a>12?a:b;
-    const d=new Date(yy,mm-1,dd);if(!isNaN(d)&&d.getFullYear()===yy)out.exp=d.toISOString().slice(0,10);
-  }
+  const exp=pantExtractDate(raw);
+  if(exp)out.exp=exp;
   const lines=raw.split(/\n/).map(L=>L.trim()).filter(Boolean);
   out.name=pantNameFromLabel(lines);
   const brandLine=lines.find(L=>L&&out.name!==L&&!/\bnet\s*wt\b|\boz\b|\blbs?\b|count|pieces?|grams?|\bct\b|servings?|expir|best\s*by|use\s*by|ingredients|nutrition|www|\.com|@/.test(L.toLowerCase())
@@ -1180,18 +1209,80 @@ function pantNameFromLabel(lines){
   return (best&&bestSc>=1)?best.replace(/[\s-]+$/,''):'';
 }
 function rawLower(x){return String(x||'').toLowerCase();}
+function pantExtractDate(text){
+  const t=String(text||'').replace(/[^\x20-\x7E\n]/g,' ').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n');
+  const mons={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const pad=n=>String(n).padStart(2,'0');
+  const y=(v)=>{const n=+v;return n<100?2000+n:n;};
+  const good=(yy,mm,dd)=>{
+    if(!(mm>=1&&mm<=12))return null;
+    if(!(dd>=1&&dd<=31))return null;
+    const d=new Date(yy,mm-1,dd);
+    if(isNaN(d.getTime())||d.getFullYear()!==yy||d.getMonth()!==mm-1||d.getDate()!==dd)return null;
+    return yy+'-'+pad(mm)+'-'+pad(dd);
+  };
+  let m;
+  m=t.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
+  m=t.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
+  if(m){
+    let a=+m[1],b=+m[2],yy=+m[3];
+    if(a>12){const tmp=a;a=b;b=tmp;}
+    const v=good(yy,a,b);if(v)return v;
+  }
+  m=t.match(/\b(\d{1,2})\s+(\d{1,2})\s+(20\d{2})\b/);
+  if(m){
+    let a=+m[1],b=+m[2],yy=+m[3];
+    if(a>12){const tmp=a;a=b;b=tmp;}
+    const v=good(yy,a,b);if(v)return v;
+  }
+  m=t.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/);
+  if(m){
+    let a=+m[1],b=+m[2],yy=y(m[3]);
+    if(a>12){const tmp=a;a=b;b=tmp;}
+    const v=good(yy,a,b);if(v)return v;
+  }
+  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*\/\s*(\d{2,4})\b/i);
+  if(m){
+    const a=+m[1],b=+m[2];
+    let mm=a,dd=28;
+    if(a>=1&&a<=12)mm=a;else if(b>=1&&b<=12){mm=b;}else mm=0;
+    const v=mm?good(y(b),mm,28):null;if(v)return v;
+  }
+  m=t.match(/\b((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{1,2}),?\s+(20\d{2})\b/i);
+  if(m){const v=good(+m[3],mons[m[1].toLowerCase().slice(0,3)],+m[2]);if(v)return v;}
+  m=t.match(/\b(\d{1,2})\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*),?\s+(20\d{2})\b/i);
+  if(m){const v=good(+m[3],mons[m[2].toLowerCase().slice(0,3)],+m[1]);if(v)return v;}
+  m=t.match(/\b(20\d{2})\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{1,2})\b/i);
+  if(m){const v=good(+m[1],mons[m[2].toLowerCase().slice(0,3)],+m[3]);if(v)return v;}
+  m=t.match(/\b((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{2})\b/i);
+  if(m){const v=good(y(+m[2]),mons[m[1].toLowerCase().slice(0,3)],28);if(v)return v;}
+  m=t.match(/\b(\d{1,2})\s*\/\s*(\d{2,4})\b/);
+  if(m){
+    const a=+m[1],b=+m[2];
+    if(a>=1&&a<=12&&(b>99||b>=24)){const v=good(y(b),a,28);if(v)return v;}
+  }
+  return '';
+}
+
 function pantSuggestFromFiles(files){
   const list=[...files];if(!list.length)return;
   const st=$('pantScanStatus');if(st)st.innerHTML='Loading <b>'+list.length+'</b> photo(s)…';
-  const loadAll=list.map(f=>new Promise(res=>readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();res(dataUrl);})));
-  Promise.all(loadAll).then(async dataUrls=>{
+  const loadAll=list.map(f=>new Promise(res=>{
+    readPantImage(f,dataUrl=>{
+      pantPhotos.push(dataUrl);pantRenderPreviews();
+      pantOcrImage(f,ocrUrl=>res({dataUrl,ocrUrl}));
+    });
+  }));
+  Promise.all(loadAll).then(async items=>{
     try{
       await getPantRecognizer();
       let text='';
-      for(const url of dataUrls.slice(0,3)){
-        if(st)st.innerHTML='Reading label… ('+(dataUrls.indexOf(url)+1)+' of '+Math.min(3,dataUrls.length)+')';
+      const nOcr=Math.min(2,items.length);
+      for(let i=0;i<nOcr;i++){
+        const it=items[i];
+        if(st)st.innerHTML='Reading label… ('+(i+1)+' of '+nOcr+')';
         let out=null;
-        try{out=await Tesseract.recognize(url,'eng');}catch(e){}
+        try{out=await Tesseract.recognize(it.ocrUrl||it.dataUrl,'eng');}catch(e){}
         text+=((out&&out.data&&out.data.text)||'')+'\n';
         const info=pantParseLabel(text);
         if(info.name&&!$('pantName').value.trim())$('pantName').value=info.name;
@@ -1199,6 +1290,7 @@ function pantSuggestFromFiles(files){
         if(info.exp&&!$('pantExp').value)$('pantExp').value=info.exp;
         const nm=$('pantName').value.trim()||info.name||'';
         if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
+        if($('pantName').value.trim()&&$('pantExp').value)break;
       }
       if(st)st.innerHTML=('<b>'+esc(list.length)+'</b> photo(s) attached'+(text.trim()?' — label read → name <b>'+esc($('pantName').value)+'</b>, brand '+esc($('pantBrand').value||'…')+', expiry '+esc($('pantExp').value||'…')+'. Adjust, then Save.':' — couldn’t read the label clearly; type the fields and Save.'));
     }catch(err){
