@@ -1011,31 +1011,53 @@ function renderRecipes(){
       </div>`;
     $('fCostSum').textContent='est. '+fm((+r.serves||4)*(+r.cost||0))+' for the batch';
     try{$('recForm').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
-    let recPu=null;
-    if(r.id)recPu=purchaseFor(r.name);
+    let recPu=null,recName=String(r.name||'').trim();
+    if(recName)recPu=purchaseFor(recName);
     const wrap=$('fRecWrap');
-    const unitTxt=recPu?fm(Math.round((Number(recPu.price)/Math.max(1,Number(recPu.qty)||1))*100)/100):'';
+    const recList=(db.purchases||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+    const unitOf=pu=>Math.round((Number(pu.price)/Math.max(1,Number(pu.qty)||1))*100)/100;
     const settle=()=>{
-      if(!recPu){return;}
+      const pu=recPu;if(!pu)return;
       const sv=Math.max(1,+$('fServes').value||1);
-      const unit=Math.round((Number(recPu.price)/Math.max(1,Number(recPu.qty)||1))*100)/100;
+      const unit=unitOf(pu);
       $('fCost').value=Math.round((unit/sv)*100)/100;
       $('fCostSum').textContent='est. '+fm(unit)+' for the batch';
     };
-    wrap.innerHTML=recPu
-      ?`<span style="font-size:12.5px;font-weight:700">Receipt: ${esc(recPu.name)} · ${unitTxt} paid</span>
-        <span style="font-size:12px;color:var(--muted)">serves ${r.serves} → ${fm(+r.cost||0)}/serving</span>
-        <label class="chip" style="cursor:pointer;margin-left:auto;display:flex;gap:6px;align-items:center"><input type="checkbox" id="fSettle" checked> Auto-span receipt ÷ serves</label>
-        <button type="button" class="ghost" id="fSettleBtn">Settle from receipt</button>`
-      :`<span style="font-size:12px;color:var(--muted)">No matching receipt scan on file — set Cost / serving manually.</span>`;
-    if(recPu){
-      const sel=$('fSettle'),btn=$('fSettleBtn');
-      sel.addEventListener('change',()=>{if(sel.checked)settle();});
-      btn.addEventListener('click',settle);
-      $('fServes').addEventListener('input',()=>{if(sel.checked)settle();});
-      $('fCost').addEventListener('input',()=>{sel.checked=false;});
-      settle();
-    }
+    const refreshRec=()=>{
+      recPu=null;
+      const nameEl=$('fName');
+      if(nameEl&&nameEl.value.trim())recPu=purchaseFor(nameEl.value.trim());
+      renderRecPanel();
+    };
+    const renderRecPanel=()=>{
+      const meta=recPu?`<span style="font-size:12px;color:var(--muted)">serves ${$('fServes').value||r.serves} → ${fm(+$('fCost').value||0)}/serving</span>`:'';
+      const opts=recList.length?recList.map(p=>`<option value="${esc(JSON.stringify(p))}">${esc(p.name)} · ${fm(unitOf(p))} ← ${esc(p.date||'')}</option>`).join(''):'';
+      const curVal=recPu?esc(JSON.stringify(recPu)):'';
+      wrap.innerHTML=recList.length
+        ?`<span style="font-size:12.5px;font-weight:700">From receipt:</span>
+          <select class="inp" id="fRecPick" style="flex:1;min-width:200px"><option value="">— choose a scanned item —</option>${opts}</select>
+          ${meta}
+          <label class="chip" style="cursor:pointer;display:flex;gap:6px;align-items:center"><input type="checkbox" id="fSettle" ${recPu?'checked':''}> Auto: price ÷ serves</label>
+          <button type="button" class="ghost" id="fSettleBtn" ${recPu?'':'disabled'}>Settle from receipt</button>`
+        :`<span style="font-size:12px;color:var(--muted)">No receipt scans logged yet — upload one on the Scan tab, or set Cost / serving manually.</span>`;
+      const pick=$('fRecPick');
+      if(recList.length){
+        if(pick&&recPu){pick.value=curVal;}
+        if(pick){
+          pick.addEventListener('change',()=>{
+            try{recPu=pick.value?JSON.parse(pick.value):null;}catch(e){recPu=null;}
+            renderRecPanel();
+            if(recPu)settle();
+          });
+        }
+        const sel=$('fSettle'),btn=$('fSettleBtn');
+        if(sel){sel.addEventListener('change',()=>{if(sel.checked)settle();else{$('fCostSum').textContent='est. '+fm((+$('fServes').value||0)*(+$('fCost').value||0))+' for the batch';}});}
+        if(btn){btn.addEventListener('click',()=>{if(recPu)settle();});}
+      }
+    };
+    renderRecPanel();
+    $('fName').addEventListener('input',refreshRec);
+    $('fCost').addEventListener('input',()=>{const sel=$('fSettle');if(sel)sel.checked=false;});
     ['fServes','fCost'].forEach(id=>$(id).addEventListener('input',()=>{
       const sel=$('fSettle');
       if(recPu&&sel&&sel.checked){settle();return;}
