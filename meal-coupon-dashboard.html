@@ -315,6 +315,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
 <section class="tpage" id="tab-prices">
   <div class="ctl">
     <div class="grp"><label>Location</label><select class="inp" id="locSel" style="max-width:190px"></select></div>
+    <div class="grp"><label>Tax %</label><input class="inp num" id="taxInp" type="number" min="0" max="15" step="0.1" style="max-width:70px" title="Sales tax for the selected state"></div>
     <div class="grp"><label>Stores</label><div id="storeChips" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"></div></div>
     <div class="grp"><label>View</label>
       <span class="chip" id="cpnChip">✂ With coupons</span>
@@ -347,6 +348,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
 <section class="tpage" id="tab-other">
   <div class="ctl">
     <div class="grp"><label>Location</label><select class="inp" id="otherLocSel" style="max-width:190px"></select></div>
+    <div class="grp"><label>Tax %</label><input class="inp num" id="otherTaxInp" type="number" min="0" max="15" step="0.1" style="max-width:70px" title="Sales tax for the selected state"></div>
     <div class="grp"><label>Stores</label><div id="otherChips" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"></div></div>
     <div class="grp"><label>View</label>
       <span class="chip" id="otherCpnChip">✂ With coupons</span>
@@ -513,7 +515,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-c';
+const APP_VER='v2026.08.17-t';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -546,6 +548,12 @@ const numQty=q=>{const top=parseFloat(q.split('/')[0])||0,bot=parseFloat(q.split
 const dayStr=offset=>{const d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10);};
 const daysUntil=iso=>{if(!iso)return 0;return Math.ceil((new Date(iso)-new Date())/864e5);};
 const isoDays=iso=>{if(!iso)return '';const d=new Date(iso);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+
+const DEFAULT_TAX={ID:0.060,WA:0.065,TX:0.0625,IL:0.0625,MA:0.0625};
+function curState(){const m=String(db.location||'').match(/,?\s*([A-Z]{2})\s*$/);return m?m[1].toUpperCase():'Custom';}
+function taxRate(){const st=curState();const t=db.tax&&db.tax[st];return (t!==undefined&&t!==null&&isFinite(t)&&t>=0)?Number(t):(DEFAULT_TAX[st]||0);}
+function taxPct(){return Math.round(taxRate()*10000)/100;}
+function withTax(v){return Math.round(Number(v||0)*(1+taxRate())*100)/100;}
 
 /* ---------- seed ---------- */
 function seedRecipes(){return [
@@ -690,7 +698,7 @@ function load(){
   try{
     const raw=localStorage.getItem(KEY);
     if(raw){const d=JSON.parse(raw);
-      const dd=Object.assign({recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Boise, ID',stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:seedPrices(),other:seedOther(),otherPrices:seedOtherPrices(),pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]},d);
+      const dd=Object.assign({recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Boise, ID',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:seedPrices(),other:seedOther(),otherPrices:seedOtherPrices(),pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]},d);
       ['Albertsons','Costco'].forEach(s=>{if(!dd.stores.includes(s))dd.stores.push(s);});
       seedCoupons().forEach(sc=>{if(!dd.coupons.some(c=>c.item===sc.item))dd.coupons.push(sc);});
       Object.keys(seedPrices()).forEach(iid=>{const pr=seedPrices()[iid];
@@ -709,7 +717,7 @@ function load(){
     recipes:seedRecipes(), plan:{}, coupons:seedCoupons(),
     stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'], items:seedItems(), prices:seedPrices(),
     other:seedOther(), otherPrices:seedOtherPrices(),
-    location:'Boise, ID', pantry:[], history:{},
+    location:'Boise, ID', tax:{}, pantry:[], history:{},
     budget:500, slist:[], purchases:[], spends:[
       {id:uid(),date:dayStr(-7),store:'Walmart',amt:84.32,note:'Weekly run'},
       {id:uid(),date:dayStr(-3),store:'Fred Meyer',amt:23.10,note:'Coupon run'},
@@ -856,9 +864,9 @@ function renderPlan(){
 
   $('planKpis').innerHTML=
     kpi('Meals planned',filled+' / 7',filled===7?'good':filled>0?'':'warn',filled===7?'full week started':'plan your dinners')+
-    kpi('Est. week cost',fm(weekCost),'',planned.length?Math.round(weekCost/5*100)/100+' ≈ /person' :'')+
+    kpi('Est. week cost',fm(withTax(weekCost)),'',planned.length?Math.round(withTax(weekCost)/Math.max(1,planned.length)*100)/100+' ≈ /meal · incl. '+taxPct()+'% tax':'')+
     kpi('To buy',buy.length,'',have.length?'+'+have.length+' already on hand':'no pantry matches')+
-    kpi('Store plan est.',fm(retail),'','− '+fm(couponOff)+' in coupons');
+    kpi('Store plan est.',fm(withTax(retail)),'','− '+fm(couponOff)+' in coupons · +'+taxPct()+'% tax');
 
   $('daygrid').innerHTML=DAYS.map(([d,label])=>{
     const rid=db.plan[d]||'';
@@ -886,13 +894,13 @@ function renderPlan(){
   const SO=AISLES.filter(a=>buy.some(r=>r.item&&r.item.aisle===a)).concat(buy.some(r=>!r.item||!r.item.aisle)?['Other']:[]);
   $('shopList').innerHTML=buy.length?SO.map(a=>`<div class="aisle">${esc(a)}</div>`+buy.filter(r=>r.item?(r.item.aisle===a):a==='Other').map(r=>`<div class="srow"><span class="qty">${fmtQty(r.n,r.qty)}</span><span class="nm">${esc(r.it)}</span>${r.best?`<span class="qty2">at ${esc(r.best.store)}</span>`:''}</div>`).join('')).join(''):'<div class="empty">Pick recipes and they’ll land here, grouped by aisle.</div>';
 
-  $('shopEst').innerHTML='Retail est. <b>'+fm(retail)+'</b> <span class="small-tag">−'+fm(couponOff)+' after coupons</span>';
+  $('shopEst').innerHTML='Retail est. <b>'+fm(withTax(retail))+'</b> <span class="small-tag">incl. tax · −'+fm(couponOff)+' coupons · est. out of pocket <b>'+fm(withTax(retail-couponOff))+'</b></span>';
 
   $('storePlan').innerHTML=Object.keys(plan).map(st=>{
     const items=plan[st];
     const miss=st==='No price on file';
     const subtotal=miss?0:items.reduce((a,r)=>a+r.best.price,0);
-    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(subtotal)}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.it)}</span><span class="px">${fmtQty(r.n,r.qty)}</span></li>`).join('')}</ul></div>`;
+    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(withTax(subtotal))}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.it)}</span><span class="px">${fmtQty(r.n,r.qty)}</span></li>`).join('')}</ul></div>`;
   }).join('')||'<div class="empty">Plan some meals and the store-by-store plan appears here.</div>';
 }
 function fmtQty(n,q0){
@@ -1178,6 +1186,7 @@ function itemLow(it){
 function renderPrices(){
   const stores=db.stores.slice(0,8);
   $('locSel').innerHTML=Object.keys(LOCATIONS).map(n=>`<option value="${esc(n)}" ${(db.location||'Boise, ID')===n?'selected':''}>${esc(n)}</option>`).join('');
+  $('taxInp').value=taxPct();
   $('storeChips').innerHTML=stores.map((s,i)=>`<span class="chip grid2 on" style="cursor:default;display:flex;gap:6px;align-items:center">${esc(s)}<button class="mini del" data-sdel="${i}" title="Remove" style="width:20px;height:20px;font-size:10px;border:none;background:transparent;color:var(--muted)">✕</button></span>`).join('');
   $('cpnChip').classList.toggle('on',incCpns);
   $('unitChip').classList.toggle('on',incUnit);
@@ -1215,7 +1224,7 @@ function renderPrices(){
 
   $('priceKpis').innerHTML=
     kpi('Items compared',itemCnt,'',db.items.length+' in the list')+
-    kpi('Lowest-cart total',fm(bestCart),'good',incCpns?'after coupons':'retail')+
+    kpi('Lowest-cart total',fm(withTax(bestCart)),'good',(incCpns?'after coupons':'retail')+' · +'+taxPct()+'% tax')+
     kpi('Max potential saving',fm(bestSav),'warn',savCount?'vs priciest store (est.)':'add a second price to start')+
     kpi('At low',lows.length+'/'+db.items.length,lows.length?'warn':'good','items at lowest ever seen');
 
@@ -1256,6 +1265,18 @@ $('locSel').addEventListener('change',e=>{
   else{db.location='Custom';}
   save();renderPrices();renderOther();renderCoupons();renderScan();
 });
+function taxInput(ids){
+  ids.forEach(id=>{
+    const el=$(id);if(!el)return;
+    el.addEventListener('change',()=>{
+      const v=parseFloat(el.value);
+      db.tax=db.tax||{};
+      db.tax[curState()]=isFinite(v)&&v>=0?v/100:0;
+      save();renderPrices();renderOther();renderPlan();renderList();renderBudget();
+    });
+  });
+}
+taxInput(['taxInp','otherTaxInp']);
 $('cpnChip').addEventListener('click',()=>{incCpns=!incCpns;save();renderPrices();renderOther();});
 $('unitChip').addEventListener('click',()=>{incUnit=!incUnit;save();renderPrices();renderOther();});
 $('storeChips').addEventListener('click',e=>{
@@ -1270,6 +1291,7 @@ $('storeChips').addEventListener('click',e=>{
 function renderOther(){
   const stores=db.stores.slice(0,8);
   $('otherLocSel').innerHTML=Object.keys(LOCATIONS).map(n=>`<option value="${esc(n)}" ${(db.location||'Boise, ID')===n?'selected':''}>${esc(n)}</option>`).join('');
+  $('otherTaxInp').value=taxPct();
   $('otherChips').innerHTML=stores.map((s,i)=>`<span class="chip grid2 on" style="cursor:default;display:flex;gap:6px;align-items:center">${esc(s)}<button class="mini del" data-sdel="${i}" title="Remove" style="width:20px;height:20px;font-size:10px;border:none;background:transparent;color:var(--muted)">✕</button></span>`).join('');
   $('otherCpnChip').classList.toggle('on',incCpns);
   $('otherUnitChip').classList.toggle('on',incUnit);
@@ -1306,7 +1328,7 @@ function renderOther(){
 
   $('otherKpis').innerHTML=
     kpi('Items compared',itemCnt,'',(db.other||[]).length+' on the list')+
-    kpi('Lowest-cart total',fm(bestCart),'good',incCpns?'after coupons':'retail')+
+    kpi('Lowest-cart total',fm(withTax(bestCart)),'good',(incCpns?'after coupons':'retail')+' · +'+taxPct()+'% tax')+
     kpi('Max potential saving',fm(bestSav),'warn',savCount?'vs priciest store (est.)':'add a second price to start')+
     kpi('At low',lows.length+'/'+(db.other||[]).length,lows.length?'warn':'good','items at lowest ever seen');
 
@@ -1400,14 +1422,14 @@ function renderList(){
   });
   $('listKpis').innerHTML=
     kpi('Items picked',n,'','checked in Price Compare & Household')+
-    kpi('Est. spend',fm(totalEff),'good',incCpns?'after coupons':'retail')+
+    kpi('Est. spend',fm(withTax(totalEff)),'good',(incCpns?'after coupons':'retail')+' · +'+taxPct()+'% tax')+
     kpi('Coupon savings',fm(Math.max(0,totalRetail-totalEff)),'warn','vs retail prices')+
     kpi('Stores to visit',Object.keys(groups).length,'','split by best price below');
   $('listGrouped').innerHTML=Object.keys(groups).map(st=>{
     const items=groups[st];
     const miss=st==='No price on file';
     const sub=miss?0:items.reduce((a,r)=>a+r.best.price,0);
-    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(sub)}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.item.name)}</span><span class="px">${r.best?fm(r.best.eff):'—'}</span></li>`).join('')}</ul></div>`;
+    return `<div class="storetile ${miss?'miss':''}"><h4>${esc(st)}<span class="t">${miss?'—':fm(withTax(sub))}</span></h4><ul>${items.map(r=>`<li><span class="nm">${esc(r.item.name)}</span><span class="px">${r.best?fm(r.best.eff):'—'}</span></li>`).join('')}</ul></div>`;
   }).join('')||'<div class="empty">Top up both price tabs and check the ✓ box on anything you need — it will land here, grouped by the best store.</div>';
   listBadge();
 }
@@ -1593,7 +1615,7 @@ function renderBudget(){
   const spent=db.spends.reduce((a,s)=>a+Number(s.amt||0),0);
   const saved=db.coupons.filter(c=>c.used).reduce((a,c)=>a+Number(c.value||0),0);
   const effective=spent-saved;
-  const planned=plannedRecipes().reduce((a,r)=>a+(r.cost*r.serves),0);
+  const planned=withTax(plannedRecipes().reduce((a,r)=>a+(r.cost*r.serves),0));
   const pct=budget?(planned/budget*100):0;
 
   $('budgetKpis').innerHTML=
@@ -1601,7 +1623,7 @@ function renderBudget(){
     kpi('Spent',fm(spent),spent>budget?'bad':'', db.spends.length+' trips logged')+
     kpi('Coupon savings',fm(saved),'good','offsets your spend')+
     kpi('Effective cost',fm(effective),effective>budget?'bad':'', (effective&&budget)?'≈ '+Math.round(effective/budget*100)+'% of budget':'')+
-    kpi('Planned (week)',fm(planned),planned>budget?'warn':'',plannedRecipes().length+' meals planned');
+    kpi('Planned (week)',fm(planned),planned>budget?'warn':'',plannedRecipes().length+' meals planned · incl. '+taxPct()+'% tax');
 
   $('budgetInp').value=budget||'';
   $('budgetBar').innerHTML=`<div class="bar"><i style="width:${Math.min(100,pct)}%" class="${pct>100?'over':''}"></i><span class="lbl">${pct>100?'OVER':''} ${Math.round(pct)}% of budget this week</span></div>
@@ -1647,7 +1669,7 @@ $('fileInp').addEventListener('change',e=>{
   const r=new FileReader();
   r.onload=()=>{try{
     const d=JSON.parse(r.result);
-    const base={recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Custom',stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:{},other:seedOther(),otherPrices:{},pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]};
+    const base={recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Custom',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:{},other:seedOther(),otherPrices:{},pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]};
     db=Object.assign(base,d);
     if(!Array.isArray(db.stores)||!db.stores.length)db.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
     db.history=db.history||{};db.pantry=db.pantry||[];db.other=db.other||[];db.otherPrices=db.otherPrices||{};db.slist=db.slist||[];db.purchases=db.purchases||[];
@@ -1684,7 +1706,7 @@ function syncHeaders(){
   return {apikey:sync.key,Authorization:'Bearer '+sync.key,'Content-Type':'application/json','X-App-Secret':sync.secret};
 }
 function normalizeRemote(d){
-  const base={recipes:[],plan:{},coupons:[],location:'Custom',stores:[],items:[],prices:{},other:[],otherPrices:{},pantry:[],history:{},budget:0,spends:[],slist:[],purchases:[]};
+  const base={recipes:[],plan:{},coupons:[],location:'Custom',tax:{},stores:[],items:[],prices:{},other:[],otherPrices:{},pantry:[],history:{},budget:0,spends:[],slist:[],purchases:[]};
   const out=Object.assign(base,d||{});
   if(!Array.isArray(out.stores)||!out.stores.length)out.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
   out.history=out.history||{};out.pantry=out.pantry||[];out.other=out.other||[];out.otherPrices=out.otherPrices||{};out.slist=out.slist||[];out.purchases=out.purchases||[];
