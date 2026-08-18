@@ -578,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p6';
+const APP_VER='v2026.08.17-p7';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -878,6 +878,7 @@ function showTab(t){
   document.querySelectorAll('.tabrow .chip').forEach(c=>c.classList.toggle('on',c.dataset.tab===t));
   document.querySelectorAll('section.tpage').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));
   render(t);
+  try{localStorage.setItem(KEY+'-tab',t);}catch(e){}
 }
 document.querySelectorAll('.tabrow .chip').forEach(c=>c.addEventListener('click',()=>showTab(c.dataset.tab)));
 
@@ -1242,6 +1243,7 @@ function pantExtractDate(text){
     return yy+'-'+pad(mm)+'-'+pad(dd);
   };
   let m;
+  const t2=t.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/[Ss]/g,'5').replace(/[Zz]/g,'2').replace(/[Gg]/g,'6').replace(/B/g,'8');
   m=t.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
   m=t.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
   if(m){
@@ -1249,13 +1251,20 @@ function pantExtractDate(text){
     if(a>12){const tmp=a;a=b;b=tmp;}
     const v=good(yy,a,b);if(v)return v;
   }
-  m=t.match(/\b(\d{1,2})\s+(\d{1,2})\s+(20\d{2})\b/);
+  m=t2.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
+  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
   if(m){
     let a=+m[1],b=+m[2],yy=+m[3];
     if(a>12){const tmp=a;a=b;b=tmp;}
     const v=good(yy,a,b);if(v)return v;
   }
-  m=t.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/);
+  m=t2.match(/\b(\d{1,2})\s+(\d{1,2})\s+(20\d{2})\b/);
+  if(m){
+    let a=+m[1],b=+m[2],yy=+m[3];
+    if(a>12){const tmp=a;a=b;b=tmp;}
+    const v=good(yy,a,b);if(v)return v;
+  }
+  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/);
   if(m){
     let a=+m[1],b=+m[2],yy=y(m[3]);
     if(a>12){const tmp=a;a=b;b=tmp;}
@@ -1269,12 +1278,13 @@ function pantExtractDate(text){
   }
   m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s*[,.]?\s*(\d{2,4})\b/i);
   if(m){const v=good(y(+m[2]),mons[m[1].toLowerCase().slice(0,3)],28);if(v)return v;}
-  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*[\/\s.-]\s*(\d{2,4})\b/i);
+  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*[\/\s.-]\s*(\d{2,4})\b(?![\/\s.-]\d)/i);
   if(m){
     const a=+m[1],b=+m[2];
     let mm=a,dd=28;
     if(a>=1&&a<=12)mm=a;else if(b>=1&&b<=12){mm=b;}else mm=0;
-    const v=mm?good(y(b),mm,28):null;if(v)return v;
+    const yr=b>99?b:(b>=24?2000+b:0);
+    const v=mm&&yr?good(yr,mm,28):null;if(v)return v;
   }
   m=t.match(/\b((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{1,2}),?\s+(20\d{2})\b/i);
   if(m){const v=good(+m[3],mons[m[1].toLowerCase().slice(0,3)],+m[2]);if(v)return v;}
@@ -1294,6 +1304,8 @@ function pantExtractDate(text){
     const a=+m[1],b=+m[2];
     if(a>=1&&a<=12){const v=good(y(b),a,28);if(v)return v;}
   }
+  m=t2.match(/\b(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b/);
+  if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
   return '';
 }
 
@@ -1325,7 +1337,7 @@ function pantSuggestFromFiles(files){
         if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
         if($('pantName').value.trim()&&$('pantExp').value)break;
       }
-      if(st)st.innerHTML=('<b>'+esc(list.length)+'</b> photo(s) attached'+(text.trim()?' — label read → name <b>'+esc($('pantName').value)+'</b>, brand '+esc($('pantBrand').value||'…')+', expiry '+esc($('pantExp').value||'…')+'. Adjust, then Save.':' — couldn’t read the label clearly; type the fields and Save.'));
+      if(st)st.innerHTML=('<b>'+esc(list.length)+'</b> photo(s) attached'+(text.trim()?' — label read → name <b>'+esc($('pantName').value)+'</b>, brand '+esc($('pantBrand').value||'…')+', expiry '+esc($('pantExp').value||'…')+'. <span style="opacity:.6;font-size:11px">OCR saw: '+esc(text.trim().slice(0,220))+'…</span> Adjust, then Save.':' — couldn’t read the label clearly; type the fields and Save.'));
     }catch(err){
       if(st)st.innerHTML='<b>'+esc(list.length)+'</b> photo(s) attached. OCR unavailable right now — set the fields manually and Save. Try again in a moment.';
     }
@@ -2198,7 +2210,8 @@ function flushSync(){
 }
 if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('pagehide',flushSync);
 
-render('plan');
+let savedTab='plan';try{const st=localStorage.getItem(KEY+'-tab');if(st&&TABS.includes(st))savedTab=st;}catch(e){}
+showTab(savedTab);
 listBadge();
 initSync();
 $('appVer').textContent=APP_VER+' · v4';
