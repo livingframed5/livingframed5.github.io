@@ -471,7 +471,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
 </section>
 
 <footer>
-  <span><span style="color:var(--accent);font-weight:600">✦</span> Built by Whitney Smith · Kitchen &amp; Coupons · <a id="exportBtn">Backup JSON</a> · <a id="importBtn">Restore</a> · <a id="syncToggle">☁ Sync</a><span id="syncStatus"></span><input type="file" id="fileInp" accept="application/json,.json" style="display:none"></span>
+  <span><span style="color:var(--accent);font-weight:600">✦</span> Built by Whitney Smith · Kitchen &amp; Coupons · <span id="appVer" style="font-weight:700;color:var(--accent)"></span> · <a id="exportBtn">Backup JSON</a> · <a id="importBtn">Restore</a> · <a id="syncToggle">☁ Sync</a><span id="syncStatus"></span><input type="file" id="fileInp" accept="application/json,.json" style="display:none"></span>
   <span>Data lives in this browser · <a id="resetData">Reset / re-seed data</a></span>
 </footer>
 
@@ -513,6 +513,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
+const APP_VER='v2026.08.17-c';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1756,6 +1757,7 @@ if(typeof window!=='undefined'&&typeof window.addEventListener==='function')wind
 render('plan');
 listBadge();
 initSync();
+$('appVer').textContent=APP_VER+' · v4';
 </script>
 </body>
 </html>
