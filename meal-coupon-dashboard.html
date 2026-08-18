@@ -578,7 +578,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-p3';
+const APP_VER='v2026.08.17-p4';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -1125,14 +1125,10 @@ function pantParseLabel(text){
     const d=new Date(yy,mm-1,dd);if(!isNaN(d)&&d.getFullYear()===yy)out.exp=d.toISOString().slice(0,10);
   }
   const lines=raw.split(/\n/).map(L=>L.trim()).filter(Boolean);
-  const brandLine=lines.find(L=>L.length>=2&&L.length<=32&&L===L.toUpperCase()&&/^[A-Z][A-Z0-9&\s.'-]+$/.test(L)&&!/\d{4}/.test(L));
+  out.name=pantNameFromLabel(lines);
+  const brandLine=lines.find(L=>L&&out.name!==L&&!/\bnet\s*wt\b|\boz\b|\blbs?\b|count|pieces?|grams?|\bct\b|servings?|expir|best\s*by|use\s*by|ingredients|nutrition|www|\.com|@/.test(L.toLowerCase())
+    &&L.length>=2&&L.length<=28&&L===L.toUpperCase()&&/^[A-Z][A-Z0-9&\s.'-]+$/.test(L)&&!/\d{4}/.test(L));
   if(brandLine)out.brand=brandLine;
-  const nameRe=lines.find(L=>
-    L.length>=3&&L.length<=45&&L!==brandLine&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase())&&!/^\d/.test(L)&&(L.toLowerCase()!==L)
-  )||lines.find(L=>
-    L.length>=3&&L.length<=45&&L!==brandLine&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase())&&!/^\d/.test(L)
-  );
-  if(nameRe)out.name=nameRe.replace(/[\s-]+$/,'');
   if(out.name&&!out.brand){
     const parts=out.name.split(' ');
     if(parts.length>=2&&parts[0].length>=3&&parts.slice(1).join(' ').length>=3)out.brand=parts[0];
@@ -1144,6 +1140,46 @@ function getPantRecognizer(){
   if(!pantOcrPromise)pantOcrPromise=loadTess().catch(()=>{pantOcrPromise=null;throw new Error('offline');});
   return pantOcrPromise;
 }
+const PANT_FOOD_WORDS='egg|milk|cheese|butter|yogurt|cream|chicken|beef|pork|turkey|fish|shrimp|salmon|tuna|sausage|bacon|steak|rice|pasta|noodle|bean|flour|sugar|salt|pepper|oil|vinegar|sauce|marinara|tomato|salsa|spice|seasoning|bread|tortilla|bagel|cereal|granola|oat|cookie|cracker|chip|chocolate|candy|popcorn|pretzel|juice|soda|water|tea|coffee|honey|syrup|peanut|almond|cashew|walnut|fruit|apple|banana|orange|berry|lemon|lime|vegetable|potato|onion|garlic|carrot|broccoli|spinach|lettuce|corn|pea|soup|broth|stock|canned|frozen|pizza|pie|taco|pasta|ramen|soup|stew|chili|queso|salsa|guac|protein|greek|granola|tofu|pancake|waffle|syrup|mustard|ketchup|mayo|ranch|dressing|pickle|olive|avocado|quinoa|oats|seed|wrap|pita|naan|yeast|butter|margarine|jelly|jam|peanut butter'.split('|');
+function pantLineScore(L){
+  const t=L.toLowerCase();
+  let s=0;
+  if(/net wt|net\s*weight|\boz\b|\blbs?\b|pounds?|grams?|\bkg\b|\bml\b|\blitres?|\bfl\s*oz\b|count|pieces?|servings?|%|calories|best\s*by|use\s*by|sell\s*by|expir|exp\b|www|\.com|@|nutrition|ingredients|distributed|made in|manufactured|barcode|item\s*#|sku|\.\d{3,}/.test(t))s-=12;
+  if(/^\d/.test(t))s-=6;
+  const words=t.split(/[^a-z0-9]+/).filter(w=>w&&!/^\d+$/.test(w));
+  let hits=0;words.forEach(w=>{if(PANT_FOOD_WORDS.includes(w))hits++;});
+  s+=hits*4;
+  if(hits>=2)s+=3;
+  const wc=words.length;
+  if(wc>=2&&wc<=6)s+=2;
+  else if(wc<2)s-=4;
+  else if(wc>8)s-=2;
+  if(t!==t.toUpperCase()&&/[A-Z][a-z]/.test(L))s+=1;
+  if(L.length<3||L.length>45)s-=3;
+  return s;
+}
+function pantNameFromLabel(lines){
+  const catalog=(db.purchases||[]).filter(p=>p.name&&!/^barcode\s/i.test(p.name)).map(p=>p.name)
+    .concat((db.stock||[]).map(i=>i.name));
+  const t=rawLower(lines.join(' '));
+  if(catalog.length){
+    let best=null,bestSc=0,bestN=0;
+    catalog.forEach(nm=>{
+      const nw=normMeal(nm);if(!nw.length)return;
+      let sc=0;nw.forEach(w=>{if(t.includes(w))sc++;});
+      if(sc>bestSc){bestSc=sc;best=nm;bestN=nw.length;}
+    });
+    if(bestSc>=Math.min(2,bestN)&&bestSc>=2)return best;
+  }
+  let best=null,bestSc=-999;
+  lines.forEach((L,idx)=>{
+    const sc=pantLineScore(L);
+    if(sc>bestSc){bestSc=sc;best=L;}
+    if(sc>0&&idx===0&&bestSc<20)best=L;
+  });
+  return (best&&bestSc>=1)?best.replace(/[\s-]+$/,''):'';
+}
+function rawLower(x){return String(x||'').toLowerCase();}
 function pantSuggestFromFiles(files){
   const list=[...files];if(!list.length)return;
   const st=$('pantScanStatus');if(st)st.innerHTML='Loading <b>'+list.length+'</b> photo(s)…';
