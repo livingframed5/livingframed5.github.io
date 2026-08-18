@@ -181,6 +181,23 @@ section.tpage.on{display:block;animation:pop .25s ease}
 .radar .st{font-size:11px;color:var(--muted)}
 .pantrychip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--edge);background:var(--panel2);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
 .pantrychip b{color:var(--accent)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.pcard{position:relative;border:1px solid var(--edge);background:var(--panel2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.pcard .pic{width:100%;height:92px;object-fit:cover;border-radius:8px;background:var(--panel);border:1px solid var(--edge)}
+.pcard .pic.emptypic{display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted)}
+.pcard .nm{font-size:13px;font-weight:700;line-height:1.2}
+.pcard .cat{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.pcard .qtyrow{display:flex;align-items:center;gap:6px}
+.pcard .qtyrow .inp{width:64px;text-align:center}
+.pcard .stbtn{width:26px;height:26px;border-radius:8px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);font-size:16px;line-height:1;cursor:pointer}
+.pcard .stbtn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pcard .exp{font-size:11px;font-weight:700}
+.pcard .exp.warn{color:var(--amber)}
+.pcard .exp.bad{color:var(--red)}
+.pcard .lowflag{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;background:var(--amber);color:#fff;padding:2px 6px;border-radius:6px}
+.pcard .minic{position:absolute;top:6px;right:6px;display:flex;gap:4px}
+.pcard .minic button{width:22px;height:22px;border-radius:6px;border:1px solid var(--edge);background:var(--panel);color:var(--muted);font-size:12px;cursor:pointer}
+.pcard .minic button:hover{color:var(--red);border-color:var(--red)}
 .qty2{font-size:10px;color:var(--muted);font-weight:600}
 .effsub{font-size:11px;color:var(--green);font-weight:700}
 .strike{color:var(--muted);text-decoration:line-through;font-size:12px}
@@ -212,6 +229,7 @@ section.tpage.on{display:block;animation:pop .25s ease}
   <span class="chip" data-tab="prices">◈ Price Compare</span>
   <span class="chip" data-tab="other">๑ Household</span>
   <span class="chip" data-tab="list">☑ Shopping List <b id="listTabN" style="font-size:11px;opacity:.75"></b></span>
+  <span class="chip" data-tab="pantry">▣ Pantry Inventory</span>
   <span class="chip" data-tab="scan">▣ Receipts</span>
   <span class="chip" data-tab="budget">₴ Budget</span>
 </div>
@@ -396,6 +414,48 @@ section.tpage.on{display:block;animation:pop .25s ease}
   </div>
 </section>
 
+<!-- ============ PANTRY INVENTORY ============ -->
+<section class="tpage" id="tab-pantry">
+  <div class="ctl">
+    <div class="grp"><label>Search</label><input class="inp" id="pantSearch" placeholder="eggs, rice, pasta…" style="width:190px"></div>
+    <div class="grp" id="pantCats"><span class="chip on" data-pcat="all">All</span></div>
+    <div class="grp" style="margin-left:auto">
+      <input type="file" id="pantImg" accept="image/*" style="display:none">
+      <input type="file" id="pantCam" accept="image/*" capture="environment" style="display:none">
+      <button class="ghost" id="pantCamBtn">📷 Scan barcode</button>
+      <button class="act" id="pantAddBtn">＋ Add item</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="pantKpis"></div>
+
+  <div class="card span12" id="pantForm" style="margin-top:14px;display:none">
+    <h3>Add pantry item <span class="mini">scan a barcode or upload a product photo to auto-fill</span></h3>
+    <div class="sub" id="pantScanStatus">Use the camera to scan a barcode, upload a product photo for name + category suggestions, or just type it.</div>
+    <div class="form" style="box-shadow:none;border:none;padding:0;display:grid;grid-template-columns:repeat(12,1fr);gap:10px">
+      <div class="f span6"><label>Item name</label><input class="inp" id="pantName" placeholder="e.g. Large eggs, white rice…"></div>
+      <div class="f span6"><label>Category</label><select class="inp" id="pantCat"></select></div>
+      <div class="f span3"><label>Qty</label><input class="inp num" id="pantQty" type="number" min="0" step="1" value="1"></div>
+      <div class="f span3"><label>Unit</label><input class="inp" id="pantUnit" placeholder="ea / lb / oz / cup…" value="ea"></div>
+      <div class="f span3"><label>Expires</label><input type="date" class="inp" id="pantExp"></div>
+      <div class="f span3"><label>Barcode</label><input class="inp" id="pantBar" placeholder="optional"></div>
+      <div class="f span12" style="display:flex;gap:8px;align-items:center">
+        <img id="pantPreview" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--edge);display:none">
+        <button class="ghost" id="pantUpBtn">Upload photo</button>
+        <button class="ghost" id="pantScanBar">Scan barcode now</button>
+        <button class="act" id="pantSave" style="margin-left:auto">Save item</button>
+        <button class="ghost" id="pantCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card span12" style="margin-top:14px">
+    <h3>Inventory <span class="mini">grouped by category · tap +/− to update on hand</span></h3>
+    <div class="sub">Stock counts and photos are stored locally in your browser. Items marked low or expiring soon surface at the top.</div>
+    <div id="pantGrid"></div>
+  </div>
+</section>
+
 <!-- ============ RECEIPT SCANNER ============ -->
 <section class="tpage" id="tab-scan">
   <div class="ctl">
@@ -515,7 +575,7 @@ grant all on dashboard_sync to anon, authenticated;</pre>
    Meal Planner & Coupon Saver — single-file app
    ============================================================ */
 const KEY='meal-coupon-dash-v4';
-const APP_VER='v2026.08.17-t2';
+const APP_VER='v2026.08.17-p';
 const DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
 const CAT_LIST=['Dinner','Chicken','Beef','Seafood','Pasta','Slow Cooker','Kid-friendly','Quick','Make-ahead','Breakfast','Sides'];
 const LOCATIONS={
@@ -698,7 +758,7 @@ function load(){
   try{
     const raw=localStorage.getItem(KEY);
     if(raw){const d=JSON.parse(raw);
-      const dd=Object.assign({recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Boise, ID',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:seedPrices(),other:seedOther(),otherPrices:seedOtherPrices(),pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]},d);
+      const dd=Object.assign({recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Boise, ID',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:seedPrices(),other:seedOther(),otherPrices:seedOtherPrices(),pantry:[],stock:[],history:{},budget:500,spends:[],slist:[],purchases:[]},d);
       ['Albertsons','Costco'].forEach(s=>{if(!dd.stores.includes(s))dd.stores.push(s);});
       seedCoupons().forEach(sc=>{if(!dd.coupons.some(c=>c.item===sc.item))dd.coupons.push(sc);});
       Object.keys(seedPrices()).forEach(iid=>{const pr=seedPrices()[iid];
@@ -717,7 +777,7 @@ function load(){
     recipes:seedRecipes(), plan:{}, coupons:seedCoupons(),
     stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'], items:seedItems(), prices:seedPrices(),
     other:seedOther(), otherPrices:seedOtherPrices(),
-    location:'Boise, ID', tax:{}, pantry:[], history:{},
+    location:'Boise, ID', tax:{}, pantry:[], stock:[], history:{},
     budget:500, slist:[], purchases:[], spends:[
       {id:uid(),date:dayStr(-7),store:'Walmart',amt:84.32,note:'Weekly run'},
       {id:uid(),date:dayStr(-3),store:'Fred Meyer',amt:23.10,note:'Coupon run'},
@@ -809,7 +869,7 @@ const badge=(st)=>({active:`<span class="badge good">Active</span>`,soon:`<span 
 /* ---------- tab routing ---------- */
 let cur='plan', cpnFilter='all', cpnStoreF='all', recCat='all', recSearch='', editing=null;
 const $=id=>document.getElementById(id);
-const TABS=['plan','recipes','coupons','prices','other','list','scan','budget'];
+const TABS=['plan','recipes','coupons','prices','other','list','pantry','scan','budget'];
 function showTab(t){
   cur=t;
   document.querySelectorAll('.tabrow .chip').forEach(c=>c.classList.toggle('on',c.dataset.tab===t));
@@ -825,6 +885,7 @@ function render(t){
   else if(t==='prices')renderPrices();
   else if(t==='other')renderOther();
   else if(t==='list')renderList();
+  else if(t==='pantry')renderPantry();
   else if(t==='scan')renderScan();
   else if(t==='budget')renderBudget();
 }
@@ -959,6 +1020,151 @@ $('pantryChips').addEventListener('click',e=>{
   const b=e.target.closest('[data-pdel]');if(!b)return;
   db.pantry.splice(+b.dataset.pdel,1);save();render('plan');
 });
+
+/* ---------- PANTRY INVENTORY ---------- */
+const PANT_CATS=['Produce','Meat & Seafood','Dairy & Eggs','Bakery & Grains','Pantry & Canned','Frozen','Spices & Oils','Snacks','Beverages','Other'];
+let pantCat='all',pantSearch='',pantEditing=null,pantImgData='',pantBar='';
+function pantryExpiry(r){return daysUntil(r.exp||'');}
+function pantryFlag(r){
+  const e=pantryExpiry(r);
+  if(r.qty<=0)return {cls:'lowflag',t:'OUT'};
+  if(r.qty<=1)return {cls:'lowflag',t:'LOW'};
+  if(e>=0&&e<=3)return {cls:'lowflag',t:'EXPIRES '+e+'d'};
+  return null;
+}
+function renderPantry(){
+  const all=db.stock||[];
+  const list=all.filter(r=>{
+    if(pantCat!=='all'&&r.cat!==pantCat)return false;
+    if(pantSearch&&!String(r.name||'').toLowerCase().includes(pantSearch.toLowerCase()))return false;
+    return true;
+  });
+  const out=list.filter(r=>r.qty<=0),low=list.filter(r=>r.qty>0&&r.qty<=1),exp=list.filter(r=>r.qty>0&&pantryExpiry(r)>=0&&pantryExpiry(r)<=3);
+  $('pantKpis').innerHTML=
+    kpi('Items on hand',all.filter(r=>r.qty>0).length,'','from '+all.length+' tracked')+
+    kpi('Categories',new Set(all.map(r=>r.cat)).size,'',''+PANT_CATS.length+' available')+
+    kpi('Running low',low.length,'warn',low.length?'qty ≤ 1':'everything stocked')+
+    kpi('Expiring soon',exp.length,exp.length?'warn':'good','within 3 days');
+  $('pantCats').innerHTML=['<span class="chip on" data-pcat="all">All</span>'].concat(PANT_CATS.map(c=>`<span class="chip" data-pcat="${esc(c)}">${esc(c)}</span>`)).join('');
+  const sorted=[...list].sort((a,b)=>{
+    const fa=pantryFlag(a)||{},fb=pantryFlag(b)||{};
+    return (fa.t?0:1)-(fb.t?0:1)||String(a.name||'').localeCompare(String(b.name||''));
+  });
+  if(!sorted.length){$('pantGrid').innerHTML='<div class="empty">No items here yet — add eggs, rice, whatever you keep in the pantry.</div>';return;}
+  $('pantGrid').innerHTML=sorted.map(r=>{
+    const flag=pantryFlag(r);
+    const e=pantryExpiry(r);
+    const expTxt=r.exp?`<div class="exp ${e<0?'':e<=3?'bad':'warn'}">${isoDays(r.exp)}${e<0?' · '+Math.abs(e)+'d ago':e===0?' · today':e<=3?' · '+e+'d':' · '+e+'d'}</div>`:'';
+    return `<div class="pcard">
+      ${flag?`<span class="${flag.cls}">${flag.t}</span>`:''}
+      <div class="minic"><button title="Edit" data-edit="${r.id}">✎</button><button title="Delete" data-pdel2="${r.id}">✕</button></div>
+      ${r.img?`<img class="pic" src="${r.img}" alt="${esc(r.name)}">`:`<div class="pic emptypic">🍞</div>`}
+      <span class="cat">${esc(r.cat||'Other')}</span>
+      <span class="nm">${esc(r.name)}</span>
+      ${expTxt}
+      <div class="qtyrow"><button class="stbtn" data-minus="${r.id}">−</button>
+        <input class="inp num" data-qty="${r.id}" value="${r.qty}" title="On-hand quantity">
+        <button class="stbtn" data-plus="${r.id}">+</button>
+        <span style="font-size:11px;color:var(--muted)">${esc(r.unit||'ea')}</span></div>
+    </div>`;
+  }).join('');
+}
+function pantOpenForm(r){
+  pantEditing=r?r.id:null;
+  $('pantForm').style.display='block';
+  $('pantCat').innerHTML=pantCatOptions();
+  $('pantName').value=r?r.name:'';
+  $('pantCat').value=r?(r.cat||'Other'):'Other';
+  $('pantQty').value=r?r.qty:1;
+  $('pantUnit').value=r?(r.unit||'ea'):'ea';
+  $('pantExp').value=r?(r.exp||''):'';
+  $('pantBar').value=r?(r.barcode||''):'';
+  pantImgData=r?(r.img||''):'';pantBar=r?(r.barcode||''):'';
+  const pv=$('pantPreview');if(pantImgData){pv.src=pantImgData;pv.style.display='block';}else{pv.style.display='none';}
+  try{$('pantForm').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+}
+function pantSuggestCat(name){
+  const t=String(name||'').toLowerCase();
+  if(/milk|yogurt|cheese|butter|egg|cream/.test(t))return 'Dairy & Eggs';
+  if(/chicken|beef|pork|turkey|fish|shrimp|sausage|bacon|steak|seafood|salmon/.test(t))return 'Meat & Seafood';
+  if(/apple|banana|lettuce|tomato|onion|potato|carrot|broccoli|pepper|fruit|berry|produce|spinach|avocado/.test(t))return 'Produce';
+  if(/rice|pasta|bean|flour|oat|bread|tortilla|noodle|can|cereal|granola/.test(t))return 'Pantry & Canned';
+  if(/frozen|ice cream|pizza|pie/.test(t))return 'Frozen';
+  if(/spice|salt|pepper|oil|vinegar|sauce|honey|syrup|seasoning/.test(t))return 'Spices & Oils';
+  if(/snack|chip|cookie|cracker|chocolate|candy/.test(t))return 'Snacks';
+  if(/juice|soda|water|tea|coffee|beer|wine|drink/.test(t))return 'Beverages';
+  return 'Other';
+}
+function pantCatOptions(){return PANT_CATS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');}
+function readPantImage(file,cb){
+  const rd=new FileReader();
+  rd.onload=()=>{cb(rd.result);};
+  rd.readAsDataURL(file);
+}
+function pantSuggestFromImage(file){
+  readPantImage(file,async dataUrl=>{
+    const pv=$('pantPreview');pv.src=dataUrl;pv.style.display='block';
+    pantImgData=dataUrl;
+    setStatus?.(null);
+    const st=$('pantScanStatus');if(st)st.innerHTML='Photo loaded — reading label…';
+    try{
+      await loadTess();
+      const r=await Tesseract.recognize(file,'eng');
+      const text=(r&&r.data&&r.data.text)||'';
+      const lines=text.split(/\r?\n/).map(L=>L.replace(/[^\x20-\x7E]/g,' ').trim()).filter(Boolean);
+      const name=(lines.find(L=>L.length>=3&&L.length<=40&&!/\d{5,}/.test(L)&&!/net wt|ingredients|nutrition|serving|contents|expires|best by|distributed|made in|manufactur|www|\.com|@/.test(L.toLowerCase()))||'').replace(/[\s-]+$/,'');
+      if(name){$('pantName').value=name;if(!$('pantCat').value||$('pantCat').value==='Other')$('pantCat').value=pantSuggestCat(name);}
+      if(st)st.innerHTML=name?('Label read — <b>'+esc(name)+'</b> filled in. Adjust, then Save.'):'Photo loaded — couldn’t read a clear label name, type it and Save.';
+    }catch(err){
+      if(st)st.innerHTML='Photo loaded for the item — set name manually and Save.';
+    }
+  });
+}
+function pantSave(){
+  const name=$('pantName').value.trim();if(!name){$('pantName').focus();return;}
+  const qty=Math.max(0,+$('pantQty').value||0);
+  const rec={name,cat:$('pantCat').value||'Other',qty,unit:$('pantUnit').value.trim()||'ea',exp:$('pantExp').value,barcode:$('pantBar').value.trim(),img:pantImgData};
+  if(pantEditing){const i=db.stock.findIndex(x=>x.id===pantEditing);if(i>=0)db.stock[i]=Object.assign(db.stock[i],rec);}
+  else db.stock.push(Object.assign({id:uid()},rec));
+  save();pantOpenForm(null);$('pantForm').style.display='none';renderPantry();
+}
+$('pantAddBtn').addEventListener('click',()=>pantOpenForm(null));
+$('pantCancel').addEventListener('click',()=>{$('pantForm').style.display='none';renderPantry();});
+$('pantSave').addEventListener('click',pantSave);
+$('pantName').addEventListener('input',e=>{if(!$('pantCat').value||$('pantCat').value==='Other')$('pantCat').value=pantSuggestCat(e.target.value);});
+$('pantUpBtn').addEventListener('click',()=>$('pantImg').click());
+$('pantCamBtn').addEventListener('click',()=>$('pantCam').click());
+$('pantScanBar').addEventListener('click',()=>$('pantCam').click());
+$('pantImg').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)pantSuggestFromImage(f);e.target.value='';});
+$('pantCam').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  if(!f)return;
+  const st=$('pantScanStatus');if(st)st.innerHTML='Reading barcode…';
+  const codes=await detectCodes(f);
+  if(codes.length){
+    pantBar=codes[0];$('pantBar').value=pantBar;
+    const prior=(db.stock||[]).find(s=>s.barcode===pantBar);
+    if(prior){$('pantName').value=prior.name;$('pantCat').value=prior.cat||'Other';$('pantUnit').value=prior.unit||'ea';}
+    if(st)st.innerHTML='Barcode <b>'+esc(pantBar)+'</b> read'+(prior?' — reusing <b>'+esc(prior.name)+'</b> from your pantry. Adjust qty and Save.':' — type the item name and Save; future scans of the same code reuse it.');
+  }else{
+    if(st)st.innerHTML='No barcode found in that photo — you can still use it as the item photo.';
+    readPantImage(f,dataUrl=>{pantImgData=dataUrl;const pv=$('pantPreview');pv.src=dataUrl;pv.style.display='block';});
+  }
+});
+$('pantSearch').addEventListener('input',e=>{pantSearch=e.target.value;renderPantry();});
+$('pantCats').addEventListener('click',e=>{const c=e.target.closest('.chip[data-pcat]');if(!c)return;pantCat=c.dataset.pcat;renderPantry();});
+$('pantGrid').addEventListener('click',e=>{
+  const m=e.target.closest('[data-minus]');if(m){const r=db.stock.find(x=>x.id===m.dataset.minus);if(r){r.qty=Math.max(0,(+r.qty||0)-1);save();renderPantry();}return;}
+  const p=e.target.closest('[data-plus]');if(p){const r=db.stock.find(x=>x.id===p.dataset.plus);if(r){r.qty=(+r.qty||0)+1;save();renderPantry();}return;}
+  const ed=e.target.closest('[data-edit]');if(ed){const r=db.stock.find(x=>x.id===ed.dataset.edit);if(r)pantOpenForm(r);return;}
+  const d=e.target.closest('[data-pdel2]');if(d){if(confirm('Remove this item from your pantry?')){db.stock=db.stock.filter(x=>x.id!==d.dataset.pdel2);save();renderPantry();}return;}
+});
+$('pantGrid').addEventListener('change',e=>{
+  const q=e.target.closest('[data-qty]');if(!q)return;
+  const r=db.stock.find(x=>x.id===q.dataset.qty);if(!r)return;
+  r.qty=Math.max(0,+q.value||0);save();renderPantry();
+});
+$('pantForm').addEventListener('keydown',e=>{if(e.key==='Enter')pantSave();});
 let autoQuick=false,autoBudget=false,autoNoRepeat=false;
 $('genQuick').addEventListener('click',e=>{autoQuick=!autoQuick;e.currentTarget.classList.toggle('on',autoQuick);});
 $('genBudget').addEventListener('click',e=>{autoBudget=!autoBudget;e.currentTarget.classList.toggle('on',autoBudget);});
@@ -1669,10 +1875,10 @@ $('fileInp').addEventListener('change',e=>{
   const r=new FileReader();
   r.onload=()=>{try{
     const d=JSON.parse(r.result);
-    const base={recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Custom',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:{},other:seedOther(),otherPrices:{},pantry:[],history:{},budget:500,spends:[],slist:[],purchases:[]};
+    const base={recipes:seedRecipes(),plan:{},coupons:seedCoupons(),location:'Custom',tax:{},stores:['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'],items:seedItems(),prices:{},other:seedOther(),otherPrices:{},pantry:[],stock:[],history:{},budget:500,spends:[],slist:[],purchases:[]};
     db=Object.assign(base,d);
     if(!Array.isArray(db.stores)||!db.stores.length)db.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
-    db.history=db.history||{};db.pantry=db.pantry||[];db.other=db.other||[];db.otherPrices=db.otherPrices||{};db.slist=db.slist||[];db.purchases=db.purchases||[];
+    db.history=db.history||{};db.pantry=db.pantry||[];db.stock=db.stock||[];db.other=db.other||[];db.otherPrices=db.otherPrices||{};db.slist=db.slist||[];db.purchases=db.purchases||[];
     save();render('plan');showTab(cur);
   }catch(err){alert('Could not read that backup: '+err.message);}
   };
@@ -1706,10 +1912,10 @@ function syncHeaders(){
   return {apikey:sync.key,Authorization:'Bearer '+sync.key,'Content-Type':'application/json','X-App-Secret':sync.secret};
 }
 function normalizeRemote(d){
-  const base={recipes:[],plan:{},coupons:[],location:'Custom',tax:{},stores:[],items:[],prices:{},other:[],otherPrices:{},pantry:[],history:{},budget:0,spends:[],slist:[],purchases:[]};
+  const base={recipes:[],plan:{},coupons:[],location:'Custom',tax:{},stores:[],items:[],prices:{},other:[],otherPrices:{},pantry:[],stock:[],history:{},budget:0,spends:[],slist:[],purchases:[]};
   const out=Object.assign(base,d||{});
   if(!Array.isArray(out.stores)||!out.stores.length)out.stores=['Albertsons','Costco','Walmart','WinCo Foods','Fred Meyer'];
-  out.history=out.history||{};out.pantry=out.pantry||[];out.other=out.other||[];out.otherPrices=out.otherPrices||{};out.slist=out.slist||[];out.purchases=out.purchases||[];
+  out.history=out.history||{};out.pantry=out.pantry||[];out.stock=out.stock||[];out.other=out.other||[];out.otherPrices=out.otherPrices||{};out.slist=out.slist||[];out.purchases=out.purchases||[];
   return out;
 }
 async function doPush(){
