@@ -1232,53 +1232,60 @@ function pantNameFromLabel(lines){
 function rawLower(x){return String(x||'').toLowerCase();}
 function pantExtractDate(text){
   const t=String(text||'').replace(/[^\x20-\x7E\n]/g,' ').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n');
+  const t2=t.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/[Ss]/g,'5').replace(/[Zz]/g,'2').replace(/[Gg]/g,'6').replace(/B/g,'8');
   const mons={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   const pad=n=>String(n).padStart(2,'0');
+  const _NOW=new Date().getFullYear();
+  const FUTURE_CAP=_NOW+8;
   const y=(v)=>{const n=+v;return n<100?2000+n:n;};
-  const good=(yy,mm,dd)=>{
+  const good0=(yy,mm,dd)=>{
     if(!(mm>=1&&mm<=12))return null;
     if(!(dd>=1&&dd<=31))return null;
     const d=new Date(yy,mm-1,dd);
     if(isNaN(d.getTime())||d.getFullYear()!==yy||d.getMonth()!==mm-1||d.getDate()!==dd)return null;
     return yy+'-'+pad(mm)+'-'+pad(dd);
   };
-  let m;
-  const t2=t.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/[Ss]/g,'5').replace(/[Zz]/g,'2').replace(/[Gg]/g,'6').replace(/B/g,'8');
-  m=t.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
-  m=t.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
+  const plausible=(yy,mm,dd)=>{if(yy>FUTURE_CAP)return null;const v=good0(yy,mm,dd);return v?v:null;};
+  const good=(yy,mm,dd)=>{
+    const v=good0(yy,mm,dd);
+    if(v)return v;
+    if(yy<100&&!plausible(2000+yy,mm,dd)){
+      const alt=plausible(2000+dd,mm,yy);
+      if(alt)return alt;
+    }
+    return null;
+  };
+  const KW='(?:exp(?:iry|ires?)?|best\\s*(?:by|before|used\\s*by)|use\\s*by|sell\\s*by|\\bbb\\b)';
+  m=t.match(new RegExp('\\b'+KW+'\\s*[:.]?\\s*((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\\s*[,.]?\\s*(\\d{1,2})?,?\\s*(20\\d{2})\\b','i'));
   if(m){
-    let a=+m[1],b=+m[2],yy=+m[3];
-    if(a>12){const tmp=a;a=b;b=tmp;}
-    const v=good(yy,a,b);if(v)return v;
+    const mo=mons[m[1].toLowerCase().slice(0,3)],dd=m[2]?+m[2]:28,yy=+m[3];
+    const v=good(yy,mo,dd);if(v)return v;
   }
-  m=t2.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
-  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
-  if(m){
-    let a=+m[1],b=+m[2],yy=+m[3];
-    if(a>12){const tmp=a;a=b;b=tmp;}
-    const v=good(yy,a,b);if(v)return v;
-  }
-  m=t2.match(/\b(\d{1,2})\s+(\d{1,2})\s+(20\d{2})\b/);
-  if(m){
-    let a=+m[1],b=+m[2],yy=+m[3];
-    if(a>12){const tmp=a;a=b;b=tmp;}
-    const v=good(yy,a,b);if(v)return v;
-  }
-  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/);
-  if(m){
-    let a=+m[1],b=+m[2],yy=y(m[3]);
-    if(a>12){const tmp=a;a=b;b=tmp;}
-    const v=good(yy,a,b);if(v)return v;
-  }
-  m=t.match(/\b(\d{1,2})\s+(\d{1,2})\s+(\d{2})\b/);
-  if(m){
-    let a=+m[1],b=+m[2],yy=y(m[3]);
-    if(a>12){const tmp=a;a=b;b=tmp;}
-    const v=good(yy,a,b);if(v)return v;
-  }
-  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s*[,.]?\s*(\d{2,4})\b/i);
-  if(m){const v=good(y(+m[2]),mons[m[1].toLowerCase().slice(0,3)],28);if(v)return v;}
-  m=t.match(/\b(?:exp(?:iry|ires?)?|best\s*(?:by|before)|use\s*by|sell\s*by|\bbb\b)\s*[:.]?\s*(\d{1,2})\s*[\/\s.-]\s*(\d{2,4})\b(?![\/\s.-]\d)/i);
+  const monDate=(S,orig)=>{
+    const NS=S.replace(/((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\.?/gi,(mm)=>'#'+mons[mm.toLowerCase().slice(0,3)]+'#').replace(/[ \t]+/g,' ');
+    const sep='[\\s\\/.,-]*';
+    let g;
+    g=NS.match(new RegExp('\\b(\\d{1,2})'+sep+'#(\\d{1,2})#'+sep+'(20\\d{2})\\b'));
+    if(g){const v=good(+g[3],+g[2],+g[1]);if(v)return v;}
+    g=NS.match(new RegExp('\\b(\\d{1,2})'+sep+'#(\\d{1,2})#'+sep+'(\\d{2})\\b'));
+    if(g){const v=good(y(+g[3]),+g[2],+g[1]);if(v)return v;}
+    g=NS.match(new RegExp('\\b#(\\d{1,2})#'+sep+'(\\d{1,2})'+sep+'(20\\d{2})\\b'));
+    if(g){const v=good(+g[3],+g[1],+g[2]);if(v)return v;}
+    g=NS.match(new RegExp('\\b#(\\d{1,2})#'+sep+'(\\d{1,2})'+sep+'(\\d{2})\\b'));
+    if(g){const v=good(y(+g[3]),+g[1],+g[2]);if(v)return v;}
+    g=NS.match(new RegExp('\\b#(\\d{1,2})#'+sep+'(20\\d{2})\\b'));
+    if(g){const v=good(+g[2],+g[1],28);if(v)return v;}
+    g=NS.match(new RegExp('\\b#(\\d{1,2})#'+sep+'(\\d{2})\\b'));
+    if(g){const v=good(y(+g[2]),+g[1],28);if(v)return v;}
+    return '';
+  };
+  const vMon=monDate(t)||monDate(t2);
+  if(vMon)return vMon;
+  m=t.match(new RegExp('\\b'+KW+'\\s*[:.]?\\s*(\\d{1,2})[\\/.-](\\d{1,2})[\\/.-](20\\d{2})\\b','i'));
+  if(m){let a=+m[1],b=+m[2],yy=+m[3];if(a>12){const tmp=a;a=b;b=tmp;}const v=good(yy,a,b);if(v)return v;}
+  m=t.match(new RegExp('\\b'+KW+'\\s*[:.]?\\s*(20\\d{2})[\\/.-](\\d{1,2})[\\/.-](\\d{1,2})\\b','i'));
+  if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
+  m=t.match(new RegExp('\\b'+KW+'\\s*[:.]?\\s*(\\d{1,2})\\s*[\\/\\s.-]\\s*(\\d{2,4})\\b(?![\\/\\s.-]\\d)','i'));
   if(m){
     const a=+m[1],b=+m[2];
     let mm=a,dd=28;
@@ -1286,26 +1293,17 @@ function pantExtractDate(text){
     const yr=b>99?b:(b>=24?2000+b:0);
     const v=mm&&yr?good(yr,mm,28):null;if(v)return v;
   }
-  m=t.match(/\b((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{1,2}),?\s+(20\d{2})\b/i);
-  if(m){const v=good(+m[3],mons[m[1].toLowerCase().slice(0,3)],+m[2]);if(v)return v;}
-  m=t.match(/\b(\d{1,2})\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*),?\s+(20\d{2})\b/i);
-  if(m){const v=good(+m[3],mons[m[2].toLowerCase().slice(0,3)],+m[1]);if(v)return v;}
-  m=t.match(/\b(20\d{2})\s+((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{1,2})\b/i);
-  if(m){const v=good(+m[1],mons[m[2].toLowerCase().slice(0,3)],+m[3]);if(v)return v;}
-  m=t.match(/\b((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)\s+(\d{2})\b/i);
-  if(m){const v=good(y(+m[2]),mons[m[1].toLowerCase().slice(0,3)],28);if(v)return v;}
-  m=t.match(/\b(\d{1,2})\s*\/\s*(\d{2,4})\b/);
-  if(m){
-    const a=+m[1],b=+m[2];
-    if(a>=1&&a<=12&&(b>99||b>=24)){const v=good(y(b),a,28);if(v)return v;}
-  }
-  m=t.match(/\b(\d{1,2})\s+(\d{4})\b/);
-  if(m){
-    const a=+m[1],b=+m[2];
-    if(a>=1&&a<=12){const v=good(y(b),a,28);if(v)return v;}
-  }
+  m=t2.match(/\b(20\d{2})[/.-](\d{1,2})[/.-](\d{1,2})\b/);if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
   m=t2.match(/\b(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b/);
   if(m){const v=good(+m[1],+m[2],+m[3]);if(v)return v;}
+  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](20\d{2})\b/);
+  if(m){let a=+m[1],b=+m[2],yy=+m[3];if(a>12){const tmp=a;a=b;b=tmp;}const v=good(yy,a,b);if(v)return v;}
+  m=t2.match(/\b(\d{1,2})\s+(\d{1,2})\s+(20\d{2})\b/);
+  if(m){let a=+m[1],b=+m[2],yy=+m[3];if(a>12){const tmp=a;a=b;b=tmp;}const v=good(yy,a,b);if(v)return v;}
+  m=t2.match(/\b(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})\b/);
+  if(m){let a=+m[1],b=+m[2],yy=y(m[3]);if(a>12){const tmp=a;a=b;b=tmp;}const v=good(yy,a,b);if(v)return v;}
+  m=t2.match(/\b(\d{1,2})\s+(\d{1,2})\s+(\d{2})\b/);
+  if(m){let a=+m[1],b=+m[2],yy=y(m[3]);if(a>12){const tmp=a;a=b;b=tmp;}const v=good(yy,a,b);if(v)return v;}
   return '';
 }
 
@@ -1367,17 +1365,37 @@ $('pantImg').addEventListener('change',e=>{pantSuggestFromFiles(e.target.files);
 $('pantCam').addEventListener('change',async e=>{
   const f=e.target.files&&e.target.files[0];e.target.value='';
   if(!f)return;
-  const st=$('pantScanStatus');if(st)st.innerHTML='Reading barcode…';
-  const codes=await detectCodes(f);
+  const st=$('pantScanStatus');if(st)st.innerHTML='Reading label…';
+  try{await getPantRecognizer();}catch(err){}
+  let codes=[];
+  try{codes=await detectCodes(f);}catch(err){}
+  let text='';
+  const ocrUrl=await new Promise(res=>pantOcrImage(f,res));
+  if(ocrUrl){
+    try{
+      const out=await Tesseract.recognize(ocrUrl,'eng');
+      text=(out&&out.data&&out.data.text)||'';
+    }catch(err){}
+  }
+  const info=pantParseLabel(text);
   if(codes.length){
     pantBar=codes[0];$('pantBar').value=pantBar;
     const prior=(db.stock||[]).find(s=>s.barcode===pantBar);
-    if(prior){$('pantName').value=prior.name;$('pantBrand').value=prior.brand||'';$('pantCat').value=prior.cat||'Other';$('pantUnit').value=prior.unit||'ea';}
-    if(st)st.innerHTML='Barcode <b>'+esc(pantBar)+'</b> read'+(prior?' — reusing <b>'+esc(prior.name)+'</b> from your pantry. Adjust qty and Save.':' — type the item name and Save; future scans of the same code reuse it.');
-  }else{
-    if(st)st.innerHTML='No barcode found in that photo — attached it to the item instead.';
-    readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();});
+    if(prior){$('pantName').value=prior.name;$('pantBrand').value=prior.brand||'';$('pantCat').value=prior.cat||'Other';$('pantUnit').value=prior.unit||'ea';if(prior.exp)$('pantExp').value=prior.exp;}
   }
+  if(info.name&&!$('pantName').value.trim())$('pantName').value=info.name;
+  if(info.brand&&!$('pantBrand').value.trim())$('pantBrand').value=info.brand;
+  if(info.exp&&!$('pantExp').value)$('pantExp').value=info.exp;
+  const nm=$('pantName').value.trim()||info.name||'';
+  if(nm&&(!$('pantCat').value||$('pantCat').value==='Other'))$('pantCat').value=pantSuggestCat(nm);
+  if(st){
+    if(codes.length&&!info.name&&!$('pantName').value.trim()){
+      st.innerHTML='Barcode <b>'+esc(pantBar)+'</b> read — type the item name and Save; future scans of the same code reuse it.';
+      return;
+    }
+    st.innerHTML=(codes.length?'Barcode <b>'+esc(codes[0])+'</b> read. ':'')+(text.trim()?'Label read → name <b>'+esc($('pantName').value)+'</b>, brand '+esc($('pantBrand').value||'…')+', expiry '+esc($('pantExp').value||'…')+'. <span style="opacity:.6;font-size:11px">OCR saw: '+esc(text.trim().slice(0,220))+'…</span> Adjust, then Save.':'Couldn’t read the label clearly; type the fields and Save.');
+  }
+  if(!codes.length)readPantImage(f,dataUrl=>{pantPhotos.push(dataUrl);pantRenderPreviews();});
 });
 $('pantSearch').addEventListener('input',e=>{pantSearch=e.target.value;renderPantry();});
 $('pantCats').addEventListener('click',e=>{const c=e.target.closest('.chip[data-pcat]');if(!c)return;pantCat=c.dataset.pcat;renderPantry();});

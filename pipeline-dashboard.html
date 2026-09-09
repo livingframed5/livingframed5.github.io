@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Forecast &amp; Early-Warning Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee); --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 16px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease;min-height:100vh}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:92px 26px 80px}
+nav.top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:.15s;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:10px 2px 18px;margin-bottom:14px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-0.025em;margin:12px 0 4px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.ctl{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 18px;margin:18px 0 6px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.ctl .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip{border:1px solid var(--edge);background:var(--panel2);color:var(--muted);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+.inp{width:120px;padding:6px 10px;border:1px solid var(--edge);border-radius:9px;background:var(--panel2);color:var(--txt);font-size:13px;font-weight:600}
+.inp.rng{width:110px;accent-color:var(--accent);cursor:pointer}
+.mini{display:inline-block;font-size:12px;color:var(--muted);white-space:nowrap}
+button.act{background:var(--grad);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:filter .15s}
+button.act:hover{filter:brightness(1.1)}
+button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--edge);padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer}
+button.ghost:hover{border-color:var(--accent)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin:18px 0 6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-top:4px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi .v.good{color:var(--green)} .kpi .v.bad{color:var(--rose)} .kpi .v.warn{color:var(--amber)}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.card.fan{grid-column:span 8}
+.card.alerts{grid-column:span 4}
+.card.funnel{grid-column:span 6}
+.card.heat{grid-column:span 6}
+.card.tbl{grid-column:span 12}
+.chartbox{position:relative;height:300px}
+.chartbox.tall{height:360px}
+.card h3 .mini{font-weight:600;font-size:11px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px 8px;border-bottom:1px solid var(--edge);cursor:pointer;white-space:nowrap;user-select:none}
+thead th:hover{color:var(--accent)}
+tbody td{padding:8px;border-bottom:1px solid var(--edge);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.nm{font-weight:700}
+.mu{color:var(--muted);font-size:11.5px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.tag.g{background:rgba(5,150,105,.13);color:var(--green)}
+.tag.a{background:rgba(217,119,6,.15);color:var(--amber)}
+.tag.r{background:rgba(225,29,72,.13);color:var(--rose)}
+.tag.v{background:var(--halo);color:var(--accent)}
+.sev{font-weight:800;font-size:10.5px;padding:2px 9px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em}
+.sev-C{background:rgba(225,29,72,.14);color:var(--rose)}
+.sev-H{background:rgba(217,119,6,.16);color:var(--amber)}
+.sev-M{background:rgba(37,99,235,.13);color:var(--blue)}
+.sev-L{background:var(--halo);color:var(--accent)}
+.score{font-weight:800;font-size:12.5px}
+.score.good{color:var(--green)} .score.warn{color:var(--amber)} .score.bad{color:var(--rose)}
+
+.alert{display:flex;gap:10px;padding:11px 12px;border:1px solid var(--edge);border-radius:13px;margin-bottom:8px;background:var(--panel2);align-items:flex-start}
+.alert .ab{min-width:0;flex:1}
+.alert .t{font-size:12.8px;font-weight:700}
+.alert .d{font-size:12px;color:var(--muted);margin-top:2px}
+.alert .o{font-size:11px;font-weight:700;color:var(--accent);margin-top:4px}
+.alert.done{opacity:.5}
+.alert.done .t{text-decoration:line-through}
+.logbtn{margin-top:7px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer}
+.logbtn:hover{border-color:var(--accent);color:var(--accent)}
+.heatgrid{display:grid;grid-template-columns:64px repeat(7,1fr);gap:5px;font-size:11px}
+.hg{display:flex;align-items:center;justify-content:center;border-radius:6px;padding:7px 2px;font-weight:800}
+.hg.h{color:var(--muted);font-weight:700;background:var(--panel2)}
+.hg.r{background:rgba(225,29,72,.14);color:var(--rose)}
+.hg.a{background:rgba(217,119,6,.16);color:var(--amber)}
+.hg.g{background:rgba(5,150,105,.13);color:var(--green)}
+.hg.c{background:var(--panel2);color:var(--muted)}
+.legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.legend b{font-weight:700}
+
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--edge);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media (max-width:1000px){.card.fan,.card.alerts,.card.funnel,.card.heat,.card.tbl{grid-column:span 12}}
+@media (max-width:640px){.wrap{padding:84px 14px 60px}nav.top{padding:12px 14px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<nav class="top">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</nav>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Interactive Prototype · dMPS Managed Services</span>
+  <h1>Pipeline Forecast &amp; <b>Early-Warning Dashboard</b></h1>
+  <div class="tag">Deal velocity · quarterly revenue P50/P70/P90 · bottleneck alerts</div>
+</header>
+
+<div class="ctl">
+  <div class="grp"><label>Band</label><span class="chip on" data-band="ALL">All</span><span class="chip" data-band="L">L</span><span class="chip" data-band="M">M</span><span class="chip" data-band="H">H</span><span class="chip" data-band="XXL">XXL</span></div>
+  <div class="grp"><label>Region</label><select class="inp" id="regionSel"><option value="ALL">All</option><option>AMER</option><option>EMEA</option><option>APAC</option></select></div>
+  <div class="grp"><label>Close-rate ×</label><input class="inp rng" id="closeRng" type="range" min="0.5" max="1.5" step="0.05" value="1"><span class="mini" id="closeVal">1.00</span></div>
+  <div class="grp"><label>Slippage (d)</label><input class="inp rng" id="slipRng" type="range" min="-7" max="21" step="1" value="0"><span class="mini" id="slipVal">0</span></div>
+  <div class="grp"><label>Q target $M</label><input class="inp" id="targetInp" type="number" value="13" min="1" step="0.5"></div>
+  <div class="grp"><label><input type="checkbox" id="driftChk" style="accent-color:var(--accent)"> Simulate accuracy drift</label></div>
+  <div class="grp" style="margin-left:auto">
+    <button class="ghost" id="resetBtn">Reset</button>
+    <button class="ghost" id="printBtn">Print</button>
+    <button class="act" id="exportBtn">Export JSON</button>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div class="card fan">
+    <h3>Quarter revenue forecast <span class="mini">Monte Carlo · shaded band = P50–P90 upside</span></h3>
+    <div class="sub">5,000 draws over migration probabilities. <span id="confBadge"></span></div>
+    <div class="chartbox"><canvas id="fanChart"></canvas></div>
+  </div>
+
+  <div class="card alerts">
+    <h3>Early-warning alerts <span class="mini" id="alertCount"></span></h3>
+    <div class="sub">Rule engine A1–A10 · click to log the course-correct action</div>
+    <div id="alertFeed"></div>
+  </div>
+
+  <div class="card funnel">
+    <h3>Pipeline funnel by stage</h3>
+    <div class="sub">Open TCV vs the stage&rsquo;s historical to-close conversion</div>
+    <div class="chartbox tall"><canvas id="funnelChart"></canvas></div>
+  </div>
+
+  <div class="card heat">
+    <h3>Bottleneck heat-map</h3>
+    <div class="sub">Stalled deals by complexity band × stage (dwell vs threshold)</div>
+    <div class="heatgrid" id="heatGrid"></div>
+    <div class="legend"><span><b class="score good">●</b> none stalled</span><span><b class="score warn">●</b> 1 stalled</span><span><b class="score bad">●</b> 2+ stalled</span></div>
+  </div>
+
+  <div class="card tbl">
+    <h3>Open deal register <span class="mini">sorted by risk score · click a column to sort</span></h3>
+    <div class="sub">Machine-assigned P(win) + risk, archetype classification, and the playbook action + owner</div>
+    <div style="overflow-x:auto"><table id="dealTable"></table></div>
+  </div>
+</div>
+
+<footer>
+  <span><span style="color:var(--accent);font-weight:600">✦</span> Built by Whitney Smith · Commercial Operations</span>
+  <span>Seeded demo data · companion to the <a href="pipeline-forecasting-blueprint.html" style="color:var(--accent);font-weight:600">Forecasting Blueprint</a></span>
+</footer>
+</div>
+
+<script>
+/* ---------- seeded reference models ---------- */
+const STAGES = {
+  P0:{lab:'P0 Qualified',  pwin:.05, signWeeks:11},
+  P1:{lab:'P1 Discovery',  pwin:.17, signWeeks:9 },
+  P2:{lab:'P2 Design/Cost',pwin:.38, signWeeks:7 },
+  P3:{lab:'P3 Risk Quant', pwin:.55, signWeeks:6 },
+  P4:{lab:'P4 Legal/Terms',pwin:.70, signWeeks:4 },
+  P5:{lab:'P5 Checks/Sign',pwin:.86, signWeeks:2 },
+  P6:{lab:'P6 Approval',   pwin:.94, signWeeks:1 }
+};
+const BANDS = ['L','M','H','XXL'];
+const BAND = {
+  L:{stall:14, cycle:45, silent:5 }, M:{stall:21, cycle:72, silent:7 },
+  H:{stall:28, cycle:95, silent:10}, XXL:{stall:38, cycle:132, silent:10}
+};
+const OWNER = {s2:'FC / PA', s4:'LG', s0:'DP', s56:'CM', sil:'SO', risk:'DP / FC'};
+
+/* ---------- deterministic rng ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20260810);
+
+/* ---------- seed history (closed deals) ---------- */
+const HISTORY = [];
+(function(){
+  const custs = ['Meridian Health','Hartwell Financial','Langdon Group','Vantage Logistics','Cobalt Energy','Northbay Retail','Aurelia Pharma','Ridgeline Mining','Empire Steel','Bluepeak Utilities','Stewart Agri','Oakfield Bank','Summit Air','Grayscale Media'];
+  for(let i=0;i<92;i++){
+    const band = BANDS[Math.floor(rnd()*4)];
+    const won = rnd() > (band==='L'?0.42:band==='XXL'?0.58:0.50);
+    const cyc = Math.round(BAND[band].cycle + (rnd()-0.5)*28);
+    const tcv = +(band==='L'? 0.5+rnd()*1.5 : band==='M'? 1.5+rnd()*4 : band==='H'? 5+rnd()*5 : 9+rnd()*9).toFixed(1);
+    HISTORY.push({band,won,cyc,tcv:won?tcv:tcv,closeQ: i%4});
+  }
+})();
+const histWon = HISTORY.filter(h=>h.won);
+const MED = arr => {const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const avgCycle = Math.round(MED(histWon.map(h=>h.cyc)));
+
+/* ---------- seed open pipeline (26 deals, crafted so alerts fire) ---------- */
+function O(id,nm,cust,region,band,stage,tcv,dwell,age,act,rf,owner){
+  return {id,nm,cust,region,band,stage,tcv,dwell,age,act,rf,owner};
+}
+let OPEN = [
+  O(1,'Fleet & Print Transformation','Meridian Health','AMER','XXL','P4',18.4,52,118,4,2,'K. Ruiz'),
+  O(2,'Managed Print Services Expansion','Hartwell Financial','AMER','H','P3',7.8,39,88,2,1,'D. Osei'),
+  O(3,'Device Services Refresh','Langdon Group','EMEA','M','P2',4.6,22,41,1,0,'T. Nakamura'),
+  O(4,'Back-Office Document Workflow','Cobalt Energy','AMER','M','P4',3.2,30,66,3,0,'L. Fontaine'),
+  O(5,'Print Security & Compliance Rollout','Vantage Logistics','EMEA','H','P2',6.4,31,69,1,1,'A. Duarte'),
+  O(6,'Cost-Per-Page Renewal','Northbay Retail','AMER','L','P5',1.1,8,40,2,0,'M. Chen'),
+  O(7,'Enterprise Managed Print','Aurelia Pharma','APAC','XXL','P2',14.9,34,74,5,2,'S. Kapoor'),
+  O(8,'Remote-Site Print Coverage','Ridgeline Mining','APAC','H','P1',5.5,35,58,9,1,'J. Whitfield'),
+  O(9,'Workflow Automation Pilot','Grayscale Media','AMER','M','P0',2.4,4,7,1,0,'R. Silveira'),
+  O(10,'Device-as-a-Service Program','Summit Air','EMEA','XXL','P4',12.6,55,121,6,2,'K. Ruiz'),
+  O(11,'Managed Print & Analytics','Oakfield Bank','AMER','H','P3',6.8,26,61,2,1,'D. Osei'),
+  O(12,'Leasing & Fleet Finance Deal','Empire Steel','APAC','XXL','P1',11.3,30,52,8,1,'S. Kapoor'),
+  O(13,'Toner & Parts Supply Chain','Bluepeak Utilities','AMER','M','P2',3.9,9,28,3,0,'T. Nakamura'),
+  O(14,'Employee Document Services','Stewart Agri','EMEA','L','P3',2.1,18,47,1,0,'A. Duarte'),
+  O(15,'Print Room Consolidation','Vantage Logistics','AMER','M','P4',2.8,36,71,5,0,'L. Fontaine'),
+  O(16,'Secure Print for Financial Ops','Hartwell Financial','AMER','M','P5',2.2,12,58,2,1,'M. Chen'),
+  O(17,'Global Fleet Standardization','Langdon Group','EMEA','XXL','P5',16.7,3,92,1,0,'K. Ruiz'),
+  O(18,'Transformation & Automation Suite','Northbay Retail','AMER','H','P4',5.9,34,80,4,2,'A. Duarte'),
+  O(19,'Managed Output Refresh','Cobalt Energy','AMER','M','P1',1.9,6,16,2,0,'T. Nakamura'),
+  O(20,'Digital Workflow Expansion','Aurelia Pharma','EMEA','H','P6',4.4,2,70,1,0,'M. Chen'),
+  O(21,'Print Fleet Managed Services','Oakfield Bank','AMER','H','P2',6.2,33,70,7,2,'J. Whitfield'),
+  O(22,'Facilities Print & Mobile','Ridgeline Mining','APAC','M','P3',3.1,24,55,7,0,'R. Silveira'),
+  O(23,'Cost Benchmark Reset','Grayscale Media','AMER','L','P4',0.9,19,41,7,0,'L. Fontaine'),
+  O(24,'Hybrid Device Ecosystem','Summit Air','EMEA','XXL','P3',10.8,44,102,8,3,'K. Ruiz'),
+  O(25,'Legacy Print Decommissioning','Empire Steel','APAC','M','P0',2.7,10,12,1,0,'D. Osei'),
+  O(26,'MPS Program Migration','Bluepeak Utilities','AMER','H','P1',5.1,24,44,6,1,'S. Kapoor')
+];
+
+/* ---------- settings ---------- */
+const S = {band:'ALL', region:'ALL', close:1, slip:0, target:13, drift:false};
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt = v => (v>=100? Math.round(v).toLocaleString() : v.toFixed(1));
+
+function activeDeals(){return OPEN.filter(d=>(S.band==='ALL'||d.band===S.band)&&(S.region==='ALL'||d.region===S.region));}
+function pwinEff(d){return clamp(STAGES[d.stage].pwin*S.close,0.03,0.97);}
+function pNow(d){const ew=STAGES[d.stage].signWeeks*7;return clamp(1-((d.dwell+S.slip)/ew),0.05,0.97);}
+function stallThr(b){return BAND[b].stall*1.35;}
+function silentThr(b){return BAND[b].silent;}
+
+/* ---------- KPI tiles ---------- */
+function kpi(k,v,cls,s){return `<div class="kpi"><div class="k">${k}</div><div class="v ${cls||''}">${v}</div><div class="s">${s||''}</div></div>`;}
+function renderKpis(fc){
+  const cvg = fc.p50[0]/S.target*100;
+  const aging = activeDeals().filter(d=>d.dwell>stallThr(d.band)).length;
+  const wp = activeDeals().reduce((a,d)=>a+d.tcv*pwinEff(d),0);
+  const conv = activeDeals().length? Math.round(activeDeals().reduce((a,d)=>a+pwinEff(d),0)/activeDeals().length*100):0;
+  document.getElementById('kpis').innerHTML =
+    kpi('Q forecast · P50',`$${fmt(fc.p50[0])}M`, cvg>=100?'good':cvg>=70?'warn':'bad',`P90 $${fmt(fc.p90[0])}M · P10 $${fmt(fc.p10[0])}M`)+
+    kpi('Coverage vs target',`${cvg.toFixed(0)}%`, cvg>=100?'good':cvg>=70?'warn':'bad',`target $${S.target}M`)+
+    kpi('Weighted pipeline',`$${fmt(wp)}M`,null,activeDeals().length+' open deals')+
+    kpi('Stage→Won conversion',`${conv}%`,null,'avg P(win), open funnel')+
+    kpi('Avg cycle (median won)',`${avgCycle}d`,null,'from '+histWon.length+' recent closures')+
+    kpi('Aging index',`${aging}`, aging>0?'warn':'good','deals past dwell threshold')+
+    kpi('Forecast confidence', S.drift?'LOW':'Good', S.drift?'bad':'good', S.drift?'accuracy drift detected':'CSPI cal. · backtested');
+}
+
+/* ---------- Monte Carlo forecast ---------- */
+function monteCarlo(){
+  const deals = activeDeals();
+  const q = [[],[],[]];
+  for(let r=0;r<5000;r++){
+    let v=[0,0,0];
+    for(const d of deals){
+      if(Math.random()<pwinEff(d)){
+        const p=pNow(d), s=Math.random();
+        if(s<p)v[0]+=d.tcv; else if(s<p+(1-p)*0.65)v[1]+=d.tcv; else v[2]+=d.tcv;
+      }
+    }
+    q[0].push(v[0]);q[1].push(v[1]);q[2].push(v[2]);
+  }
+  const pct=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length*p)];};
+  return {
+    p10:[pct(q[0],.1),pct(q[1],.1),pct(q[2],.1)],
+    p50:[pct(q[0],.5),pct(q[1],.5),pct(q[2],.5)],
+    p90:[pct(q[0],.9),pct(q[1],.9),pct(q[2],.9)]
+  };
+}
+function qLabels(){
+  const d=new Date(),qs=[];
+  let m=d.getMonth(), y=d.getFullYear();
+  for(let i=0;i<3;i++){const q=Math.floor(m/3)+1;qs.push(`Q${q} '${String(y).slice(2)}`);m+=3;if(m>=12){m-=12;y++;}}
+  return qs;
+}
+
+/* ---------- charts ---------- */
+let fanChart,funnelChart;
+function renderFan(fc){
+  const L=qLabels(), themed=document.documentElement.getAttribute('data-theme')==='dark';
+  const a1=themed?'#8b7dff':'#6d5ef2', a2=themed?'#38e5ff':'#22d3ee', tgt=themed?'#fbbf24':'#d97706';
+  if(fanChart)fanChart.destroy();
+  fanChart=new Chart(document.getElementById('fanChart'),{
+    type:'line',
+    data:{labels:L,datasets:[
+      {label:'P90 (upside)',data:fc.p90,borderColor:a1,borderWidth:1.6,pointRadius:0,tension:.35,fill:false,spanGaps:true},
+      {label:'P50 (base case)',data:fc.p50,borderColor:a2,borderWidth:2.8,pointRadius:0,tension:.35,fill:'-1',backgroundColor:'rgba(34,211,238,.16)',spanGaps:true},
+      {label:'P10 (floor)',data:fc.p10,borderColor:themed?'#64748b':'#94a3b8',borderWidth:1.2,borderDash:[3,4],pointRadius:0,tension:.35,fill:false,spanGaps:true},
+      {label:'Target',data:[S.target,S.target,S.target],borderColor:tgt,borderWidth:2,borderDash:[7,5],pointRadius:0,fill:false,spanGaps:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'circle',font:{size:11,weight:'700'},color:themed?'#9aa3bd':'#6b7280'}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: $${c.parsed.y.toFixed(1)}M`}}},
+      scales:{y:{title:{display:true,text:'Expected revenue ($M)',font:{size:11,weight:'700'}}},
+        x:{ticks:{font:{size:11}}}}}
+  });
+}
+function renderFunnel(){
+  const themed=document.documentElement.getAttribute('data-theme')==='dark';
+  const keys=Object.keys(STAGES).reverse();
+  const tcvBy={}, cntBy={};
+  activeDeals().forEach(d=>{tcvBy[d.stage]=(tcvBy[d.stage]||0)+d.tcv;cntBy[d.stage]=(cntBy[d.stage]||0)+1;});
+  if(funnelChart)funnelChart.destroy();
+  const a1=themed?'#8b7dff':'#6d5ef2';
+  funnelChart=new Chart(document.getElementById('funnelChart'),{
+    type:'bar',
+    data:{labels:keys.map(k=>STAGES[k].lab),
+      datasets:[{data:keys.map(k=>+(tcvBy[k]||0).toFixed(1)),
+        backgroundColor:keys.map((k,i)=>`hsla(245,${themed?78:70}%,${82-i*7}%,1)`),
+        borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>{
+          const k=keys[c.dataIndex],cv=STAGES[k].pwin*100;
+          return `  Open TCV: $${c.parsed.x.toFixed(1)}M · to-win ${cv.toFixed(0)}%`;
+        }}}},
+      scales:{x:{title:{display:true,text:'Open TCV ($M)',font:{size:11,weight:'700'}},ticks:{font:{size:11}}},
+        y:{ticks:{font:{size:11}}}}}
+  });
+}
+
+/* ---------- heat map ---------- */
+function renderHeat(){
+  const el=document.getElementById('heatGrid');
+  let h=`<div class="hg h"></div>`+Object.values(STAGES).map(s=>`<div class="hg h">${s.lab.replace(/^P\d /,'')}</div>`).join('');
+  BANDS.forEach(b=>{
+    h+=`<div class="hg h">${b}</div>`;
+    Object.keys(STAGES).forEach(k=>{
+      const stalled=activeDeals().filter(d=>d.band===b&&d.stage===k&&d.dwell>stallThr(b)).length;
+      const cls=stalled===0?'g':stalled===1?'a':'r';
+      h+=`<div class="hg ${stalled===0?'c':cls}">${stalled||'·'}</div>`;
+    });
+  });
+  el.innerHTML=h;
+}
+
+/* ---------- deal risk + archetypes ---------- */
+function archetype(d){
+  const thr=stallThr(d.band),sil=silentThr(d.band),pw=pwinEff(d),pn=pNow(d);
+  if(d.rf>0)return{tag:'Open risk flags',cls:'r',owner:OWNER.risk,next:'Clear Medium+ register rows; FC sign-off needed pre-G3'};
+  if(d.act>sil&&d.dwell<thr)return{tag:'Silent pursuit',cls:'a',owner:OWNER.sil,next:'Log a customer touch within 5 days or re-qualify'};
+  if(d.dwell>thr)return stageAction(d.stage,{tag:'Stalled: '+STAGES[d.stage].lab,cls:'r'});
+  if(pn<0.40)return{tag:'High slip risk',cls:'a',owner:OWNER.s2,next:'Re-validate committed quarter with FC; plan slip'};
+  if(pw<0.30)return{tag:'Competitive risk',cls:'a',owner:OWNER.s2,next:'Run fresh-eyes sanity review; price realism check'};
+  if(d.tcv>9)return{tag:'Jumbo exposure',cls:'v',owner:OWNER.s4,next:'Confirm L4 sponsorship & counterparty screen'};
+  return{tag:'On track',cls:'g',owner:d.owner,next:'Hold cadence; next gate scheduled'};
+}
+function stageAction(stage,base){
+  if(stage==='P2'||stage==='P3')return{tag:base.tag+' · economics',cls:'r',owner:OWNER.s2,next:'Re-run cost build & margin validation with FC/PA'};
+  if(stage==='P4')return{tag:base.tag+' · legal',cls:'r',owner:OWNER.s4,next:'Route to Legal redline working group; unblock terms'};
+  if(stage==='P5'||stage==='P6')return{tag:base.tag+' · close',cls:'r',owner:OWNER.s56,next:'Drive DOA approvals; booking rules review with CM'};
+  return{tag:base.tag,cls:'r',owner:OWNER.s0,next:'Escalate to Deal Control Room; define 5-day unblock'};
+}
+function riskScore(d){
+  const thr=stallThr(d.band),sil=silentThr(d.band);
+  return Math.round(clamp((d.dwell/thr)*34+(d.age/BAND[d.band].cycle)*26+(d.act>sil?12:0)+d.rf*8+(1-pwinEff(d))*14+(1-pNow(d))*8,0,100));
+}
+const scoreCls=s=>s<40?'good':s<65?'warn':'bad';
+
+/* ---------- alert engine (rules A1–A10) ---------- */
+function buildAlerts(fc){
+  const A=[];
+  const deals=activeDeals().filter(d=>d.stage!=='P6');
+  const stalled=deals.filter(d=>d.dwell>stallThr(d.band));
+  const byStage={};
+  stalled.forEach(d=>byStage[d.stage]=(byStage[d.stage]||0)+1);
+
+  let fired=0;
+  const emit=(id,sev,title,body,owner,recommend)=>{
+    if(fired>=11)return;fired++;
+    A.push({id,sev,title,body,owner,recommend,logged:0});
+  };
+  stalled.slice(0,4).forEach(d=>{
+    const a=archetype(d);
+    emit('A1','H',`Stalled: ${d.cust} (${d.band}, ${d.stage})`,`${d.tcv}M deal, ${d.dwell}d in stage vs ~${Math.round(stallThr(d.band))}d threshold.`,a.owner,`${a.next} · log action with ${a.owner}`);
+  });
+  deals.filter(d=>d.age>BAND[d.band].cycle*1.2&&d.stage!=='P5'&&d.stage!=='P6').slice(0,3).forEach(d=>{
+    emit('A2','H',`Aging vs plan: ${d.cust}`,`${d.age}d total vs ${BAND[d.band].cycle}d band plan, no gate advance.`,OWNER.s0,'Deal Control Room escalation template · 5-day recovery list');
+  });
+  Object.keys(byStage).filter(k=>byStage[k]>=2).forEach(k=>{
+    emit('A3','H',`Velocity decay at ${STAGES[k].lab}`,`${byStage[k]} stalled deals stacking in one stage — conversion dropping vs trailing 2 quarters.`,OWNER.s2,'Focus sprint: route to owning function per RACI (FC/LG/DT)');
+  });
+  if(fc.p50[0]<S.target*0.7)emit('A4','C',`Coverage gap: P50 ${fmt(fc.p50[0])}M vs ${S.target}M target`,`${(fc.p50[0]/S.target*100).toFixed(0)}% of target 30 days from quarter close.`,OWNER.s2,'Pipeline resuscitation: surface 3 convert-or-remove deals to leadership');
+  Object.keys(STAGES).forEach(k=>{
+    const sum=deals.filter(d=>d.stage===k).reduce((a,d)=>a+d.tcv,0);
+    const anyStall=byStage[k]>0;
+    if(deals.length&&sum>0.3*deals.reduce((a,d)=>a+d.tcv,0)&&anyStall){
+      const a=stageAction(k,{});
+      emit('A5','M',`Bottleneck at ${STAGES[k].lab}`,`${fmt(sum)}M (${(sum/(deals.reduce((x,d)=>x+d.tcv,0))*100).toFixed(0)}% of open value) held by stalled deals.`,a.owner,`${a.next}`);
+    }
+  });
+  [...deals].sort((a,b)=>b.tcv-a.tcv).slice(0,10).filter(d=>pNow(d)<0.40).forEach(d=>{
+    emit('A6','M',`Slip risk: ${d.cust}`,`P(sign this quarter) ${(pNow(d)*100).toFixed(0)}% for a top-10 deal.`,OWNER.s2,'Re-validate committed quarter with FC; plan the slip in fan chart');
+  });
+  deals.filter(d=>d.act>silentThr(d.band)).slice(0,3).forEach(d=>{
+    emit('A7','L',`Silent pursuit: ${d.cust}`,`No logged activity in ${d.act}d (>${silentThr(d.band)}d).`,OWNER.sil,'Assign next-step reminder to opportunity owner');
+  });
+  if(S.drift)emit('A8','M','Forecast accuracy drift','CSPI dropped >0.1 · FVAE widening past 10 pts across the last 2 quarters.','Ops','Refit models quarterly per band; alert on drift in registry');
+  const units=deals.filter(d=>pNow(d)>0.6&&pwinEff(d)>0.7).reduce((a,d)=>a+(d.band==='XXL'?2:d.band==='H'?1:d.band==='M'?0.5:0),0);
+  if(units>6)emit('A9','H',`Onboarding headroom at risk`,`${units.toFixed(1)} transition units expected to close this quarter vs ~6 unit capacity (R4 exposure).`,OWNER.s4,'Pre-commit delivery capacity; validate onboarding plan before close');
+  const top=[...deals].sort((a,b)=>b.tcv-a.tcv)[0];
+  if(top&&top.tcv>0.4*fc.p50[0])emit('A10','M',`Jumbo concentration: ${top.cust}`,`${top.tcv}M deal is ${(top.tcv/fc.p50[0]*100).toFixed(0)}% of quarter P50.`,OWNER.s4,'Counterparty screen + L4 sponsorship; scenario both outcome paths');
+  const sevW={C:4,H:3,M:2,L:1};
+  A.sort((a,b)=>sevW[b.sev]-sevW[a.sev]);
+  return A;
+}
+function renderAlerts(alerts){
+  document.getElementById('alertCount').textContent=alerts.length?alerts.length+' open':'all clear';
+  document.getElementById('alertFeed').innerHTML=alerts.map(a=>`
+    <div class="alert ${a.logged?'done':''}" id="al${a.id}${a.title.replace(/\W/g,'')}">
+      <span class="sev sev-${a.sev}">${a.sev}</span>
+      <div class="ab">
+        <div class="t">${a.title}</div><div class="d">${a.body}</div><div class="o">Owner → ${a.owner}</div>
+        <button class="logbtn" data-r="${a.recommend.replace(/"/g,'')}">${a.logged?'Logged ✓':'Log action'}</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.logbtn').forEach(b=>b.onclick=()=>{b.textContent='Logged ✓';b.closest('.alert').classList.add('done');b.style.opacity=.6;});
+}
+
+/* ---------- deal table ---------- */
+let sortKey='risk';
+function renderTable(){
+  const R=activeDeals().map(function(d){
+    const a=archetype(d);
+    const rs=riskScore(d);
+    const row=
+      '<td class="nm">'+d.nm+'<br><span class="mu">'+d.cust+' · '+d.owner+'</span></td>'+
+      '<td><span class="tag v">'+d.band+'</span></td>'+
+      '<td>'+STAGES[d.stage].lab+'</td>'+
+      '<td>$'+d.tcv.toFixed(1)+'M</td>'+
+      '<td>'+d.dwell+'d</td>'+
+      '<td class="'+scoreCls(rs)+' score">'+d.age+'d</td>'+
+      '<td>'+(pwinEff(d)*100).toFixed(0)+'%</td>'+
+      '<td>'+(pNow(d)*100).toFixed(0)+'%</td>'+
+      '<td><span class="score '+scoreCls(rs)+'">'+rs+'</span></td>'+
+      '<td><span class="tag '+a.cls+'">'+a.tag+'</span></td>'+
+      '<td style="max-width:230px">'+a.next+' <span class="mu">\u2192 '+a.owner+'</span></td>';
+    return {d:d, rs:rs, a:a, row:row};
+  });
+  const sorter={risk:function(x,y){return y.rs-x.rs;},tcv:function(x,y){return y.d.tcv-x.d.tcv;},dwell:function(x,y){return y.d.dwell-x.d.dwell;},val:function(x,y){return y.d.tcv*pwinEff(y.d)-x.d.tcv*pwinEff(x.d);}};
+  R.sort(sorter[sortKey]||sorter.risk);
+  const head='<thead><tr>'+
+    '<th>Deal</th><th>Band</th><th>Stage</th><th>TCV</th><th>Dwell</th><th data-s="age">Age</th><th data-s="pwin">P(win)</th><th>Q-in prob</th><th data-s="risk">Risk</th><th>Archetype</th><th>Playbook action</th>'+
+    '</tr></thead>';
+  const rows=R.map(function(r){return '<tr>'+r.row+'</tr>';}).join('');
+  document.getElementById('dealTable').innerHTML=head+'<tbody>'+rows+'</tbody>';
+  document.querySelectorAll('th[data-s]').forEach(function(th){th.onclick=function(){sortKey=this.dataset.s;renderTable();};});
+}
+
+/* ---------- master render ---------- */
+function renderAll(){
+  const fc=monteCarlo();
+  const acc = S.drift?'Model confidence LOW':'CSPI-calibrated · backtested';
+  document.getElementById('confBadge').innerHTML=`<span class="tag ${S.drift?'r':'g'}">${acc}</span>`;
+  renderKpis(fc);
+  renderFan(fc);
+  renderFunnel();
+  renderHeat();
+  renderAlerts(buildAlerts(fc));
+  renderTable();
+}
+
+/* ---------- UI wiring ---------- */
+const themeBtn=document.getElementById('themeBtn');
+const saved=localStorage.getItem('pf-theme')||'light';
+const MOON='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const SUN='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+function paint(theme){themeBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(theme==='dark'?MOON:SUN)+'</svg>';}
+document.documentElement.setAttribute('data-theme',saved);paint(saved);
+themeBtn.onclick=()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);paint(n);localStorage.setItem('pf-theme',n);renderFan(monteCarlo());renderFunnel();};
+
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');S.band=c.dataset.band;renderAll();
+});
+const bind=(id,cb)=>document.getElementById(id).addEventListener('input',cb);
+bind('closeRng',e=>{S.close=+e.target.value;document.getElementById('closeVal').textContent=S.close.toFixed(2);renderAll();});
+bind('slipRng',e=>{S.slip=+e.target.value;document.getElementById('slipVal').textContent=S.slip;renderAll();});
+bind('targetInp',e=>{S.target=+e.target.value||S.target;renderAll();});
+bind('regionSel',e=>{S.region=e.target.value;renderAll();});
+bind('driftChk',e=>{S.drift=e.target.checked;renderAll();});
+document.getElementById('resetBtn').onclick=()=>location.reload();
+document.getElementById('printBtn').onclick=()=>window.print();
+document.getElementById('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({settings:S,deals:activeDeals().map(d=>({...d,pwin:+pwinEff(d).toFixed(2),qSign:+pNow(d).toFixed(2),risk:riskScore(d)}))},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pipeline-forecast-snapshot.json';a.click();URL.revokeObjectURL(a.href);
+};
+
+renderAll();
+</script>
+</body>
+</html>

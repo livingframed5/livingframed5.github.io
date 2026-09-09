@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Win/Loss Dashboard &mdash; User Guide</title>
+<style>
+:root{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f7; --edge:#dfe5ef;
+  --txt:#0f172a; --muted:#5b6b84; --accent:#0891b2; --green:#059669;
+  --amber:#d97706; --rose:#e11d48; --violet:#7c3aed; --blue:#2563eb;
+  --mono:Consolas,'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6}
+.wrap{max-width:920px;margin:0 auto;padding:28px 20px 80px}
+header{display:flex;align-items:center;gap:14px;padding:10px 2px 20px;border-bottom:3px solid var(--accent);margin-bottom:26px}
+.brand-dot{width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--green));box-shadow:0 0 14px var(--accent)}
+header h1{font-size:22px;font-weight:700}
+header .tag{color:var(--muted);font-size:12px}
+.toc{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:16px 20px;margin-bottom:28px}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:sec}
+.toc li{counter-increment:sec;margin:4px 0}
+.toc a{color:var(--accent);text-decoration:none;font-size:13px}
+.toc a::before{content:counter(sec) ". ";font-weight:700;color:var(--violet)}
+.toc a:hover{text-decoration:underline}
+h2{font-size:19px;margin:34px 0 10px;display:flex;align-items:center;gap:10px}
+h2 .n{background:var(--accent);color:#fff;font-size:13px;width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+h3{font-size:15px;margin:20px 0 6px;color:var(--blue)}
+p{margin:8px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:4px 0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--edge);border-radius:5px;padding:1px 6px}
+pre{font-family:var(--mono);font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:14px 16px;overflow:auto;margin:10px 0}
+pre .c{color:#64748b}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:16px 18px;margin:14px 0}
+.tip{background:#f0f9ff;border-left:4px solid var(--accent);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px}
+.warn{background:#fff7ed;border-left:4px solid var(--amber);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0;background:var(--panel);border-radius:10px;overflow:hidden}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;border-bottom:1px solid var(--edge)}
+td{padding:8px 10px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.req{color:var(--green);font-weight:700}
+.opt{color:var(--muted)}
+.btn{display:inline-block;background:linear-gradient(135deg,#0e7490,#0e9f6e);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer}
+.btn:hover{filter:brightness(1.12)}
+.back{display:inline-block;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;white-space:nowrap;padding:8px 13px;border:1px solid var(--edge);border-radius:9px;background:var(--panel);transition:color .15s ease,border-color .15s ease}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--edge);border-radius:4px;padding:1px 6px}
+footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--edge);color:var(--muted);font-size:12px}
+.chip{display:inline-block;background:rgba(8,145,178,.12);color:var(--accent);border-radius:14px;padding:2px 10px;font-size:11.5px;margin:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="back" href="index.html" title="Back to the main portfolio">&larr; Portfolio</a>
+  <div class="brand-dot"></div>
+  <div>
+    <h1>Win/Loss Analytics &amp; Benchmarking Dashboard</h1>
+    <div class="tag">User Guide &middot; Enterprise Managed Services &middot; Pursuit Deal Strategy</div>
+  </div>
+</header>
+
+<p>This guide explains how to use the interactive prototype. Open the dashboard with the button below, then come back here as you explore each section.</p>
+<p><a class="btn" href="winloss-dashboard.html" target="_blank">Open the Dashboard</a></p>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#start">Getting started</a></li>
+    <li><a href="#layout">Layout at a glance</a></li>
+    <li><a href="#filter">Filtering the view</a></li>
+    <li><a href="#import">Importing your own deal data (CSV)</a></li>
+    <li><a href="#intel">Competitor pricing intelligence</a></li>
+    <li><a href="#requirements">Customer requirements / RFx notes</a></li>
+    <li><a href="#scenario">Scenario simulator (discount ceiling)</a></li>
+    <li><a href="#kpis">Reading the KPI cards</a></li>
+    <li><a href="#charts">Reading the charts</a></li>
+    <li><a href="#insights">The insight engine &amp; its rules</a></li>
+    <li><a href="#bench">Where the benchmarks come from</a></li>
+    <li><a href="#theme">Appearance (light / dark)</a></li>
+    <li><a href="#schema">Data schema reference</a></li>
+    <li><a href="#protect">Export / print protection</a></li>
+    <li><a href="#workflow">Suggested workflow</a></li>
+  </ol>
+</nav>
+
+<h2 id="start"><span class="n">1</span> Getting started</h2>
+<p>Open <code>winloss-dashboard.html</code> in Chrome, Edge, or Firefox. No installation is required; the only external dependency is the <strong>Chart.js</strong> library loaded from a CDN, so an internet connection is needed once when the page first loads.</p>
+<p>The dashboard ships with <strong>140 seeded demo deals</strong> so every panel, chart, and recommendation is populated the moment it opens. Use <span class="chip">Reset Sample</span> (top right) at any time to restore the demo data.</p>
+
+<h2 id="layout"><span class="n">2</span> Layout at a glance</h2>
+<div class="card">
+<p><strong>Left rail &mdash; Data Ingestion &amp; Filtering panel</strong> contains every control that shapes the analysis:</p>
+<ul>
+  <li>Pursuit &amp; scope filters (industry, region, deal size, team)</li>
+  <li>Deal ingestion (outcome, date range, CSV import)</li>
+  <li>Competitor pricing intelligence box</li>
+  <li>Customer deal requirements box</li>
+  <li>Scenario simulator slider</li>
+</ul>
+<p><strong>Main view</strong> renders, in order: five KPI cards &rarr; trend and pricing charts &rarr; duration / TCV / cycle charts &rarr; benchmark and component charts &rarr; root-cause charts &rarr; competitor table + scenario card &rarr; insight feed.</p>
+<p>Everything recalculates automatically when any control changes &mdash; there is no "Apply" button.</p>
+</div>
+
+<h2 id="filter"><span class="n">3</span> Filtering the view</h2>
+<ul>
+  <li><strong>Chips</strong> (industry, region, TCV bracket, team): click to toggle. Multiple chips can be active; the filter matches <em>any</em> of the selected values. If no chip is selected, all values are included.</li>
+  <li><strong>Outcome</strong>: All / Won / Lost narrows to a single outcome.</li>
+  <li><strong>Date range</strong>: use the two date fields to limit by close date.</li>
+</ul>
+<div class="tip">Tip: combine filters to compare one pursuit team across regions, or one vertical across deal-size brackets. The KPI cards, all charts, and the insight feed update together.</div>
+
+<h2 id="import"><span class="n">4</span> Importing your own deal data (CSV)</h2>
+<p>Paste records into the <strong>CSV</strong> box and click <span class="chip">Parse &amp; Import</span>. Imported records are appended to the current dataset (they are not saved &mdash; see the protection section).</p>
+<table>
+  <tr><th>Column</th><th>Required</th><th>Format / Example</th></tr>
+  <tr><td><code>date</code></td><td class="req">Yes</td><td><code>2025-03-14</code> (ISO date)</td></tr>
+  <tr><td><code>region</code></td><td class="req">Yes</td><td><code>AMER</code>, <code>EMEA</code>, <code>APAC</code>, <code>LATAM</code></td></tr>
+  <tr><td><code>industry</code></td><td class="req">Yes</td><td>e.g. <code>Financial Services</code></td></tr>
+  <tr><td><code>team</code></td><td class="req">Yes</td><td>Account / pursuit team name</td></tr>
+  <tr><td><code>bracket</code></td><td class="req">Yes</td><td><code>&lt;$1M</code>, <code>$1M&ndash;$5M</code>, <code>$5M&ndash;$20M</code>, <code>$20M+</code></td></tr>
+  <tr><td><code>tcv_usd</code></td><td class="req">Yes</td><td>Total contract value in USD, e.g. <code>4500000</code></td></tr>
+  <tr><td><code>outcome</code></td><td class="req">Yes</td><td><code>won</code> or <code>lost</code></td></tr>
+  <tr><td><code>discount_pct</code></td><td class="opt">No</td><td>Discount vs standard rate, e.g. <code>12</code> (defaults to 0)</td></tr>
+  <tr><td><code>margin_pct</code></td><td class="opt">No</td><td>Achieved / quoted margin, e.g. <code>28.5</code></td></tr>
+  <tr><td><code>cycle_days</code></td><td class="opt">No</td><td>Deal cycle length in days (defaults to 45)</td></tr>
+  <tr><td><code>contract_months</code></td><td class="opt">No</td><td>Contract duration in months (defaults to 12)</td></tr>
+  <tr><td><code>components</code></td><td class="opt">No</td><td>Semicolon-separated services, e.g. <code>Managed Security;AI/ML Ops</code></td></tr>
+  <tr><td><code>loss_reason</code></td><td class="opt">No</td><td>Leave blank for won deals; e.g. <code>Price sensitivity</code></td></tr>
+</table>
+<pre>date,region,industry,team,bracket,tcv_usd,outcome,discount_pct,margin_pct,cycle_days,contract_months,components,loss_reason
+2025-03-14,AMER,Financial Services,Orion,$5M&#x2013;$20M,8500000,won,9.5,31.2,58,36,Managed Services;Managed Security,
+2025-04-02,EMEA,Government,Atlas,$1M&#x2013;$5M,2400000,lost,14.0,24.8,71,24,Managed Services;Data &amp; Analytics,Price sensitivity</pre>
+<div class="warn">The header row must be present. Blank <code>loss_reason</code> is fine for won deals. Use <span class="chip">Clear</span> to empty the box.</div>
+
+<h2 id="intel"><span class="n">5</span> Competitor pricing intelligence</h2>
+<p>Paste one competitor per line using four comma-separated fields:</p>
+<pre>competitor, region, discount_pct, note</pre>
+<pre>GloboTech,AMER,9,Leads on AI governance + SLAs; aggressive bundle pricing
+Nimbus Data,EMEA,12,Price-led; weak delivery references</pre>
+<p>The <strong>Competitor Intelligence</strong> table (main view) then shows each competitor&rsquo;s typical discount, share of internal losses, and the note &mdash; useful for calibrating the discount ceiling and counter-messaging.</p>
+
+<h2 id="requirements"><span class="n">6</span> Customer requirements / RFx notes</h2>
+<p>List the solution elements customers are asking for in active pursuits. The insight engine reads this text and flags components that appear in 60%+ of your deals but are <em>not</em> mentioned in the requirements &mdash; i.e. potential <strong>missing service elements</strong> to add as optional line items before you scope short.</p>
+
+<h2 id="scenario"><span class="n">7</span> Scenario simulator (discount ceiling)</h2>
+<p>Drag the <strong>Proposed discount ceiling</strong> slider (0&ndash;25%) to model a pricing guardrail across the current filter set. The scenario card shows:</p>
+<ul>
+  <li>Won deals currently quoting above the ceiling</li>
+  <li>Projected margin uplift if discounts were capped (each point of discount removed restores ~0.5 points of margin)</li>
+  <li>Price-driven losses that fall inside the band &mdash; candidates you might recover with value-led packaging instead of discounting</li>
+</ul>
+
+<h2 id="kpis"><span class="n">8</span> Reading the KPI cards</h2>
+<table>
+  <tr><th>KPI</th><th>What it tells you</th></tr>
+  <tr><td>Overall Win Rate</td><td>Share of won deals in scope, with the ▲/▼ delta vs the unfiltered dataset.</td></tr>
+  <tr><td>Avg Deal Cycle (Won)</td><td>Average and median cycle length of won deals &mdash; your closing cadence.</td></tr>
+  <tr><td>Avg Margin Won vs Lost</td><td>Margin achieved on won deals compared with the margin quoted on lost deals.</td></tr>
+  <tr><td>Pipeline Value Impacted</td><td>Total TCV of every deal in scope (won and lost) and how many deals that represents.</td></tr>
+  <tr><td>Win/Loss Margin Spread</td><td>The margin gap between won and lost deals &mdash; a widening spread often signals over-discounting on must-win deals.</td></tr>
+</table>
+
+<h2 id="charts"><span class="n">9</span> Reading the charts</h2>
+<ul>
+  <li><strong>Win Rate Trend</strong> &mdash; quarterly win rate (line) vs won/lost volume (bars). Look for persistent dips that align with pricing or team changes.</li>
+  <li><strong>Outcome vs Pricing Variance</strong> &mdash; win rate per discount bucket (bars) plus the average margin achieved (line). This is the chart that sets the pricing guardrail.</li>
+  <li><strong>Win Rate by Contract Duration</strong> &mdash; whether longer or shorter terms convert better in your current scope.</li>
+  <li><strong>Win Rate by Deal Size (TCV)</strong> &mdash; which bracket is the sweet spot; low-volume brackets may just need more data.</li>
+  <li><strong>Avg Deal Cycle Length</strong> &mdash; won vs lost cycle times; a big gap is a red flag for deal hygiene.</li>
+  <li><strong>Benchmark vs External Baselines</strong> &mdash; your win rate and margin by region vs the industry baseline.</li>
+  <li><strong>Solution Component Attach</strong> &mdash; radar of win rate where each service is attached vs how often it appears.</li>
+  <li><strong>Lost-Deal Root Causes</strong> &mdash; the internal mix of why deals are lost (doughnut).</li>
+  <li><strong>Loss Mix vs Benchmark</strong> &mdash; your loss reasons compared against the external baseline, so you can see where you deviate from the market.</li>
+</ul>
+
+<h2 id="insights"><span class="n">10</span> The insight engine &amp; its rules</h2>
+<p>Recommendations are computed live from the filtered data. Each card shows a severity color (red = high, amber = medium, green = low) and the reasoning behind it.</p>
+<table>
+  <tr><th>Rule</th><th>What it detects</th></tr>
+  <tr><td>Pricing ceiling</td><td>The discount bucket where win rate peaks &mdash; the suggested cap for active pursuits.</td></tr>
+  <tr><td>Root cause attack</td><td>The most common loss reason in scope and a call to build a playbook for it.</td></tr>
+  <tr><td>Missing element</td><td>Lowest-attach component &mdash; bundle it by default in proposals.</td></tr>
+  <tr><td>Geography gap</td><td>Regions underperforming the external baseline by the largest margin.</td></tr>
+  <tr><td>Cadence drag</td><td>When lost deals cycle much longer than won deals &mdash; sets a stage-gate warning.</td></tr>
+  <tr><td>Systemic price sensitivity</td><td>When price causes more than 45% of losses &mdash; time to rebuild value-selling thresholds.</td></tr>
+  <tr><td>Proposal coverage</td><td>Components attaching to 60%+ of deals but absent from your RFx notes.</td></tr>
+</table>
+<div class="tip">Insights are heuristics, not forecasts. Treat them as a review checklist to bring to a deal review, then validate against the underlying data on the charts.</div>
+
+<h2 id="bench"><span class="n">11</span> Where the benchmarks come from</h2>
+<p>The external baseline (<code>EX_BENCH</code> in the code) represents sector-level figures &mdash; win rate by region and industry, a typical discount band, and the typical loss mix &mdash; drawn from managed-services market win/loss survey pools. You can edit these numbers directly in the JavaScript (search for <code>EX_BENCH</code>) to use your own market data.</p>
+
+<h2 id="theme"><span class="n">12</span> Appearance (light / dark)</h2>
+<p>Use the <strong>theme toggle</strong> at the top right to switch between the light and dark palettes. Charts, grids, tables, and tooltips recolor automatically. The dashboard defaults to the light theme.</p>
+
+<h2 id="schema"><span class="n">13</span> Data schema reference</h2>
+<p>Internally each deal is a record like this:</p>
+<pre>{
+  "id": "DL-1042",
+  "iso": "2024-06-18",
+  "quarter": "24-Q2",
+  "region": "EMEA",
+  "industry": "Government",
+  "team": "Atlas",
+  "bracket": "$1M\u2013$5M",
+  "tcv": 2400000,
+  "discount": 11.2,          <span class="c">// discount vs standard rate (%)</span>
+  "margin": 26.4,            <span class="c">// quoted / achieved margin (%)</span>
+  "cycleDays": 71,           <span class="c">// deal cycle length (days)</span>
+  "contractMonths": 24,
+  "outcome": "lost",
+  "lossReason": "Price sensitivity",
+  "competitor": "GloboTech",
+  "components": ["Managed Services", "Data & Analytics"]
+}</pre>
+<p>The demo data is generated deterministically (seed <code>520175</code>) by <code>genDeals()</code> so every refresh reproduces the same patterns for repeatable demos.</p>
+
+<h2 id="protect"><span class="n">14</span> Export / print protection</h2>
+<div class="warn">By design this build is locked to protect the author&rsquo;s work: <strong>Export CSV is disabled</strong> (the button is shown greyed out), <strong>printing and Ctrl+P/Ctrl+S are blocked</strong>, and <strong>right-click</strong> (Save Image / context menu) is disabled. Importing data and Reset Sample still work for demos.</div>
+
+<h2 id="workflow"><span class="n">15</span> Suggested workflow</h2>
+<ol>
+  <li><strong>Scope it.</strong> Select the region, vertical, and pursuit team you want to review.</li>
+  <li><strong>Load data.</strong> Import your CSV so the analysis reflects real deals, not the demo set.</li>
+  <li><strong>Spot the trend.</strong> Read the trend and pricing charts to see where win rate and margin are eroding.</li>
+  <li><strong>Benchmark.</strong> Compare your numbers against the external baseline to separate controllable issues from market norms.</li>
+  <li><strong>Simulate.</strong> Test a discount ceiling to protect margin.</li>
+  <li><strong>Act.</strong> Work through the insight feed as a review checklist and assign owners to each recommendation.</li>
+</ol>
+
+<footer>Prototype build &middot; Managed services pursuit analytics &mdash; user guide v1.0</footer>
+</div>
+</body>
+</html>

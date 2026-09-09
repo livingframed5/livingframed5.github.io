@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OCTO SOP-001 — Agentic-Enabled Program Management</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg0: #0b0f1a;
+    --bg1: #0f1524;
+    --panel: rgba(255,255,255,0.045);
+    --panel-solid: #131a2b;
+    --panel2: rgba(255,255,255,0.06);
+    --ink: #e7ecf6;
+    --muted: #8b95ad;
+    --accent: #6d8bff;
+    --accent2: #9f7bff;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #fb7185;
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.14);
+    --grad: linear-gradient(135deg, #6d8bff 0%, #9f7bff 100%);
+    --shadow: 0 20px 45px -20px rgba(0,0,0,0.65);
+    --header-bg: rgba(11,15,26,0.5);
+    --glow1: rgba(109,139,255,0.16);
+    --glow2: rgba(159,123,255,0.14);
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  html[data-theme="light"] {
+    --bg0: #eef3ff;
+    --bg1: #f7faff;
+    --panel: rgba(255,255,255,0.78);
+    --panel-solid: #ffffff;
+    --panel2: rgba(15,23,42,0.045);
+    --ink: #0f172a;
+    --muted: #5b6477;
+    --accent: #4f6bf5;
+    --accent2: #7c4dff;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #e0245e;
+    --border: rgba(15,23,42,0.10);
+    --border-strong: rgba(15,23,42,0.18);
+    --shadow: 0 20px 45px -24px rgba(15,23,42,0.28);
+    --header-bg: rgba(255,255,255,0.72);
+    --glow1: rgba(79,107,247,0.12);
+    --glow2: rgba(124,77,255,0.10);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(900px 600px at 12% -8%, var(--glow1), transparent 60%),
+      radial-gradient(900px 600px at 95% 0%, var(--glow2), transparent 55%),
+      linear-gradient(180deg, var(--bg0), var(--bg1) 60%);
+    background-attachment: fixed;
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background .35s ease, color .35s ease;
+  }
+
+  header { padding: 26px 40px 20px; border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); background: var(--header-bg); position: sticky; top: 0; z-index: 20; transition: background .35s ease; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink); text-decoration: none; padding: 7px 12px; margin: 0 40px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); transition: color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease); width: fit-content; }
+  .back-link:hover { color: var(--accent); border-color: var(--accent); transform: translateX(-2px); }
+  .ctrl { display: flex; align-items: center; justify-content: flex-end; gap: 8px; white-space: nowrap; flex-shrink: 0; margin-left: auto; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border);
+    background: var(--panel2); color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 0 14px; height: 40px; border-radius: 10px; transition: transform .15s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
+  }
+  .icon-btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+  .icon-btn[disabled] { opacity: .38; cursor: not-allowed; }
+  .icon-btn[disabled]:hover { transform: none; border-color: var(--border); color: var(--ink); }
+
+  @media print {
+    body * { display: none !important; }
+  }
+  .hero { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .hero > div:first-child { min-width: 0; flex: 1 1 auto; }
+  header .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  header .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(52,211,153,.5); animation: pulse 2.4s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(52,211,153,.45)} 70%{box-shadow:0 0 0 9px rgba(52,211,153,0)} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0)} }
+  header h1 { margin: 0 0 6px; font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 30px 28px 60px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px;
+  }
+  .meta span {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel);
+  }
+  .meta span b { color: var(--accent); font-weight: 700; }
+
+  .doc { display: flex; flex-direction: column; gap: 10px; }
+  section {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    padding: 26px 28px; box-shadow: var(--shadow); backdrop-filter: blur(10px);
+  }
+  section h2 {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0 0 4px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  section h2 .num {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+    font-size: 14px; font-weight: 700; color: #fff; background: var(--grad); box-shadow: 0 6px 16px -6px rgba(109,139,255,.7);
+  }
+  section h3 { margin: 20px 0 8px; font-size: 14px; font-weight: 700; color: var(--accent); }
+  section h3:first-of-type { margin-top: 6px; }
+  section p { margin: 8px 0; color: var(--ink); font-size: 14.5px; }
+  section ul { margin: 8px 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+  section ol { margin: 8px 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  section li { font-size: 14.5px; }
+  section li::marker { color: var(--accent); }
+  .sub { color: var(--muted) !important; font-size: 13.5px !important; margin-top: 2px !important; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 4px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--panel2); }
+  td:first-child { font-weight: 600; }
+  tr:nth-child(even) td { background: var(--panel2); }
+
+  .rule {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--panel2); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 12px; padding: 14px 16px; margin: 14px 0;
+  }
+  .rule b { color: var(--accent); }
+
+  .code {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.55;
+    background: var(--panel-solid); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto; margin: 12px 0; white-space: pre;
+    color: var(--ink);
+  }
+  .code .c { color: var(--muted); }
+  .code .k { color: var(--accent2); font-weight: 600; }
+  .code .s { color: var(--green); }
+
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; vertical-align: 1px; }
+  .pill.t1 { color: var(--green); background: rgba(52,211,153,.14); border: 1px solid rgba(52,211,153,.35); }
+  .pill.t2 { color: var(--red); background: rgba(251,113,133,.14); border: 1px solid rgba(251,113,133,.35); }
+  .pill.mode-a { color: var(--accent); background: rgba(109,139,255,.14); border: 1px solid rgba(109,139,255,.35); }
+  .pill.mode-b { color: var(--amber); background: rgba(251,191,36,.14); border: 1px solid rgba(251,191,36,.35); }
+  .pill.mode-c { color: var(--red); background: rgba(251,113,133,.14); border: 1px solid rgba(251,113,133,.35); }
+
+  .check { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; }
+  .check::before { content: '▢'; color: var(--accent); font-weight: 700; flex: 0 0 auto; line-height: 1.4; }
+
+  .foot { margin-top: 26px; text-align: center; color: var(--muted); font-size: 13px; }
+  .foot .hash { color: var(--accent); font-weight: 600; }
+
+  @media (max-width: 860px) {
+    header { padding: 20px 20px 16px; }
+    .back-link { margin: 0 20px 10px; }
+    .wrap { padding: 22px 16px 48px; }
+    section { padding: 20px 18px; }
+    .ctrl { margin-left: 0; width: 100%; justify-content: flex-start; margin-top: 12px; }
+    .hero { flex-wrap: wrap; }
+    table { font-size: 12.5px; }
+    th, td { padding: 8px 9px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="back-link" href="index.html" title="Back to portfolio">← Back to portfolio</a>
+  <div class="hero">
+    <div>
+      <div class="badge"><span class="dot"></span> Office of the CTO · Standard Operating Procedure</div>
+      <h1>Agentic-Enabled Program Management</h1>
+      <p>Automating routine operations while maintaining human-in-the-loop governance.</p>
+    </div>
+    <div class="ctrl">
+      <button class="icon-btn" id="printBtn" title="Printing is disabled on this preview" aria-label="Save as PDF" disabled><span class="ico">⬇ PDF</span></button>
+      <button class="icon-btn" id="themeBtn" title="Toggle light / dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="meta">
+    <span>Doc <b>OCTO-PM-SOP-001</b></span>
+    <span>Version <b>1.0</b></span>
+    <span>Audience <b>TPMs · Program Office</b></span>
+    <span>Classification <b>Official — Internal</b></span>
+  </div>
+
+  <div class="doc">
+
+    <!-- 1 -->
+    <section>
+      <h2><span class="num">1</span> Purpose &amp; Scope</h2>
+      <p class="sub">Establishing the operating framework for AI agentic workflows in the OCTO Program Office.</p>
+
+      <h3>1.1 Objective</h3>
+      <p>Reduce high-volume, low-complexity administrative work from Technical Program Managers (TPMs) while ensuring human attention is focused on judgment, risk, and safety-critical decisions. Success is defined by three outcomes:</p>
+      <ol>
+        <li><b>Fidelity</b> — Automated outputs are provably accurate and traceable to source data.</li>
+        <li><b>Throughput</b> — Pilot teams see a ≥50% reduction in cycle time for routine tasks (minutes, status, action tracking).</li>
+        <li><b>Risk Containment</b> — Zero unsanctioned actions against systems of record or sensitive data.</li>
+      </ol>
+      <p>This SOP applies to all OCTO program staff who use agentic tooling, and to the engineers and architects who configure, provision, and monitor those agents.</p>
+
+      <h3>1.2 Automation Boundary: Administrative vs. Strategic</h3>
+      <p>Every task is classified into one of two tiers. Tier classification is the gate for agent behavior.</p>
+      <table>
+        <thead>
+          <tr><th>Tier</th><th>Definition</th><th>Examples</th><th>Agent Role</th><th>Human Role</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tier 1 <span class="pill t1">ADMIN</span></td>
+            <td>Deterministic, reversible, low-sensitivity, no external/customer impact</td>
+            <td>Extract meeting minutes &amp; decisions; extract action items; draft status summaries; file tickets; route notifications</td>
+            <td><b>Autonomous execution</b> with post-action logging</td>
+            <td>Review at defined checkpoints (end-of-day, milestone)</td>
+          </tr>
+          <tr>
+            <td>Tier 2 <span class="pill t2">STRATEGIC</span></td>
+            <td>Irreversible, cross-team, external, budget-affecting, or involving people/compliance</td>
+            <td>Scope changes; budget or threshold changes; external communications; termination decisions; security-posture actions</td>
+            <td><b>Recommendation only. Pause for approval.</b></td>
+            <td>Mandatory human sign-off before any action</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="rule"><b>Governing rule:</b> an agent proposes; a human approves. Tier 1 executes with checkpoints; Tier 2 requires explicit sign-off and must not proceed without it. <b>Unclassified tasks default to Tier 2.</b></div>
+    </section>
+
+    <!-- 2 -->
+    <section>
+      <h2><span class="num">2</span> Architecture &amp; Core Concepts (HITL Framework)</h2>
+      <p class="sub">The Supervisor–Agent–Human model, operating modes, and mandatory intervention triggers.</p>
+
+      <h3>2.1 The Supervisor–Agent–Human Model</h3>
+      <div class="code"><span class="c">┌────────────────────┐  orchestrates  ┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="k">SUPERVISOR</span>        <span class="c">├───────────────▶│</span>  <span class="k">AGENTS</span>              <span class="c">│</span>
+<span class="c">│</span>  router / tier      <span class="c">│</span>  routes       <span class="c">│</span>  minutes-extractor     <span class="c">│</span>
+<span class="c">│</span>  classifier /       <span class="c">│</span>  tasks,        <span class="c">│</span>  action-tracker        <span class="c">│</span>
+<span class="c">│</span>  validator          <span class="c">│</span>  validates     <span class="c">│</span>  status-drafter        <span class="c">│</span>
+<span class="c">└─────────┬──────────┘</span>  <span class="c">└────────────┬───┘</span>
+          <span class="c">│ policy rules,</span>                <span class="c">│ reads / writes</span>
+          <span class="c">│ confidence</span>                  <span class="c">▼</span>
+          <span class="c">▼</span>                <span class="c">┌─────────────────────────┐</span>
+<span class="c">┌────────────────────┐</span>   <span class="c">│</span>   <span class="k">DATA SOURCES</span>      <span class="c">│</span>
+<span class="c">│</span>  <span class="k">HUMAN / TPM</span>       <span class="c">│◀──────────│</span> Slack · Jira · GitHub  <span class="c">│</span>
+<span class="c">│</span>  approvals &amp; audit <span class="c">│</span>  esc.     <span class="c">│</span> Confluence · Email     <span class="c">│</span>
+<span class="c">└────────────────────┘</span>   <span class="c">└─────────────────────────┘</span></div>
+      <ul>
+        <li><b>Supervisor:</b> higher-order orchestration layer that (a) classifies incoming tasks into Tier 1 / Tier 2, (b) routes to the correct task-specific agent, (c) validates agent output against schema and confidence thresholds, and (d) writes the audit ledger. The supervisor cannot grant itself new permissions.</li>
+        <li><b>Agents:</b> single-purpose, narrowly scoped automation. Each has a limited toolset: read sources via scoped credentials, and write only to a staging/quarantine area unless a human-approved publish token is present.</li>
+        <li><b>Human Layer:</b> TPMs own all outputs. They approve Tier 2 actions, review Tier 1 drafts at checkpoints, receive escalations when confidence is low, and may recall or correct agent behavior.</li>
+      </ul>
+
+      <h3>2.2 Operating Modes</h3>
+      <table>
+        <thead>
+          <tr><th>Mode</th><th>Description</th><th>Trigger</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A — Autonomous <span class="pill mode-a">FIRE &amp; LOG</span></td>
+            <td>Drafts / transforms in staging only; no publishing</td>
+            <td>Tier 1 with confidence ≥ 0.85; target is staging surface</td>
+          </tr>
+          <tr>
+            <td>B — Draft-then-approve <span class="pill mode-b">STAGE &amp; PUBLISH</span></td>
+            <td>Stages full output; publishes only after checkpoint / automated validation</td>
+            <td>Tier 1 with confidence ≥ 0.85 and a low-risk destination</td>
+          </tr>
+          <tr>
+            <td>C — Human-in-the-loop <span class="pill mode-c">RECOMMEND &amp; PAUSE</span></td>
+            <td>Drafts recommendation + rationale + payload, then stops</td>
+            <td>Any Tier 2 task; confidence &lt; 0.85; sensitive source; write to a system of record</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.3 Mandatory HITL Triggers</h3>
+      <p>A checkpoint <b>must</b> be raised when any of the following occurs:</p>
+      <ol>
+        <li>The task is classified Tier 2 (or cannot be classified).</li>
+        <li>Agent confidence is below <b>0.85</b> (e.g., degraded transcript, conflicting data).</li>
+        <li>The source or payload contains PII, credentials, personnel data, customer data, or a confidential design.</li>
+        <li>The task asks for a write to a system of record (Jira, GitHub, Confluence, email) beyond an approved "drafts only" grant.</li>
+        <li>A novel recipient or channel is introduced (external party, blocked domain).</li>
+        <li>The agent detects rapid-fire parallel actions against a sensitive target.</li>
+      </ol>
+      <div class="rule"><b>Checkpoint payload:</b> the agent returns a structured decision card — Tier classification · proposed action · full source citations · confidence score · rationale · recommended decision. The human review and decision are logged as first-class audit records.</div>
+    </section>
+
+    <!-- 3 -->
+    <section>
+      <h2><span class="num">3</span> Step-by-Step Agentic Workflows</h2>
+      <p class="sub">Three routine tasks, each with a concrete, auditable execution path.</p>
+
+      <h3>3.1 Meeting Minutes &amp; Structured Decision Summaries</h3>
+      <p><b>Inputs:</b> raw meeting transcript / recording, optional agenda and calendar metadata.</p>
+      <ol>
+        <li><b>Ingestion</b> — The <code>minutes-extractor</code> agent pulls the calendar / recordings for the session in scope and ingests the transcript. Transcription runs in the approved environment; nothing leaves the sanctioned workspace.</li>
+        <li><b>Noise filtering</b> — Speaker ID, filler removal, and crosstalk cleanup. Segments containing clear credentials, PII, or flagged client terms are tagged and excluded from the final written summary.</li>
+        <li><b>Structured extraction</b> — Enforce a fixed schema: <code>summary, decisions, action_items, risks, open_questions, owner, timestamp</code>. Each decision maps back to a source segment (start/end timestamps) so every item remains traceable to the transcript.</li>
+        <li><b>Confidence scoring</b> — Each <code>decision</code> and <code>action</code> receives a score derived from clarity, speaker agreement, and attribution.</li>
+        <li><b>Draft &amp; review</b> — The structured minutes are written to staging (<code>drafts/</code>) for TPM review. Unresolvable owners are flagged (see §3.2).</li>
+        <li><b>Publish control</b> — Publishing to the team wiki / channel occurs only with TPM release (Mode B/C) — never automatically for sensitive audiences.</li>
+      </ol>
+
+      <h3>3.2 Action Item &amp; Dependency Tracking</h3>
+      <p><b>Inputs:</b> Slack messages, Jira tickets, GitHub issues/PRs (via approved connectors), plus outputs from §3.1.<br>
+      <b>Outputs:</b> a unified action-item register with owner, due date, current status, and risk flags.</p>
+      <ol>
+        <li><b>Monitoring</b> — Connectors scan designated channels / projects / repos for commitment signals ("I will…", "shall deliver…", "requests…", "needs…").</li>
+        <li><b>Extraction &amp; disambiguation</b> — Extract actor, action, deadline, and context; de-duplicate against the existing register (semantic similarity + link match).</li>
+        <li><b>Owner resolution</b> — Resolve owner from the directory mapping (Slack handle → role → JIRA assignee). If the owner is ambiguous, flag as <code>needs-owner</code> rather than guessing.</li>
+        <li><b>Dependency graph</b> — Build block/blocked-by links from Jira relations and summarize the set.</li>
+        <li><b>Stall detection</b> — Flag actions with no activity within a window (default 7 days), overdue past due, or repeated owner churn (&gt;2 re-assigns) as <b>at-risk</b>.</li>
+        <li><b>Escalation draft</b> — For stalled items, the agent drafts an escalation message and <b>pauses for TPM approval</b> before it can be posted or a human tagged.</li>
+      </ol>
+
+      <h3>3.3 Status Reporting Drafts</h3>
+      <p><b>Inputs:</b> Jira / iteration boards, git history, CI/CD results, wiki pages, previous executive summaries.<br>
+      <b>Outputs:</b> a preliminary executive-level status summary with appendix data.</p>
+      <ol>
+        <li><b>Data pull</b> — The <code>status-drafter</code> aggregates from configured boards, repo history, pipelines, and the register from §3.2.</li>
+        <li><b>Synthesis</b> — Produce a summary — <b>Done / In-Progress / Blocked / Risks</b> — with each claim mapped to a source citation (ticket ID, commit hash, pipeline run).</li>
+        <li><b>Validation-before-draft</b> — Any sentence without a resolvable citation is <b>excluded</b> or marked <code>low-confidence</code>. The agent never invents metrics; numbers come only from query results.</li>
+        <li><b>Draft delivery</b> — The summary + appendix land in the <code>drafts/status</code> channel for TPM review.</li>
+        <li><b>Finalization</b> — The TPM edits tone / scope, and the agent renders the final document. The agent does not send it externally; a pre-filled outbound email is created but only sent by the human.</li>
+      </ol>
+    </section>
+
+    <!-- 4 -->
+    <section>
+      <h2><span class="num">4</span> Governance, Guardrails &amp; Security</h2>
+      <p class="sub">Data privacy controls and anti-hallucination auditing.</p>
+
+      <h3>4.1 Data Privacy and Classification</h3>
+      <ul>
+        <li><b>Pre-ingestion checks</b> — All input is scanned for PII, credentials / key material, and internal-confidential markers. Content exceeding Tier-1 limits is quarantined or routed to the human, and never touches the shared intelligence pipeline.</li>
+        <li><b>Permitted storage</b> — Working transcripts and intermediate outputs reside in the approved staging environment with scoped access; they auto-purge after the retention window (default 30 days unless human-retained).</li>
+        <li><b>Least-privilege credentials</b> — Agents receive narrow, expiring, audit-logged tokens, granted per-connector by the source-system admin.</li>
+        <li><b>Deny-list</b> — Actions that are always refused regardless of mode: account / credential changes, finance or people-data writes, external sends, deletions, impersonation.</li>
+      </ul>
+
+      <h3>4.2 Preventing "Hallucinated" Updates</h3>
+      <table>
+        <thead>
+          <tr><th>Guardrail</th><th>Control</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Source locking</td><td>Every factual claim must be backed by ≥1 resolvable citation; unsubstantiated content triggers the HITL pause.</td></tr>
+          <tr><td>Confidence thresholds</td><td>Outputs below 0.85 confidence are paused and reviewed.</td></tr>
+          <tr><td>Schema validation</td><td>Output must conform to the declared structure; agents retry, and failures surface for review.</td></tr>
+          <tr><td>Provenance ledger</td><td>Every agent action is logged: timestamp, agent ID, input refs, output snapshot, tier, mode, approver.</td></tr>
+          <tr><td>Accuracy audit</td><td>Spot-check ≥10% of Tier 1 outputs monthly; track (a) metadata accuracy, (b) hallucinated-claims rate, (c) wrong-owner match rate; report to the Program Office.</td></tr>
+          <tr><td>Drift alerting</td><td>Alert on confidence collapse, quota anomalies, or an unexplained spike in escalations.</td></tr>
+        </tbody>
+      </table>
+      <div class="rule"><b>Primary rule:</b> no agent may claim a decision, commitment, or fact that does not trace to a citation. A correct-looking output without a source is, by definition, a hallucination — and never reaches an external system.</div>
+    </section>
+
+    <!-- 5 -->
+    <section>
+      <h2><span class="num">5</span> Implementation Checklist &amp; Rollout Strategy</h2>
+      <p class="sub">Four gated phases to pilot and adopt an agentic workflow.</p>
+
+      <h3>Phase 1 — Scope &amp; Pilot <span style="font-weight:600;color:var(--muted)">(Weeks 1–2)</span></h3>
+      <ul>
+        <li class="check">Select one program with limited sensitive / regulated data as the pilot scope.</li>
+        <li class="check">Classify the team's full task inventory into Tier 1 vs Tier 2; log all assumptions.</li>
+        <li class="check">Set success targets — e.g., ≥30% time saved, &lt;2% hallucination rate, zero unapproved Tier 2 writes.</li>
+        <li class="check">Map connector requirements (Jira, Slack, GitHub, email) and what each needs.</li>
+      </ul>
+
+      <h3>Phase 2 — Build &amp; Configure <span style="font-weight:600;color:var(--muted)">(Weeks 3–4)</span></h3>
+      <ul>
+        <li class="check">Deploy in staging-only mode (drafts only, no publish).</li>
+        <li class="check">Configure tier policy and HITL thresholds (0.85 default).</li>
+        <li class="check">Turn on fail-closed deny-lists; verify no write to production without approval.</li>
+        <li class="check">Enable ledger + alerts; test impersonation and prompt-injection.</li>
+      </ul>
+
+      <h3>Phase 3 — Run &amp; Harden <span style="font-weight:600;color:var(--muted)">(Weeks 5–8)</span></h3>
+      <ul>
+        <li class="check">Pilot flows in this order: meetings → action tracking → status reports.</li>
+        <li class="check">Review every output with the TPM for the first two weeks; record edits.</li>
+        <li class="check">Track KPIs daily; diff human edits against agent output.</li>
+        <li class="check">Gate check at week 8 (program committee): pass / fail on defined success targets.</li>
+      </ul>
+
+      <h3>Phase 4 — Gated Expansion <span style="font-weight:600;color:var(--muted)">(Weeks 9+)</span></h3>
+      <ul>
+        <li class="check">Move only the passing flows to Mode B (draft-then-approve); Tier 2 stays HITL.</li>
+        <li class="check">Expand to a second team after documented, reviewed additions.</li>
+        <li class="check">Re-run the audit and update thresholds monthly for the first quarter.</li>
+      </ul>
+    </section>
+
+    <!-- 6 -->
+    <section>
+      <h2><span class="num">6</span> Roles &amp; Responsibilities</h2>
+      <p class="sub">Who owns what once the framework is live.</p>
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>TPM / Program Lead</td><td>Owns final approval of Tier 2, reviews Tier 1 at checkpoints, defines priorities.</td></tr>
+          <tr><td>AI Integration Architect (OCTO)</td><td>Develops guardrails, thresholds, flow config, and messaging standards.</td></tr>
+          <tr><td>Program Office / Ops</td><td>Audits agent accuracy and prompt-drift; monitors the ledger.</td></tr>
+          <tr><td>Security &amp; Privacy (DPO / GRC)</td><td>Reviews DPA, EULA, retention, classification, and access reviews.</td></tr>
+          <tr><td>Source System Admins</td><td>Grant scoped, expiring, least-privilege connectors.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+  <div class="foot"><span class="hash">✦</span> Built by Whitney Smith · hosted with GitHub Pages <span class="hash">✦</span></div>
+</main>
+
+<script>
+  const themeBtn = document.getElementById('themeBtn');
+  const savedTheme = localStorage.getItem('pf-theme') || 'light';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    themeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  paintThemeIcon(savedTheme);
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('pf-theme', next);
+  });
+  document.getElementById('printBtn').addEventListener('click', () => {});
+
+  // ---- protect against printing / page export ----
+  window.addEventListener('beforeprint', ev => ev.preventDefault());
+  window.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'p') {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  });
+</script>
+</body>
+</html>

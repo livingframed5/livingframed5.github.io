@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predictive Pipeline Analytics &amp; Forecasting Blueprint</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.65;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:96px 26px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:var(--shadow,0 1px 2px rgba(17,24,39,.04))}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 24px;border-bottom:3px solid transparent;margin-bottom:14px;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.brand-dot{width:15px;height:15px;border-radius:50%;background:var(--grad);box-shadow:0 0 16px var(--accent)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.toc{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 22px;margin:26px 0 8px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:sec}
+.toc li{counter-increment:sec;margin:5px 0}
+.toc a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:500}
+.toc a::before{content:counter(sec) ". ";font-weight:800;color:var(--violet)}
+main{counter-reset:sec}
+h2{font-size:21px;margin:44px 0 12px;display:flex;align-items:center;gap:12px;letter-spacing:-0.01em;counter-increment:sec}
+h2 .n{background:var(--grad);color:#fff;font-size:13px;min-width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+h3{font-size:15.5px;margin:26px 0 8px;color:var(--violet);font-weight:700}
+p{margin:9px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:4px 0}
+strong{font-weight:700}
+em{font-style:italic}
+code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--edge);border-radius:5px;padding:1px 6px}
+pre{font-family:var(--mono);font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px 18px;overflow:auto;margin:12px 0;line-height:1.55}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 20px;margin:16px 0;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:var(--halo)}
+.callout b{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--edge)}
+td{padding:9px 12px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.sev{font-weight:700;font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.sev-c{background:rgba(225,29,72,.12);color:var(--rose)}
+.sev-h{background:rgba(217,119,6,.14);color:var(--amber)}
+.sev-m{background:rgba(37,99,235,.12);color:var(--blue)}
+.sev-l{background:var(--halo);color:var(--accent)}
+.good{color:var(--green);font-weight:700}
+.bad{color:var(--rose)}
+.warn{color:var(--amber)}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:88px 16px 70px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Commercial Operations &middot; Architecture Blueprint</span>
+  <h1>Predictive Pipeline Analytics &amp; <b>Forecasting</b></h1>
+  <div class="tag">Deal velocity &middot; quarterly revenue trajectories &middot; bottleneck early-warning</div>
+  <div class="chips">
+    <span class="chip">dMPS Managed Services</span>
+    <span class="chip">Complexity Bands L/M/H/XXL</span>
+    <span class="chip">TCV up to $20M</span>
+    <span class="chip">P0&ndash;P7 Gate Pipeline</span>
+    <span class="chip">Data &middot; ML &middot; UX &middot; Alerts</span>
+  </div>
+</header>
+
+<div class="card" style="margin:22px 0 6px">
+  <p style="margin:0 0 8px"><strong style="color:var(--accent)">What it does:</strong> watches every open deal ($1M&ndash;$20M managed-services), measures how fast each moves through its P0&ndash;P7 stages, and predicts the revenue you&rsquo;ll actually book per quarter &mdash; as a P50 / P70 / P90 range, not one guess.</p>
+  <p style="margin:0"><strong style="color:var(--accent)">The point:</strong> gut-feel stage forecasts are usually overconfident, and problems (a stalled legal review, a pipeline shortfall) get spotted too late to fix. The alert engine below flags them early and hands the owning role a concrete next action.</p>
+</div>
+<div class="card" style="margin:10px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+    <h3 style="margin:0 0 4px;color:var(--txt)">Not just a plan &mdash; run it</h3>
+    <p style="margin:0;font-size:13px">A working interactive prototype with seeded deals: Monte Carlo fan chart, funnel, bottleneck heat-map, risk-scored deal register, and the live A1&ndash;A10 alert engine.</p>
+  </div>
+  <a class="back" href="pipeline-dashboard.html" style="color:var(--accent);border-color:var(--accent);padding:10px 18px">Open the Dashboard &rarr;</a>
+</div>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#data">Data Architecture &amp; Metrics</a></li>
+    <li><a href="#model">Predictive Modeling Logic</a></li>
+    <li><a href="#ui">Interactive Interface Design</a></li>
+    <li><a href="#alerts">Early-Warning Alerts</a></li>
+    <li><a href="#build">Build Order</a></li>
+    <li><a href="#append">Appendix: Playbook Alignment</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h2 id="data"><span class="n">1</span> Data Architecture &amp; Metrics</h2>
+
+<h3>Metric taxonomy</h3>
+<p>Group every KPI into 6 families so the dashboard and model share one metric dictionary:</p>
+<table>
+  <tr><th>Family</th><th>Metrics</th><th>Purpose</th></tr>
+  <tr><td><strong>Velocity</strong></td><td>Stage dwell time (days), cycle length (avg/median/p90 from stage entry to won), days in current stage</td><td>How fast is money moving</td></tr>
+  <tr><td><strong>Conversion</strong></td><td>Stage-to-stage rate, stage-to-won rate, first-pass gate pass rate, re-spin rate</td><td>Where deals die or stall</td></tr>
+  <tr><td><strong>Value</strong></td><td>TCV/ACV distribution, historical contract values (stratified 0&ndash;1M, 1&ndash;5M, 5&ndash;10M, 10&ndash;20M), ASP per complexity band</td><td>Size realism for forecasts</td></tr>
+  <tr><td><strong>Coverage</strong></td><td>Forecast vs target, weighted pipeline &ge; 3&times; quarter target, WIP-to-booking ratio</td><td>Will we hit the number</td></tr>
+  <tr><td><strong>Health</strong></td><td>Risk score, red-flag count, aging index, onboarding-capacity headroom</td><td>Bottleneck early-warning</td></tr>
+  <tr><td><strong>Quality / Leakage</strong></td><td>Forecast accuracy (FVAE), deal slip rate, deal churn to zero / competitor</td><td>Model calibration</td></tr>
+</table>
+
+<h3>Core KPI definitions (single source of truth)</h3>
+<ul>
+  <li><strong>Stage-to-stage conversion (S&rarr;S&prime;):</strong> <code>won-transitions &divide; entered-transitions</code> within the stage, trailing <strong>2 rolling quarters</strong>. Use <strong>calendar-quarter cohorts</strong>, not lifetime averages, to catch drift.</li>
+  <li><strong>Cycle length:</strong> median and p90 of <code>SignedDate &minus; OppCreatedDate</code> per complexity band. Playbook budgets ~60&ndash;80 biz-days for M &mdash; the p90 is your <strong>stall threshold</strong>, not the median.</li>
+  <li><strong>Weighted pipeline (forecast basis):</strong> <code>&Sigma;(TCV<sub>i</sub> &times; P(win)<sub>i</sub> &times; sign_quarter_prob<sub>i</sub>)</code>. This is the <em>headline</em> number; the machine forecast reconciles against it.</li>
+  <li><strong>Contract value stratification:</strong> a <code>tcv_band</code> dimension (0&ndash;1M / 1&ndash;5M / 5&ndash;10M / 10&ndash;20M). Band-specific conversion history matters &mdash; a $1M and a $15M deal do not behave alike, and one coefficient hides the distortion.</li>
+  <li><strong>Time-to-revenue:</strong> <code>expected_revenue_quarter(opp)</code> = signed-quarter &times; recognition-profile (IFRS-15 / ASC 606 &mdash; B5 check). Booking &ne; revenue; drive the forecast from the recognition schedule.</li>
+</ul>
+
+<h3>Data model (medallion + event-sourced stage history)</h3>
+<p>Structure the warehouse in 3 layers; make <strong>stage changes first-class events</strong>, never overwritten fields.</p>
+<table>
+  <tr><th>Table</th><th>Grain</th><th>Key fields</th></tr>
+  <tr><td><code>dim_opportunity</code></td><td>1 row / opp (SCD2)</td><td>opp_id, opp_nm, customer, region, entity, complexity_band, booking_cd, forecast_class, intake_ts</td></tr>
+  <tr><td><code>dim_contract</code></td><td>1 row / signed opp</td><td>opp_id, tcv, acv, term_months, band, signed_ts, booking_ts, recognition_profile, first_revenue_qtr</td></tr>
+  <tr><td><code>fact_stage_snapshot</code></td><td>1 row / opp / day (overnight ETL)</td><td>opp_id, stage, gw_forecast, risk_score, next_action_owner, open_ts</td></tr>
+  <tr><td><code>fact_stage_transition</code></td><td>1 row / stage-entry (event)</td><td>opp_id, from_stage, to_stage, entered_ts, exited_ts, dwell_days, outcome (won/lost/stalled), reason_code</td></tr>
+  <tr><td><code>fact_activity</code></td><td>1 row / logged touch</td><td>opp_id, activity_type, owner_role, activity_ts (email/call/demo evidence)</td></tr>
+  <tr><td><code>fact_forecast_snapshot</code></td><td>1 row / opp / forecast-run</td><td>opp_id, run_qtr, scenario, p_win, expected_qtr, expected_tcv, methodology</td></tr>
+  <tr><td><code>dim_calendar</code> / <code>dim_complexity</code> / <code>dict_risk_reason</code></td><td>reference</td><td>quarter, band thresholds, risk reason codes (TCD/OPR/FIN/CNT/CPR/BOK)</td></tr>
+</table>
+<h3>Key design rules</h3>
+<ol>
+  <li><strong>Never store &ldquo;current stage&rdquo; on <code>dim_opportunity</code></strong> &mdash; derive from the latest transition. This is what makes velocity/aging computable retrospectively.</li>
+  <li><code>fact_forecast_snapshot</code> is <strong>append-only</strong> &mdash; you need the history to compute FVAE and backtest.</li>
+  <li><code>dwell_days</code> and <code>conversion</code> are <strong>pre-computed rollups</strong> to <code>mart_pipeline_daily</code> and <code>mart_forecast_quarterly</code> so the dashboard never scans events.</li>
+  <li>Join every opp to its <strong>complexity band</strong> &mdash; the primary split for thresholds and models.</li>
+  <li>Keep signed contracts in the same model so &ldquo;historic contract values up to $20M&rdquo; flows directly into probability calibration.</li>
+</ol>
+<div class="callout"><b>Backfill caveat:</b> if the current CRM only has current stage (not history), start a 30&ndash;60 day transition-logging mode before trusting velocity metrics; backfill cycle length from signed deals only.</div>
+
+<h2 id="model"><span class="n">2</span> Predictive Modeling Logic</h2>
+<p>Tiered approach &mdash; classical + ML + LLM, each with a guardrail. No single technique owns the number; they reconcile.</p>
+<div class="card">
+  <p><strong>Layering:</strong> deterministic baseline (always on) &rarr; ML win/timing models (calibrated) &rarr; LLM narrative layer (augmentation only). The money figure always comes from the classical model; the LLM explains and classifies it.</p>
+</div>
+
+<h3>Deterministic baseline (always on, first launch)</h3>
+<ul>
+  <li><strong>Migration-matrix forecast:</strong> quarterly stage-to-stage transition probabilities per complexity band &rarr; projected on-quarter wins by running the matrix forward 4 quarters per cohort.</li>
+  <li><strong>Weighted funnel</strong> as the reconciliation anchor.</li>
+  <li><strong>Monte Carlo simulation</strong> over migration probabilities: ~5,000&ndash;10,000 draws &rarr; <strong>P50 / P70 / P90 revenue per quarter</strong> (fan chart). This is the CEO/CFO number. Build in Python (<code>scikit</code> + <code>numpy</code>) or a dedicated forecasting service; <strong>no LLM in the money path.</strong></li>
+</ul>
+
+<h3>ML win &amp; cycle-time models</h3>
+<ul>
+  <li><strong>Win model:</strong> Gradient boosting (XGBoost/LightGBM) on <code>p_win</code> &mdash; features: complexity band, stage, dwell in stage, velocity down-drift, activity recency (days since last logged touch), competitor presence, region/entity, TCV band, red-flag count, booking-class lifecycle point. Output calibrated with <strong>isotonic regression</strong> (honest probabilities, not ranking).</li>
+  <li><strong>Timing model:</strong> Survival analysis (Cox PH) per band &rarr; probability of <em>not</em> having signed by quarter-end given current dwell. Your &ldquo;slip risk&rdquo; engine &mdash; interpretable for sales leadership.</li>
+  <li><strong>Expected quarter:</strong></li>
+</ul>
+<pre>P(revenue qtr t) = P(win) &times; P(sign in t | dwell, band)   then booked through the recognition profile.</pre>
+<ul>
+  <li><strong>Validation gate:</strong> 6+ rolling quarters of history; measure <strong>CSPI (Calibration, Spread, Placing, Investment)</strong> + FVAE. Publish a &ldquo;forecast accuracy score&rdquo; on the dashboard so leadership trusts the machine number.</li>
+</ul>
+
+<h3>LLM-driven layer (augmentation, not the money path)</h3>
+<ul>
+  <li><strong>Deal-context reasoning:</strong> RAG over deal notes, risk register, reasons-for-loss &rarr; classify each open deal into risk archetypes (e.g. <em>onboarding-capacity risk</em>, <em>pricing-indexation dispute</em>, <em>legal redline stall</em>, <em>silent competitor</em>), each mapped to the playbook reaction.</li>
+  <li><strong>Narrative forecast commentary:</strong> auto-draft the quarterly &ldquo;bridge&rdquo; &mdash; why forecast moved vs last run (upside/downside), citing fact IDs. Human-understandable, fully traceable.</li>
+  <li><strong>Guardrails (aligns with OCTO-SOP):</strong> LLM outputs are Tier-2 style recommendations &mdash; flagged <code>low-confidence</code>, never auto-written to CRM, all claims citation-backed (0.85 threshold + HITL). <strong>Never let an LLM produce a $ figure</strong>; it <em>summarizes</em> the classical forecast only.</li>
+</ul>
+
+<h3>Model governance</h3>
+<p>Feature store &rarr; trained quarterly per band + refit on drift &rarr; registry with version pinning. Alert on <strong>CSPI drop &gt; 0.1</strong> between runs (same DRIFT-alert principle as the OCTO SOP).</p>
+
+<h2 id="ui"><span class="n">3</span> Interactive Interface Design</h2>
+
+<h3>Stack</h3>
+<ul>
+  <li><strong>React + TypeScript</strong>, Vite build. Charts: <strong>visx/d3 or Recharts</strong> (interactive, dependency-light). <strong>TanStack Query</strong> for fetching + caching; <strong>Zustand</strong> for state. <strong>Tremor/Shadcn</strong> component base for a clean ops look.</li>
+  <li>Real-time: <strong>WebSocket</strong> feed on snapshot updates; export to JSON/PDF matching existing tool patterns.</li>
+</ul>
+
+<h3>Layout (single scrollable command center, 12-col grid)</h3>
+<table>
+  <tr><th>Zone</th><th>Component</th><th>Placement</th></tr>
+  <tr><td><strong>1. KPI band</strong></td><td>6 headline tiles &mdash; forecast-P50, coverage ratio, weighted pipeline, stage-to-won conversion, avg cycle, aging index</td><td>Top row, click-through to drill-down</td></tr>
+  <tr><td><strong>2. Quarter fan chart</strong></td><td>Monte Carlo <strong>P50/P70/P90 waterfall + ribbon</strong> vs target line; month markers</td><td>Top-center, largest real estate</td></tr>
+  <tr><td><strong>3. Funnel</strong></td><td>Stage-to-stage funnel with <strong>drop-off % per band switch</strong>; overlays: dwell, blocked count</td><td>Mid-left</td></tr>
+  <tr><td><strong>4. Bottleneck heat-map</strong></td><td>Stage &times; complexity band matrix, colored by dwell vs threshold</td><td>Mid-right</td></tr>
+  <tr><td><strong>5. Deal table</strong></td><td>Sortable, pitchfork (risk score + reason archetype + next step + owner)</td><td>Bottom, ~70% width</td></tr>
+  <tr><td><strong>6. Activity feed / alerts</strong></td><td>Alert severity-ordered feed with one-click action buttons</td><td>Right rail</td></tr>
+</table>
+
+<h3>Key interactive behaviors</h3>
+<ul>
+  <li><strong>Forecast toggles:</strong> scenario sliders &mdash; <em>close rate &times; 0/5/10%, slippage shift, target change</em> &mdash; recompute the fan chart live (what-if in-browser, pure client logic).</li>
+  <li><strong>Filter by complexity band / region / entity / TCV band</strong> everywhere; every chart reacts.</li>
+  <li><strong>Cohort comparison:</strong> &ldquo;this quarter vs last quarter vs 4-quarter average&rdquo; for conversion and cycle.</li>
+  <li><strong>Click-to-recommend:</strong> clicking an at-risk deal opens a recommendation card with the playbook action and a &ldquo;log action &rarr; owner&rdquo; write-back that updates next-action-time.</li>
+  <li><strong>Annotate &amp; export:</strong> pin budget/board notes; snapshot export for the weekly Deal Control Room.</li>
+</ul>
+
+<h3>Visualization hints</h3>
+<ul>
+  <li>Color coding: <span class="good">green</span> = on-track, <span class="warn">amber</span> = breach &lt; 1 week away, <span class="bad">red</span> = stalled &mdash; driven by the alert thresholds (Section 4), consistent across the entire tool.</li>
+  <li>Fan chart over bar chart for forecasts &mdash; communicates uncertainty honestly.</li>
+  <li>A human-readable &ldquo;machine confidence&rdquo; badge (forecast accuracy score) on the headline number.</li>
+</ul>
+
+<h2 id="alerts"><span class="n">4</span> Early-Warning Alerts</h2>
+
+<h3>Trigger rules (computed at daily snapshot)</h3>
+<table>
+  <tr><th>#</th><th>Rule</th><th>Trigger condition</th><th>Severity</th></tr>
+  <tr><td>A1</td><td><strong>Stage stall</strong></td><td><code>dwell_in_stage &gt; p85 &times; band threshold</code> (e.g. M-band T-75 selling &gt; 45 days in P2/P3)</td><td><span class="sev sev-h">High</span></td></tr>
+  <tr><td>A2</td><td><strong>Deal aging vs plan</strong></td><td>total cycle &gt; band plan (60&ndash;80 biz-days M; extend H/XXL) without gate advance</td><td><span class="sev sev-h">High</span></td></tr>
+  <tr><td>A3</td><td><strong>Velocity decay</strong></td><td>stage dwell growing 20%+ vs trailing 2 quarters, or conversion dropping 15%+</td><td><span class="sev sev-h">High</span></td></tr>
+  <tr><td>A4</td><td><strong>Pipeline coverage gap</strong></td><td>projected P70 quarter &lt; 70% of target within 30 days of quarter close</td><td><span class="sev sev-c">Critical</span></td></tr>
+  <tr><td>A5</td><td><strong>Funnel bottleneck</strong></td><td>any stage &gt; 30% of open value and &gt; p85 dwell (onboarding capacity, legal redline, pricing)</td><td><span class="sev sev-m">Med</span></td></tr>
+  <tr><td>A6</td><td><strong>Feeble pursuit (slip)</strong></td><td><code>P(sign this qtr | Cox) &lt; 40%</code> for a top-10 deal in the forecast</td><td><span class="sev sev-m">Med</span></td></tr>
+  <tr><td>A7</td><td><strong>Silent deal</strong></td><td>no logged activity (call/email/demo) in 7 days for M, 10 for H/XXL</td><td><span class="sev sev-l">Low</span></td></tr>
+  <tr><td>A8</td><td><strong>Forecast accuracy drift</strong></td><td>CSPI drop &gt; 0.1, FVAE widening &gt; 10 pts</td><td><span class="sev sev-m">Med</span></td></tr>
+  <tr><td>A9</td><td><strong>Onboarding headroom</strong></td><td>expected transition load vs site/devices capacity shortfall (R4 exposure)</td><td><span class="sev sev-h">High</span></td></tr>
+  <tr><td>A10</td><td><strong>Top-value concentration</strong></td><td>&gt; 40% of quarter P70 in one deal/fleet &mdash; counterparty / jumbo-deal risk</td><td><span class="sev sev-m">Med</span></td></tr>
+</table>
+
+<h3>Alert-adjacent recommendations (actionable, not noise)</h3>
+<p>Each alert docks a <strong>recommendation card</strong> linked to the playbook gate &amp; owner:</p>
+<ul>
+  <li><strong>A1/A2 stall &rarr; coaching cadence:</strong> send <em>Deal Control Room escalation</em> template with risk archetype (LLM-classified), 5-day action list, naming the owner + FC for H/XXL; auto-schedule the fresh-eyes review if pre-G3.</li>
+  <li><strong>A5 bottleneck &rarr; focus sprint:</strong> route the archetype to the owning function &mdash; Legal redline &rarr; LG; pricing exception &rarr; PA/FC; onboarding &rarr; DT (matches RACI columns).</li>
+  <li><strong>A4 coverage gap &rarr; pipeline resuscitation:</strong> list qualifying unweighted pipeline with win-probability uplifts possible via an owner action; surface 3 &ldquo;convert-or-remove&rdquo; deals for leadership, not 30.</li>
+  <li><strong>A7 silent deal &rarr; next-step reminder:</strong> auto-assign to opportunity owner with a suggested next action type.</li>
+  <li><strong>Escalation:</strong> Critical ties to the L4 path (Executive Sponsor / CFO) within 2 business days &mdash; never bury financing or SLA-facility resolutions at burn level.</li>
+</ul>
+
+<h3>Alert hygiene</h3>
+<ul>
+  <li><strong>Severity-cadence matrix:</strong> <span class="sev sev-l">Low</span> = daily digest; <span class="sev sev-m">Med</span> = daily, actionable, one-click; <span class="sev sev-h">High</span> = immediate to the right function; <span class="sev sev-c">Critical</span> = immediate to DP + FC + ES. No red alert without an attached recommendation + owner.</li>
+  <li><strong>Snooze / acknowledge</strong> with reason &mdash; a &ldquo;deliberate stall&rdquo; (customer procurement cycles) is <em>expected</em>, not a flag; train the model to down-weight those reason codes.</li>
+  <li><strong>Weekly metric compliance:</strong> each generated recommendation logs against sign-off audit; end-to-end auditable.</li>
+</ul>
+
+<h2 id="build"><span class="n">5</span> Build Order</h2>
+<table>
+  <tr><th>Phase</th><th>Scope</th><th>Window</th></tr>
+  <tr><td>1</td><td>Deterministic baseline + snapshot data model</td><td>Weeks 1&ndash;4</td></tr>
+  <tr><td>2</td><td>Dashboard v1 on computed metrics</td><td>Weeks 3&ndash;6</td></tr>
+  <tr><td>3</td><td>Monte Carlo + Cox timing models</td><td>Weeks 5&ndash;9</td></tr>
+  <tr><td>4</td><td>ML calibration + LLM archetypes</td><td>Weeks 9&ndash;12</td></tr>
+  <tr><td>5</td><td>Early-warning alerts (needs model trust first)</td><td>Weeks 12+</td></tr>
+</table>
+
+<h2 id="append"><span class="n">6</span> Appendix: Playbook Alignment</h2>
+<ul>
+  <li>Gate/phase vocabulary (P0&ndash;P7, G0&ndash;G7), complexity bands, escalation (L1&ndash;L4) from the <strong>dMPS Presales Due Diligence Master Guide</strong>.</li>
+  <li>RACI roles (SO/DP/PA/SP/SA/DT/FC/BC/LG/IS/CM/ES) for alert ownership routing.</li>
+  <li>Recognition/booking rules (B5, IFRS-15 / ASC 606) for time-to-revenue logic.</li>
+  <li>LLM guardrails (citation-backed claims, 0.85 confidence, HITL, deny-lists, DRIFT alerting) from the <strong>OCTO Agentic Program Management SOP</strong>.</li>
+</ul>
+
+</main>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Commercial Operations</span>
+  <span>Internal · Version 1.0</span>
+</footer>
+</div>
+
+<script>
+  const btn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('pf-theme') || 'light';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', saved);
+  paintThemeIcon(saved);
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('pf-theme', next);
+  });
+  
+</script>
+</body>
+</html>

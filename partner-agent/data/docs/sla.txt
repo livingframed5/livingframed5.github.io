@@ -1,0 +1,11 @@
+Service level commitments are defined per partner tier and cover platform availability and support response windows. These are measured quarterly and reported to the partner.
+
+Enterprise partners receive 99.95% platform availability and 24x7 priority support with a one-hour response target for critical incidents.
+
+Growth partners receive 99.9% platform availability and business-hours support informed by an SLA, with a four-hour response target for critical incidents.
+
+Startup partners receive 99.5% platform availability and standard business-hours support with a one-business-day response target.
+
+If a partner believes an SLA was missed, the account manager must validate the claim against the measured uptime report before any service credit can be proposed. Credits are never granted automatically by self-service channels.
+
+Document the incident window, expected parity where relevant, and any customer impact before opening an SLA compensation request. Provide the measured uptime report with the quarterly numbers from the reporting dashboard.

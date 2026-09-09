@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Nova — PMO Command Center</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:88px 24px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 60%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 22px;margin-bottom:6px;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:20px 22px;margin:18px 0;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.card h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 .n{background:var(--grad);color:#fff;min-width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 6px}
+.tabbtn{font-family:inherit;font-size:12.5px;font-weight:700;color:var(--muted);padding:8px 15px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s ease;box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.tabbtn:hover{color:var(--accent);border-color:var(--accent)}
+.tabbtn.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 8px 20px rgba(109,94,242,.3)}
+.tabbtn .n{min-width:17px;height:17px;border-radius:6px;background:rgba(255,255,255,.22);display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.tabbtn:not(.on) .n{background:var(--halo);color:var(--accent)}
+/* toolbar */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 6px}
+.toolbtn{font-family:inherit;font-size:12px;font-weight:700;color:var(--accent);padding:7px 13px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s ease}
+.toolbtn:hover{background:var(--halo);border-color:var(--accent)}
+.toolbtn.warn{color:var(--rose)}
+.toolbtn.warn:hover{background:rgba(225,29,72,.08);border-color:var(--rose)}
+.savedot{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
+.savedot .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(5,150,105,.5);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(5,150,105,.4)}70%{box-shadow:0 0 0 6px rgba(5,150,105,0)}100%{box-shadow:0 0 0 0 rgba(5,150,105,0)}}
+.pane{display:none}
+.pane.on{display:block}
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:9px 12px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);color:var(--txt);font-family:inherit;font-size:13px;transition:border-color .15s ease}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--grad);border:none;border-radius:10px;padding:9px 16px;cursor:pointer;box-shadow:0 6px 16px rgba(109,94,242,.3);transition:transform .15s ease,box-shadow .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--edge);box-shadow:none}
+.btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:14px 16px}
+.kpi .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.kpi .num{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.kpi small{color:var(--muted);font-size:11.5px;display:block;margin-top:2px}
+.kpi .num.accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:6px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--edge);cursor:pointer;user-select:none;white-space:nowrap;vertical-align:middle}
+th:hover{color:var(--accent)}
+th .thr{margin-left:6px;color:var(--muted)}
+td{padding:8px 10px;border-bottom:1px solid var(--edge);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.thin{font-size:11.5px}
+/* editable cells */
+.ed{font-family:inherit;font-size:12.5px;color:var(--txt);background:transparent;border:1px dashed transparent;border-radius:7px;padding:4px 6px;width:100%;min-width:70px;transition:border-color .15s ease,background .15s ease;appearance:auto}
+.ed:hover{border-color:var(--edge);background:var(--panel)}
+.ed:focus{outline:none;border-color:var(--accent);background:var(--panel)}
+select.ed{padding:4px 4px;min-width:82px}
+select.ed.sel-min{min-width:62px}
+.ednum{width:74px;min-width:60px}
+textarea.ed{resize:vertical;min-height:30px}
+.del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 7px;border-radius:7px;line-height:1;transition:color .15s ease,background .15s ease}
+.del:hover{color:var(--rose);background:rgba(225,29,72,.08)}
+.del.armed{color:#fff;background:var(--rose)}
+.delexp{max-width:52px;text-align:center;font-size:11px;font-weight:700;white-space:nowrap}
+.filts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filtbtn{font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);cursor:pointer;transition:all .15s ease}
+.filtbtn:hover{color:var(--accent);border-color:var(--accent)}
+.filtbtn.on{background:var(--grad);color:#fff;border-color:transparent}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.rag-red{background:rgba(225,29,72,.10);color:var(--rose)}
+.rag-amber{background:rgba(217,119,6,.14);color:var(--amber)}
+.rag-green{background:rgba(16,185,129,.12);color:var(--green)}
+.typ-r{background:rgba(225,29,72,.10);color:var(--rose)}
+.typ-a{background:rgba(124,58,237,.10);color:var(--violet)}
+.typ-i{background:rgba(217,119,6,.14);color:var(--amber)}
+.typ-d{background:rgba(37,99,235,.12);color:var(--blue)}
+.milestone{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px dashed var(--edge)}
+.milestone:last-child{border-bottom:none}
+.mdot{width:36px;height:36px;border-radius:12px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--txt);flex:none}
+.mdot.done{background:var(--grad);color:#fff}
+.mdot.act{background:rgba(217,119,6,.14);color:var(--amber);border:1px dashed var(--amber)}
+.mtitle{flex:1;min-width:0}
+.mtitle b{font-size:13px;display:block}
+.mtitle span{font-size:11.5px;color:var(--muted);display:block}
+.mmeta{text-align:right;flex:none}
+.mmeta .mdate{font-weight:700;font-size:12.5px}
+.mmeta small{font-size:11px;color:var(--muted);display:block}
+.bar{height:9px;border-radius:999px;background:var(--panel2);overflow:hidden}
+.bar > span{display:block;height:100%;border-radius:999px;background:var(--grad);transition:width .25s ease}
+.wlabel{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.wlabel b{color:var(--accent)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13px;background:var(--halo)}
+.callout b{color:var(--accent)}
+.raciscore{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;font-weight:800;font-size:11px;border:none;cursor:pointer;text-align:center;font-family:inherit}
+.rr{background:rgba(16,185,129,.14);color:var(--green)}
+.ra{background:rgba(124,58,237,.12);color:var(--violet)}
+.rc{background:rgba(37,99,235,.12);color:var(--blue)}
+.ri{background:rgba(217,119,6,.12);color:var(--amber)}
+.r-{background:var(--panel2);color:var(--muted)}
+.racisel{display:inline-grid;place-items:center;width:26px;height:24px;border-radius:7px;font-weight:800;font-size:11px;appearance:auto;background:var(--panel2);color:var(--muted);border:1px dashed transparent;cursor:pointer;text-align:center;font-family:inherit;transition:border-color .15s ease}
+.racisel:hover{border-color:var(--accent)}
+.racisel.adr{background:rgba(225,29,72,.10);color:var(--rose)}
+.mech{display:flex;flex-wrap:wrap;gap:10px}
+.mech .step{flex:1;min-width:210px;background:var(--panel2);border:1px solid var(--edge);border-radius:12px;padding:12px 14px}
+.mech .step b{font-size:12px;color:var(--accent)}
+.mech .step p{font-size:11.5px;color:var(--muted);margin-top:4px}
+.antipattern{border:1px dashed var(--edge);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:12.5px;color:var(--muted);background:var(--panel)}
+.antipattern b{color:var(--rose)}
+.addrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--panel2);border-radius:12px;padding:10px 12px;margin-top:10px}
+.addrow .grow{flex:1;min-width:180px}
+.addrow input{margin:0}
+.flash{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);z-index:60;background:var(--panel);border:1px solid var(--edge);border-radius:13px;box-shadow:0 16px 40px rgba(60,60,140,.18);padding:11px 20px;font-size:12.5px;font-weight:600;color:var(--txt);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;border-left:4px solid var(--accent)}
+.flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
+code{font-family:var(--mono);font-size:11.5px;background:var(--panel2);padding:1px 6px;border-radius:6px;color:var(--accent)}
+footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:84px 16px 70px}.topbar{padding:12px 16px}}
+@media print{.topbar,.tabs,.toolbar,.filts,.btnrow,.addrow,.flash,.del,.hideprint{display:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <a class="back" href="index.html">&larr; Portfolio</a>
+    <a class="back" href="pmo-nova-user-guide.html">Guide &rarr;</a>
+  </div>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Program Management Office · Interactive Command Center</span>
+  <h1>Project <b>Nova</b> — PMO Artifact Suite</h1>
+  <div class="tag">legacy-to-cloud migration · 4 phases · 7 milestones · RAG early-warning · RACI accountability</div>
+  <div class="chips">
+    <span class="chip">Inline editing</span>
+    <span class="chip">Auto-saved in browser</span>
+    <span class="chip">JSON export / import</span>
+    <span class="chip">Markdown &amp; print-ready export</span>
+  </div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tabbtn on" data-tab="overview"><span class="n">01</span>Overview &amp; KPIs</button>
+  <button class="tabbtn" data-tab="risks"><span class="n">02</span>Risk Register</button>
+  <button class="tabbtn" data-tab="raid"><span class="n">03</span>RAID Log</button>
+  <button class="tabbtn" data-tab="raci"><span class="n">04</span>RACI Matrix</button>
+  <button class="tabbtn" data-tab="steerco"><span class="n">05</span>SteerCo</button>
+  <button class="tabbtn" data-tab="change"><span class="n">06</span>Change Playbook</button>
+</div>
+
+<div class="toolbar">
+  <button class="toolbtn" id="btnExport">&#8595; Export JSON</button>
+  <button class="toolbtn" id="btnImport">&#8593; Import JSON</button>
+  <button class="toolbtn" id="btnCopyMd">&#128203; Copy Markdown</button>
+  <button class="toolbtn" id="btnDownMd">&#11015; Download .md</button>
+  <button class="toolbtn" id="btnPrint">&#128424; Print view</button>
+  <button class="toolbtn warn" id="btnResetAll">&#10227; Reset demo data</button>
+  <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+  <span class="savedot"><span class="pulse"></span>Auto-saved to this browser</span>
+</div>
+
+<main>
+
+  <!-- ════ 01 · OVERVIEW ════ -->
+  <section class="pane on" id="pane-overview">
+    <div class="kpis" id="kpiOverview"></div>
+
+    <div class="grid2">
+      <div class="card" style="margin-top:18px">
+        <h3><span class="n">M</span> Milestone roadmap <span class="thr" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">· click a field to edit</span></h3>
+        <div id="milestones"></div>
+        <div class="addrow">
+          <input type="text" id="newMs" placeholder="New milestone title…" class="grow">
+          <button class="btn" id="addMs">Add milestone</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3><span class="n">P</span> Phase progress <span class="thr" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">· edit names &amp; %</span></h3>
+        <div id="phaseLoad"></div>
+        <div class="addrow">
+          <input type="text" id="newPhase" placeholder="New phase name…" class="grow">
+          <button class="btn" id="addPhase">Add phase</button>
+        </div>
+        <div class="callout" style="margin-top:16px;margin-bottom:2px"><b>Breathing artifacts:</b> the milestone, risk, RAID, RACI and decision views all read from the same dataset — every edit saves to this browser and stays in sync across tabs.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0">
+      <h3><span class="n">S</span> Program snapshot</h3>
+      <table>
+        <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td class="thin" style="font-weight:700">Mandate</td><td class="thin">Replace legacy on-premise ERP/CRM with a cloud-native SaaS suite across 4 regional BUs</td></tr>
+          <tr><td class="thin" style="font-weight:700">Business value</td><td class="thin">−30% TCO by Year&nbsp;3 · 99.9% availability SLA · continuous delivery · mobile-first UX</td></tr>
+          <tr><td class="thin" style="font-weight:700">Guardrails</td><td class="thin">Legacy vendor support ends 18 months after charter · budget held within ±5% · zero open P1/P2 at cutover</td></tr>
+          <tr><td class="thin" style="font-weight:700">Waves</td><td class="thin">Wave 1 → BU-A · Wave 2 → BU-B &amp; BU-C · Wave 3 → full cutover</td></tr>
+          <tr><td class="thin" style="font-weight:700">Governance</td><td class="thin">Weekly SteerCo · stage gates G1–G3 · single-threaded "A" per deliverable</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════ 02 · RISK REGISTER ════ -->
+  <section class="pane" id="pane-risks">
+    <div class="kpis" id="kpiRisks"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3><span class="n">R</span> Early-warning dashboard</h3>
+      <div class="filts" id="riskFilts">
+        <button class="filtbtn on" data-f="all">All</button>
+        <button class="filtbtn" data-f="red">Red</button>
+        <button class="filtbtn" data-f="amber">Amber</button>
+        <button class="filtbtn" data-f="green">Green</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th data-sort="id"><span class="thr">&#9650;&#9660;</span>ID</th>
+            <th data-sort="desc">Risk</th>
+            <th data-sort="prob">Prob.</th>
+            <th data-sort="impact">Impact</th>
+            <th data-sort="rag">RAG</th>
+            <th data-sort="mit">Mitigation strategy</th>
+            <th data-sort="trigger">Trigger metric</th>
+            <th data-sort="owner">Owner</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="riskBody"></tbody>
+        </table>
+      </div>
+      <p class="hint">RAG = Probability × Impact — recomputed instantly as you edit. Red items must reach the SteerCo agenda.</p>
+    </div>
+
+    <div class="card" style="margin-top:0">
+      <h3><span class="n">+</span> Log a new risk</h3>
+      <div class="grid2" style="gap:0 14px">
+        <div><label>Risk description</label><input type="text" id="rDesc" placeholder="e.g. Third-party cloud provider availability incident"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+          <div><label>Probability</label><select id="rProb"><option>H</option><option>M</option><option>L</option></select></div>
+          <div><label>Impact</label><select id="rImpact"><option>H</option><option>M</option><option selected>L</option></select></div>
+        </div>
+        <div><label>Mitigation strategy</label><input type="text" id="rMit" placeholder="How we'll hold the line"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+          <div><label>Trigger metric</label><input type="text" id="rTrig" placeholder="Early-warning sign"></div>
+          <div><label>Owner</label><select id="rOwner"><option>PM</option><option>Tech Lead</option><option>Ops Lead</option><option>Data Lead</option><option>Change Lead</option><option>Finance</option></select></div>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="addRisk">Add to register</button>
+        <button class="btn ghost" id="resetRisk">Reset risk demo data</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 03 · RAID LOG ════ -->
+  <section class="pane" id="pane-raid">
+    <div class="kpis" id="kpiRaid"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3><span class="n">R</span> RAID log — live</h3>
+      <div class="filts" id="raidFilts">
+        <button class="filtbtn on" data-f="all">All</button>
+        <button class="filtbtn" data-f="risk">Risk</button>
+        <button class="filtbtn" data-f="assumption">Assumption</button>
+        <button class="filtbtn" data-f="issue">Issue</button>
+        <button class="filtbtn" data-f="dependency">Dependency</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Type</th><th data-sort="id"><span class="thr">&#9650;&#9660;</span>ID</th><th data-sort="item">Item</th><th data-sort="owner">Owner</th><th data-sort="raised">Raised</th><th data-sort="action">Action / status</th><th data-sort="due">Due</th><th></th></tr></thead>
+          <tbody id="raidBody"></tbody>
+        </table>
+      </div>
+      <p class="hint">Delete a row with the &#10005; on the right. Filter collapses the log to what matters today.</p>
+    </div>
+
+    <div class="card" style="margin-top:0">
+      <h3><span class="n">+</span> Add a RAID entry</h3>
+      <div class="grid2" style="gap:0 14px">
+        <div><label>Type</label><select id="rdType"><option>risk</option><option>issue</option><option>assumption</option><option>dependency</option></select></div>
+        <div><label>Owner</label><input type="text" id="rdOwner" placeholder="e.g. Tech Lead"></div>
+        <div><label>Item</label><textarea id="rdItem" rows="2" placeholder="What it is, and what's in motion"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+          <div><label>Action / status</label><input type="text" id="rdAction" placeholder="Next step"></div>
+          <div><label>Due (week)</label><input type="text" id="rdDue" placeholder="e.g. W8"></div>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="addRaid">Add to raid</button>
+        <button class="btn ghost" id="resetRaid">Reset RAID demo data</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 04 · RACI ════ -->
+  <section class="pane" id="pane-raci">
+    <div class="kpis" id="kpiRaci"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3><span class="n">A</span> Accountability map — click a cell to change A / R / C / I / −</h3>
+      <div class="addrow" style="margin-top:0;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted)">Add role</span>
+        <input type="text" id="newRole" placeholder="e.g. Internal Audit" class="grow">
+        <button class="btn" id="addRole">Add column</button>
+        <span style="font-size:12px;font-weight:700;color:var(--muted)">Add deliverable</span>
+        <input type="text" id="newDeliverable" placeholder="e.g. Integration test sign-off" class="grow">
+        <button class="btn" id="addDeliverable">Add row</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="raciTable"></table>
+      </div>
+      <div class="callout" style="margin-top:14px;margin-bottom:2px"><b>Exec note:</b> accountability is single-threaded — one <b>A</b> per deliverable. End users hold <b>R</b> on adoption items deliberately, so buy-in is built into the plan, not bolted on.</div>
+    </div>
+  </section>
+
+  <!-- ════ 05 · STEERCO ════ -->
+  <section class="pane" id="pane-steerco">
+    <div class="kpis" id="kpiSteerCo"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3><span class="n">1</span> Weekly deck — 10-slot template <span class="thr" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">· editable</span></h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Slide</th><th>Slot</th><th>Content per slot</th></tr></thead>
+          <tbody id="deckBody"></tbody>
+        </table>
+      </div>
+      <div class="callout"><b>Rhythm:</b> deck published 24h before · meeting spent only on Decision Log, Early-Warning and Approvals Requests — nothing else is read aloud.</div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="margin-top:0">
+        <h3><span class="n">2</span> Open decisions <span class="thr" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">· editable</span></h3>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>ID</th><th>Request</th><th>Owner</th><th>Due</th><th>Options</th><th>Recommended</th><th></th></tr></thead>
+            <tbody id="decisionBody"></tbody>
+          </table>
+        </div>
+        <div class="addrow">
+          <input type="text" id="newDecReq" placeholder="Decision required…" class="grow">
+          <input type="text" id="newDecOwner" placeholder="Owner" style="max-width:130px">
+          <input type="text" id="newDecDue" placeholder="Due" style="max-width:80px">
+          <button class="btn" id="addDecision">Add</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <h3><span class="n">3</span> SteerCo standing agenda</h3>
+        <table>
+          <thead><tr><th>Item</th><th>Cadence</th><th>Owner</th></tr></thead>
+          <tbody>
+            <tr><td class="thin">Program status · milestone actuals vs forecast</td><td class="thin">Weekly</td><td class="thin">PM</td></tr>
+            <tr><td class="thin">Early-warning dashboard (red items only)</td><td class="thin">Weekly</td><td class="thin">PM</td></tr>
+            <tr><td class="thin">Open decisions &amp; change requests</td><td class="thin">Weekly</td><td class="thin">Sponsor</td></tr>
+            <tr><td class="thin">Budget, EAC &amp; contingency</td><td class="thin">Fortnightly</td><td class="thin">Finance</td></tr>
+            <tr><td class="thin">Stage-gate reviews G1–G3</td><td class="thin">Per gate</td><td class="thin">Sponsor</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 06 · CHANGE PLAYBOOK ════ -->
+  <section class="pane" id="pane-change">
+    <div class="kpis" id="kpiChange"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3><span class="n">R</span> Wave-readiness score simulator</h3>
+      <div class="wlabel"><span>Training complete before cutover</span><b id="cTrV">90</b></div>
+      <input type="range" id="cTr" min="0" max="100" value="90">
+      <div class="wlabel"><span>Champion enablement (per BU)</span><b id="cChV">80</b></div>
+      <input type="range" id="cCh" min="0" max="100" value="80">
+      <div class="wlabel"><span>Power-user adoption (active in sandbox)</span><b id="cPoV">75</b></div>
+      <input type="range" id="cPo" min="0" max="100" value="75">
+      <div class="wlabel"><span>Sponsor visibility (planned touchpoints)</span><b id="cSpV">85</b></div>
+      <input type="range" id="cSp" min="0" max="100" value="85">
+      <div class="kpis" style="margin-top:16px">
+        <div class="kpi"><div class="lbl">Wave readiness</div><div class="num accent" id="cReady">0%</div><small>gate is 80% to go-live</small></div>
+        <div class="kpi"><div class="lbl">Gate verdict</div><div class="num" id="cGate">&mdash;</div><small id="cGateSub">auto-computed</small></div>
+      </div>
+      <div class="hint">Readiness = training&nbsp;(30%) + adoption&nbsp;(25%) + champions&nbsp;(20%) + sponsor&nbsp;(25%). Below 80% the wave is held at Gate-3 and legacy bypass risk (R-05) rises.</div>
+    </div>
+
+    <div class="card" style="margin-top:0">
+      <h3><span class="n">T</span> One-page migration change playbook</h3>
+      <div class="mech" id="changeMechanisms"></div>
+      <div class="antipattern"><b>Anti-patterns to avoid:</b> treating rollout as training · email-only comms · hiding power users who already know the legacy workarounds · letting the sponsor go silent after kickoff.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Program Management Office &amp; Delivery</span>
+  <span>Project Nova · artifact suite V1.1 · inline editing + persistence</span>
+</footer>
+</div>
+
+<div class="flash" id="flash"></div>
+
+<script>
+/* ═══════════ STATE — single source of truth, persisted to localStorage ═══════ */
+const LS_KEY = "pf-nova-v1";
+
+const SEED = {
+  risks: [
+    { id:"R-01", desc:"Scope creep — modules or processes added to in-scope during each wave", prob:"M", impact:"H",
+      mit:"Business-case-backed change control; exec-sponsor-only approvals; 10% contingency reserve",
+      trig:"&gt; 2 change requests/quarter for 2 quarters; fit-gap add-ons &gt; 15", owner:"PM" },
+    { id:"R-02", desc:"Resource contention — legacy SMEs, DBAs and vendor consultants double-booked across waves", prob:"H", impact:"H",
+      mit:"Resource loading before each wave gate; bench agreements with vendor; backup SMEs for all critical roles",
+      trig:"Cumulative SME utilization &gt; 90%; critical-role vacancy &gt; 30 days", owner:"PM" },
+    { id:"R-03", desc:"Data migration defects — mismatches, orphans or encoding issues surfacing at cutover", prob:"H", impact:"H",
+      mit:"Data profiling pre-extract; mock/parallel run per wave; automated reconciliation dashboard",
+      trig:"Mock-run accuracy &lt; 99.5%; reconciliation exceptions &gt; 1% of records; failed ETL &gt; 5%", owner:"Data Lead" },
+    { id:"R-04", desc:"Vendor delivery slippage — SaaS release or configuration timelines overshoot wave windows", prob:"M", impact:"H",
+      mit:"Contractual milestone penalties; joint weekly workstream; ≥ 2-week wave float; fallback sequencing",
+      trig:"Milestone slip &gt; 5 working days; vendor defects &gt; 48h open", owner:"Tech Lead" },
+    { id:"R-05", desc:"Stakeholder / key-user misalignment — users resist the new UI and silently bypass the system", prob:"M", impact:"H",
+      mit:"Change champions per BU; early mock-up demos; Wave-1 pilot; sponsor comms; NPS tracking",
+      trig:"Training &lt; 90% by cutover; helpdesk how-to spike; bypass incidents; NPS &lt; 0 at Month 3", owner:"Change Lead" },
+  ],
+  raid: [
+    { type:"risk", id:"R-01", item:"Scope creep on module additions per wave", owner:"PM", raised:"1d", action:"Enforce change control; exec-only approvals", due:"Ongoing" },
+    { type:"issue", id:"I-01", item:"Vendor config team understaffed for Wave 1", owner:"Tech Lead", raised:"6d", action:"Escalation to vendor PS director; 2 FTEs committed by W8", due:"W8" },
+    { type:"assumption", id:"A-01", item:"Vendor maintains 99.9% availability SLA", owner:"PM", raised:"1d", action:"Confirm in contract + service-credit clause", due:"W2" },
+    { type:"dependency", id:"D-01", item:"BU-A finance lead approval of new chart of accounts", owner:"Finance", raised:"4d", action:"Secured business partner; deadline set", due:"W7" },
+    { type:"issue", id:"I-02", item:"Data profiling found 3.1% orphan records in master data", owner:"Data Lead", raised:"3d", action:"Data steward remediation run in progress", due:"W6" },
+    { type:"assumption", id:"A-02", item:"Legacy archive &gt; 12y can stay read-only post-cutover", owner:"Ops Lead", raised:"2d", action:"Confirm with data governance board", due:"W9" },
+  ],
+  milestones: [
+    { m:"M1", t:"Charter approved & program baseline", d:"BU-A kickoff · governance set", date:"Q1", state:"done", crit:"Charter signed · governance cadence set" },
+    { m:"M2", t:"Discovery complete", d:"As-is inventory · gap analysis", date:"Q1+30", state:"done", crit:"Fit-gap analysis approved" },
+    { m:"M3", t:"Planning baseline", d:"WBS, schedule, budget, risk plan", date:"Q2", state:"act", crit:"Gate-2 passed · wave plan locked" },
+    { m:"M4", t:"Wave 1 go-live (BU-A)", d:"First production cutover", date:"Q3", state:"future", crit:"Co-existence verified" },
+    { m:"M5", t:"Wave 2 go-live (BU-B & BU-C)", d:"Regional rollout", date:"Q4", state:"future", crit:"Traffic and data verified" },
+    { m:"M6", t:"Wave 3 — full cutover", d:"Final wave + reconciliation", date:"Q4+45", state:"future", crit:"Reconciliation signed off" },
+    { m:"M7", t:"Closure & hyper-care exit", d:"Decommission · benefits baseline", date:"Q5", state:"future", crit:"Program closure pack approved" },
+  ],
+  phases: [
+    { n:"Initiation", pct:100 },
+    { n:"Planning", pct:60 },
+    { n:"Execution", pct:12 },
+    { n:"Closure", pct:0 },
+  ],
+  roles: ["Sponsor","PM","Tech Lead","Ops Lead","Data Lead","Finance Partner","Change Lead","Vendor (SaaS)","End Users","Security","Legal/Privacy","Procurement","QA/Audit"],
+  raci: [
+    { del:"Charter & scope baseline", cells:["A","R","C","C","C","C","C","I","I","C","C","C","I"] },
+    { del:"Budget & benefits business case", cells:["A","R","C","C","C","R","C","C","I","I","C","C","I"] },
+    { del:"WBS, schedule & wave plan", cells:["I","A","R","C","C","C","C","C","I","I","I","I","C"] },
+    { del:"Target architecture & integrations", cells:["I","C","A","C","R","I","I","R","I","C","C","I","C"] },
+    { del:"Data migration & reconciliation", cells:["I","C","C","C","A","I","I","R","I","C","C","I","R"] },
+    { del:"Security, compliance & DR", cells:["I","C","R","C","R","I","I","R","I","A","R","I","R"] },
+    { del:"Vendor SOW & milestones", cells:["C","R","C","I","I","C","I","A","I","I","C","R","I"] },
+    { del:"Risk register & early warnings", cells:["A","R","C","C","C","C","C","C","I","C","C","I","C"] },
+    { del:"UAT & go/no-go per wave", cells:["A","R","C","C","C","I","C","R","R","I","I","I","R"] },
+    { del:"Training & change adoption", cells:["I","C","I","C","I","I","A","I","R","I","I","I","I"] },
+    { del:"Cutover execution & hyper-care", cells:["I","A","R","R","R","I","C","R","R","C","I","I","R"] },
+    { del:"Legacy decommission & archive", cells:["A","R","C","C","R","C","I","I","I","C","C","I","R"] },
+    { del:"Program closure & lessons learned", cells:["A","R","C","C","C","C","C","I","I","C","C","I","C"] },
+  ],
+  deck: [
+    { slot:"Cover", content:"Program name · wave # · week # · overall RAG · prepared by" },
+    { slot:"Decision log (open)", content:"ID · required-by · options · recommendation · expected decision date" },
+    { slot:"Top-3 status messages", content:"Shipped · at risk · ask of the SteerCo — one line each" },
+    { slot:"Schedule & milestones", content:"Gantt + planned / actual / forecast with green-amber-red" },
+    { slot:"Early-warning dashboard", content:"Risk & issue tickets at red + trigger metrics from the register" },
+    { slot:"RAID delta (changes only)", content:"New / closed items this week; full log in appendix" },
+    { slot:"Financials", content:"Planned vs actual burn · EAC · contingency remaining" },
+    { slot:"Key metrics", content:"Wave readiness · data accuracy · training % · NPS · open P1/P2" },
+    { slot:"Next 4 weeks", content:"Key dates · upcoming gates · SteerCo dependencies" },
+    { slot:"Approvals requested", content:"Explicit motions to vote on — nothing else decided by email" },
+  ],
+  decisions: [
+    { id:"D-01", req:"Gate-2 wave sequencing approval", due:"W8", owner:"Sponsor", opt:"Approve 3-wave plan / compress to 2 waves", rec:"Approve 3-wave plan" },
+    { id:"D-02", req:"Release of $200k contingency", due:"W9", owner:"Sponsor", opt:"Release / hold", rec:"Hold until mock-run accuracy ≥ 99.5%" },
+    { id:"D-03", req:"Legacy E & F archival treatment", due:"W10", owner:"Ops Lead", opt:"Read-only archive / full decommission", rec:"Read-only archive, deferred to closure" },
+  ],
+};
+
+const clone = (o) => JSON.parse(JSON.stringify(o));
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && Array.isArray(s.risks) && Array.isArray(s.raid) && Array.isArray(s.milestones) &&
+          Array.isArray(s.phases) && Array.isArray(s.roles) && Array.isArray(s.raci) &&
+          Array.isArray(s.deck) && Array.isArray(s.decisions)) return s;
+    }
+  } catch (e) { console.warn("state load failed", e); }
+  return clone(SEED);
+}
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch (e) { console.warn("state save failed", e); }
+}
+function resetState() {
+  state = clone(SEED);
+  save();
+  renderAll();
+}
+
+/* ── Toast ── */
+let flashTimer = null;
+function flash(msg) {
+  const el = $("flash");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+/* ── Helpers ── */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const ragOf = (p, i) => {
+  const w = (p === "H" ? 2 : p === "M" ? 1 : 0) + (i === "H" ? 2 : i === "M" ? 1 : 0);
+  return w >= 4 ? "red" : w === 3 ? "amber" : "green";
+};
+const pill = (cls, text) => '<span class="pill ' + cls + '"><span class="dot"></span>' + text + '</span>';
+
+/* ── Entity / field prefixes for delegated editing ── */
+const ENT = { risks:"risk", raid:"raid", milestones:"milestone", phases:"phase", decisions:"decision", deck:"deck" };
+
+/* ── KPI card builder ── */
+function kpi(lbl, num, sub, accentCls) {
+  return '<div class="kpi"><div class="lbl">' + lbl + '</div><div class="num' + (accentCls ? " accent" : "") + '">' + num + '</div><small>' + sub + '</small></div>';
+}
+
+/* ── Overview ── */
+function renderKpiOverview() {
+  const done = state.milestones.filter((m) => m.state === "done").length;
+  const red = state.risks.filter((r) => ragOf(r.prob, r.impact) === "red").length;
+  const issues = state.raid.filter((r) => r.type === "issue").length;
+  $("kpiOverview").innerHTML =
+    kpi("Milestones complete", done + " / " + state.milestones.length, (done - 2) + " beyond plan baseline", true) +
+    kpi("Program RAG", red ? "RED" : "AMBER", red + " red risks in the register") +
+    kpi("Open risks", state.risks.length, (state.risks.length - red) + " amber · " + red + " red") +
+    kpi("Open issues", issues, state.raid.length + " total RAID entries") +
+    kpi("Budget variance", "±0%", "vs baseline · EAC within guardrail") +
+    kpi("Wave readiness", "72%", "target 80% at Wave-1 gate");
+}
+function renderMilestones() {
+  const states = { done:"Done", act:"In flight", future:"Planned" };
+  $("milestones").innerHTML = state.milestones.map((m, i) =>
+    '<div class="milestone">' +
+      '<div class="mdot ' + m.state + '">' + esc(m.m) + '</div>' +
+      '<div class="mtitle" style="flex:1.4">' +
+        '<input class="ed" data-ent="milestone" data-idx="' + i + '" data-field="t" value="' + esc(m.t) + '">' +
+        '<input class="ed" data-ent="milestone" data-idx="' + i + '" data-field="d" value="' + esc(m.d) + '">' +
+      '</div>' +
+      '<div class="mtitle">' +
+        '<input class="ed" data-ent="milestone" data-idx="' + i + '" data-field="crit" value="' + esc(m.crit) + '">' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:4px;flex:none;min-width:96px">' +
+        '<input class="ed" data-ent="milestone" data-idx="' + i + '" data-field="date" value="' + esc(m.date) + '" style="text-align:right">' +
+        '<select class="ed sel-min" data-ent="milestone" data-idx="' + i + '" data-field="state">' +
+          Object.keys(states).map((k) => '<option value="' + k + '"' + (m.state === k ? " selected" : "") + '>' + states[k] + '</option>').join("") +
+        '</select>' +
+      '</div>' +
+      '<div style="flex:none;text-align:center">' + (state.milestones.length > 1
+        ? '<button class="del" data-del="milestone" data-idx="' + i + '" title="Delete milestone">&#10005;</button>' : "") + '</div>' +
+    '</div>').join("") +
+    (state.milestones.length === 0 ? '<p class="hint">No milestones yet — add one below.</p>' : "");
+  // tiny width tweak: nothing needed
+}
+function renderPhaseLoad() {
+  $("phaseLoad").innerHTML = state.phases.map((p, i) =>
+    '<div style="margin:2px 0 10px">' +
+      '<div class="wlabel"><input class="ed" data-ent="phase" data-idx="' + i + '" data-field="n" value="' + esc(p.n) + '" style="max-width:190px"></div>' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div class="bar" style="flex:1"><span style="width:' + p.pct + '%"></span></div>' +
+        '<input type="number" class="ed ednum" min="0" max="100" data-ent="phase" data-idx="' + i + '" data-field="pct" value="' + p.pct + '"><span class="thin" style="color:var(--muted);font-weight:700;min-width:20px">%</span>' +
+        (state.phases.length > 1 ? '<button class="del" data-del="phase" data-idx="' + i + '" title="Delete phase">&#10005;</button>' : "") +
+      '</div>' +
+    '</div>').join("") +
+    (state.phases.length === 0 ? '<p class="hint">No phases yet — add one below.</p>' : "");
+}
+
+/* ── Risk register ── */
+let riskFilt = "all", riskSort = { k:"id", d:1 };
+function renderKpiRisks() {
+  const red = state.risks.filter((r) => ragOf(r.prob, r.impact) === "red").length;
+  const amber = state.risks.filter((r) => ragOf(r.prob, r.impact) === "amber").length;
+  const green = state.risks.filter((r) => ragOf(r.prob, r.impact) === "green").length;
+  const h = state.risks.filter((r) => r.prob === "H" || r.impact === "H").length;
+  $("kpiRisks").innerHTML =
+    kpi("Total risks", state.risks.length, "baselined at 5 · growable", true) +
+    kpi("Red", red, "must land on SteerCo agenda") +
+    kpi("Amber", amber, "owner action plans in motion") +
+    kpi("Green", green, "tracked, mitigation active") +
+    kpi("High-side exposure", h, "risks with H prob or H impact");
+}
+function riskRows() {
+  let list = state.risks.filter((r) => riskFilt === "all" || ragOf(r.prob, r.impact) === riskFilt);
+  const k = riskSort.k, d = riskSort.d;
+  list.sort((a, b) => {
+    let va = a[k], vb = b[k];
+    if (k === "rag") va = ragOf(a.prob, a.impact), vb = ragOf(b.prob, b.impact);
+    if (va > vb) return 1 * d; if (va < vb) return -1 * d; return 0;
+  });
+  return list;
+}
+function renderRisks() {
+  const rows = riskRows();
+  $("riskBody").innerHTML = rows.length ? rows.map((r, ri) => {
+    const idx = state.risks.indexOf(r);
+    const rag = ragOf(r.prob, r.impact);
+    return "<tr>" +
+      '<td class="thin" style="font-weight:700;white-space:nowrap">' + esc(r.id) + '</td>' +
+      '<td><textarea class="ed" rows="1" data-ent="risk" data-idx="' + idx + '" data-field="desc">' + esc(r.desc) + '</textarea></td>' +
+      '<td><select class="ed sel-min" data-ent="risk" data-idx="' + idx + '" data-field="prob">' +
+        ["H","M","L"].map((o) => '<option' + (r.prob === o ? " selected" : "") + '>' + o + '</option>').join("") + '</select></td>' +
+      '<td><select class="ed sel-min" data-ent="risk" data-idx="' + idx + '" data-field="impact">' +
+        ["H","M","L"].map((o) => '<option' + (r.impact === o ? " selected" : "") + '>' + o + '</option>').join("") + '</select></td>' +
+      '<td style="white-space:nowrap">' + pill("rag-" + rag, rag.toUpperCase()) + '</td>' +
+      '<td><input class="ed" data-ent="risk" data-idx="' + idx + '" data-field="mit" value="' + esc(r.mit) + '"></td>' +
+      '<td><input class="ed" data-ent="risk" data-idx="' + idx + '" data-field="trig" value="' + esc(r.trig) + '"></td>' +
+      '<td><select class="ed" data-ent="risk" data-idx="' + idx + '" data-field="owner" style="min-width:110px">' +
+        ["PM","Tech Lead","Ops Lead","Data Lead","Change Lead","Finance"].map((o) => '<option' + (r.owner === o ? " selected" : "") + '>' + o + '</option>').join("") + '</select></td>' +
+      '<td style="text-align:center;white-space:nowrap">' +
+        '<button class="del" data-del="risk" data-idx="' + idx + '" title="Delete risk">&#10005;</button></td>' +
+    "</tr>";
+  }).join("") : '<tr><td colspan="9" style="text-align:center;color:var(--muted)">No risks match this RAG filter.</td></tr>';
+}
+
+/* ── RAID ── */
+let raidFilt = "all", raidSort = { k:"id", d:1 };
+function renderKpiRaid() {
+  const by = { risk:0, issue:0, assumption:0, dependency:0 };
+  state.raid.forEach((r) => by[r.type]++);
+  $("kpiRaid").innerHTML =
+    kpi("RAID entries", state.raid.length, "one log, four classes", true) +
+    kpi("Issues", by.issue, "happening now · action + owner") +
+    kpi("Risks", by.risk, "future · prob × impact") +
+    kpi("Assumptions", by.assumption, "unvalidated beliefs to test") +
+    kpi("Dependencies", by.dependency, "external gates we wait on");
+}
+function renderRaid() {
+  const typeMap = { risk:["typ-r","Risk"], issue:["typ-i","Issue"], assumption:["typ-a","Assumption"], dependency:["typ-d","Dependency"] };
+  let list = state.raid.filter((r) => raidFilt === "all" || r.type === raidFilt);
+  const k = raidSort.k, d = raidSort.d;
+  list.sort((a, b) => { const va = a[k], vb = b[k]; if (va > vb) return 1 * d; if (va < vb) return -1 * d; return 0; });
+  $("raidBody").innerHTML = list.length ? list.map((r) => {
+    const idx = state.raid.indexOf(r);
+    const t = typeMap[r.type];
+    return "<tr>" +
+      '<td style="white-space:nowrap">' + pill(t[0], t[1]) + '</td>' +
+      '<td class="thin" style="font-weight:700;white-space:nowrap">' + esc(r.id) + '</td>' +
+      '<td><input class="ed" data-ent="raid" data-idx="' + idx + '" data-field="item" value="' + esc(r.item) + '"></td>' +
+      '<td><input class="ed" data-ent="raid" data-idx="' + idx + '" data-field="owner" value="' + esc(r.owner) + '" style="min-width:92px"></td>' +
+      '<td><input class="ed" data-ent="raid" data-idx="' + idx + '" data-field="raised" value="' + esc(r.raised) + '" style="min-width:52px"></td>' +
+      '<td><input class="ed" data-ent="raid" data-idx="' + idx + '" data-field="action" value="' + esc(r.action) + '"></td>' +
+      '<td><input class="ed" data-ent="raid" data-idx="' + idx + '" data-field="due" value="' + esc(r.due) + '" style="min-width:52px"></td>' +
+      '<td style="text-align:center"><button class="del" data-del="raid" data-idx="' + idx + '" title="Delete entry">&#10005;</button></td>' +
+    "</tr>";
+  }).join("") : '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No entries match this type.</td></tr>';
+}
+
+/* ── RACI ── */
+function renderKpiRaci() {
+  const allA = [].concat(...state.raci.map((r) => r.cells)).filter((c) => c === "A").length;
+  $("kpiRaci").innerHTML =
+    kpi("Deliverables", state.raci.length, "each owned by exactly one 'A'", true) +
+    kpi("Single-threaded A's", allA, "no shared accountability zones") +
+    kpi("Roles mapped", state.roles.length, "exec → end users → vendor") +
+    kpi("Adoption owners", 4, "end users hold R on UAT · training · cutover");
+}
+const RACI_CELL = { A:["ra","A"], R:["rr","R"], C:["rc","C"], I:["ri","I"], "":["r-","−"] };
+const RACI_ORDER = ["", "A", "R", "C", "I"];
+function renderRaci() {
+  const hdr = "<thead><tr>" +
+    '<th style="cursor:default">Deliverable</th>' +
+    state.roles.map((r, ci) =>
+      '<th style="text-align:center;min-width:58px"><span class="thin">' + esc(r) + '</span>' +
+      (state.roles.length > 1 ? ' <button class="del" data-del="role" data-idx="' + ci + '" title="Remove role">&#10005;</button>' : "") + "</th>").join("") +
+    "</tr></thead>";
+  const body = state.raci.map((row, di) => "<tr>" +
+    '<td><input class="ed" data-ent="raci" data-idx="' + di + '" data-field="del" value="' + esc(row.del) + '"></td>' +
+    state.roles.map((_, ci) => {
+      const v = row.cells[ci] || "";
+      const c = RACI_CELL[v] || RACI_CELL[""];
+      return '<td style="text-align:center"><select class="racisel ' + c[0] + '" data-ent="raci" data-idx="' + di + '" data-field="c" data-role="' + ci + '" style="color:' + c[0] + '">' +
+        RACI_ORDER.map((o) => '<option value="' + o + '"' + (v === o ? " selected" : "") + '>' + (o || "−") + '</option>').join("") +
+        "</select></td>";
+    }).join("") +
+    '<td style="text-align:center">' + (state.raci.length > 1 ? '<button class="del" data-del="deliverable" data-idx="' + di + '" title="Remove deliverable">&#10005;</button>' : "") + "</td>" +
+    "</tr>").join("");
+  $("raciTable").innerHTML = hdr + "<tbody>" + body + "</tbody>";
+}
+
+/* ── SteerCo ── */
+function renderKpiSteerCo() {
+  $("kpiSteerCo").innerHTML =
+    kpi("Deck slots", state.deck.length, "decisions-first, 10 minutes", true) +
+    kpi("Open decisions", state.decisions.length, "all before the next SteerCo") +
+    kpi("Gate rhythm", "G1–G3", "charter → plan → closure") +
+    kpi("Package lead", "24h", "deck published before the call");
+}
+function renderDeck() {
+  $("deckBody").innerHTML = state.deck.map((d, i) =>
+    "<tr><td class='thin' style='font-weight:700;text-align:center'><input class='ed ednum' data-ent='deck' data-idx='" + i + "' data-field='num' value='" + (i + 1) + "'>" +
+    "</td><td><input class='ed' data-ent='deck' data-idx='" + i + "' data-field='slot' value='" + esc(d.slot) + "'></td>" +
+    "<td><input class='ed' data-ent='deck' data-idx='" + i + "' data-field='content' value='" + esc(d.content) + "'></td></tr>").join("");
+}
+function renderDecisions() {
+  $("decisionBody").innerHTML = state.decisions.length ? state.decisions.map((d, i) =>
+    "<tr>" +
+      '<td class="thin" style="font-weight:700;white-space:nowrap">' + esc(d.id) + '</td>' +
+      '<td><input class="ed" data-ent="decision" data-idx="' + i + '" data-field="req" value="' + esc(d.req) + '"></td>' +
+      '<td><input class="ed" data-ent="decision" data-idx="' + i + '" data-field="owner" value="' + esc(d.owner) + '" style="min-width:90px"></td>' +
+      '<td><input class="ed" data-ent="decision" data-idx="' + i + '" data-field="due" value="' + esc(d.due) + '" style="min-width:52px"></td>' +
+      '<td><input class="ed" data-ent="decision" data-idx="' + i + '" data-field="opt" value="' + esc(d.opt) + '"></td>' +
+      '<td><input class="ed" data-ent="decision" data-idx="' + i + '" data-field="rec" value="' + esc(d.rec) + '"></td>' +
+      '<td style="text-align:center"><button class="del" data-del="decision" data-idx="' + i + '" title="Remove decision">&#10005;</button></td>' +
+    "</tr>").join("") : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No open decisions — agenda is clear.</td></tr>';
+}
+
+/* ── Change playbook ── */
+const CHANGE_MECH = [
+  { t:"1 · Prime the wave", p:"Communicate 2 weeks out — one repeated narrative (faster · cheaper · always-on), same three numbers, zero jargon." },
+  { t:"2 · Land quick wins", p:"Day 1–5 baseline with 3 visible, real tasks that work first try, backed by champions on the floor." },
+  { t:"3 · Sustain daily", p:"Two-week pulse of daily tips plus a live helper desk; every blocker gets a name and a due date." },
+  { t:"4 · Reinforce & prove", p:"NPS pulse at Week 6 · celebrate wins publicly · feed evidence back to the SteerCo readiness score." },
+];
+function renderChange() {
+  $("changeMechanisms").innerHTML = CHANGE_MECH.map((c) =>
+    '<div class="step"><b>' + esc(c.t) + "</b><p>" + esc(c.p) + "</p></div>").join("");
+}
+function readiness() {
+  const tr = +$("cTr").value, ch = +$("cCh").value, po = +$("cPo").value, sp = +$("cSp").value;
+  const r = Math.round(tr * 0.30 + ch * 0.20 + po * 0.25 + sp * 0.25);
+  $("cTrV").textContent = tr; $("cChV").textContent = ch; $("cPoV").textContent = po; $("cSpV").textContent = sp;
+  $("cReady").textContent = r + "%";
+  $("cGate").textContent = r >= 80 ? "GREEN" : r >= 65 ? "AMBER" : "RED";
+  $("cGate").style.color = r >= 80 ? "var(--green)" : r >= 65 ? "var(--amber)" : "var(--rose)";
+  $("cGateSub").textContent = r >= 80 ? "wave clears the go-live gate" : r >= 65 ? "conditions apply before go-live" : "wave held until readiness improves";
+}
+
+/* ── render everything ── */
+function renderAll() {
+  renderKpiOverview(); renderMilestones(); renderPhaseLoad();
+  renderKpiRisks(); renderRisks();
+  renderKpiRaid(); renderRaid();
+  renderKpiRaci(); renderRaci();
+  renderKpiSteerCo(); renderDeck(); renderDecisions();
+  renderChange(); readiness();
+}
+
+/* ── Generic inline editing (delegated) ── */
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  const ent = el.dataset.ent, idx = el.dataset.idx, f = el.dataset.field;
+  if (!ent || idx === undefined || f === undefined) return;
+  if (ent === "raci") {
+    if (f === "del") { state.raci[idx].del = el.value; save(); return; }
+  }
+  const arr = state[ent];
+  if (arr && arr[idx]) { arr[idx][f] = el.value; save(); }
+});
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  const ent = el.dataset.ent, idx = el.dataset.idx, f = el.dataset.field;
+  if (!ent || idx === undefined || f === undefined) return;
+  if (ent === "raci" && f === "c") {
+    const v = el.value === "−" ? "" : el.value;
+    state.raci[idx].cells[+el.dataset.role] = v;
+    save();
+    el.className = "racisel " + (RACI_CELL[v] || RACI_CELL[""])[0];
+    return;
+  }
+  const arr = state[ent];
+  if (arr && arr[idx]) {
+    arr[idx][f] = el.value; save();
+    if (ent === "risk" && (f === "prob" || f === "impact")) { renderRisks(); }
+    else if (ent === "phase") { renderKpiOverview(); }
+  }
+});
+
+/* ── Delete (two-click confirm) ── */
+let armed = null, armedTimer = null;
+document.addEventListener("click", (e) => {
+  const del = e.target.closest("[data-del]");
+  if (!del) return;
+  const kind = del.dataset.del, idx = +del.dataset.idx;
+  const delKey = { milestone:"milestones", phase:"phases", risk:"risks", raid:"raid", decision:"decisions", deliverable:"raci", role:null }[kind];
+  if (kind === "role") {
+    if (armed === "role" + idx) {
+      state.roles.splice(idx, 1);
+      state.raci.forEach((row) => row.cells.splice(idx, 1));
+      save(); renderAll(); flash("Role removed."); clearArmed();
+    } else { prime(del, "role" + idx, "Remove role?"); }
+    return;
+  }
+  if (kind === "deliverable") {
+    if (armed === "deliv" + idx) {
+      state.raci.splice(idx, 1);
+      save(); renderAll(); flash("Deliverable removed."); clearArmed();
+    } else { prime(del, "deliv" + idx, "Remove deliverable?"); }
+    return;
+  }
+  const target = state[delKey];
+  if (!target || !target[idx]) return;
+  if (armed === delKey + idx) {
+    target.splice(idx, 1);
+    save(); renderAll(); flash(kind + " removed."); clearArmed();
+  } else { prime(del, delKey + idx, "Sure?"); }
+});
+function prime(el, key, label) {
+  clearArmed();
+  armed = key;
+  el.classList.add("armed");
+  el.innerHTML = label;
+  el.style.padding = "2px 8px";
+  armedTimer = setTimeout(clearArmed, 2800);
+}
+function clearArmed() {
+  if (armedTimer) clearTimeout(armedTimer);
+  armed = null;
+}
+
+/* ── Add forms ── */
+$("addRisk").addEventListener("click", () => {
+  const desc = $("rDesc").value.trim();
+  if (!desc) { $("rDesc").focus(); return; }
+  let seq = state.risks.length + 1;
+  let n = "R-" + String(seq).padStart(2, "0");
+  while (state.risks.some((r) => r.id === n)) { seq++; n = "R-" + String(seq).padStart(2, "0"); }
+  state.risks.push({ id: n, desc, prob: $("rProb").value, impact: $("rImpact").value,
+    mit: $("rMit").value.trim() || "Monitoring via SteerCo", trig: $("rTrig").value.trim() || "Watch context weekly", owner: $("rOwner").value });
+  $("rDesc").value = ""; $("rMit").value = ""; $("rTrig").value = "";
+  save(); renderAll(); flash(n + " added · now in the register.");
+});
+$("resetRisk").addEventListener("click", () => {
+  state.risks = clone(SEED.risks);
+  riskSort = { k:"id", d:1 }; save(); renderAll(); flash("Risks reset to baseline demo.");
+});
+$("addRaid").addEventListener("click", () => {
+  const item = $("rdItem").value.trim();
+  if (!item) { $("rdItem").focus(); return; }
+  const t = $("rdType").value;
+  const prefix = { risk:"R", issue:"I", assumption:"A", dependency:"D" }[t];
+  let nn = 1;
+  const ids = state.raid.map((x) => x.id);
+  while (ids.includes(prefix + "-" + String(nn).padStart(2, "0"))) nn++;
+  const id = prefix + "-" + String(nn).padStart(2, "0");
+  state.raid.push({ type: t, id, item, owner: $("rdOwner").value.trim() || "TBD", raised: "today",
+    action: $("rdAction").value.trim() || "In progress", due: $("rdDue").value.trim() || "—" });
+  $("rdItem").value = ""; $("rdOwner").value = ""; $("rdAction").value = ""; $("rdDue").value = "";
+  save(); renderAll(); flash(id + " added to the RAID log.");
+});
+$("resetRaid").addEventListener("click", () => {
+  state.raid = clone(SEED.raid);
+  raidSort = { k:"id", d:1 }; save(); renderAll(); flash("RAID reset to baseline demo.");
+});
+$("addMs").addEventListener("click", () => {
+  const t = $("newMs").value.trim();
+  if (!t) { $("newMs").focus(); return; }
+  const n = "M" + (state.milestones.length + 1);
+  state.milestones.push({ m: n, t, d: "", date: "TBD", state: "future", crit: "" });
+  $("newMs").value = "";
+  save(); renderAll(); flash(n + " added to the roadmap.");
+});
+$("addPhase").addEventListener("click", () => {
+  const n = $("newPhase").value.trim();
+  if (!n) { $("newPhase").focus(); return; }
+  state.phases.push({ n, pct: 0 });
+  $("newPhase").value = "";
+  save(); renderAll(); flash("Phase added.");
+});
+$("addRole").addEventListener("click", () => {
+  const n = $("newRole").value.trim();
+  if (!n) { $("newRole").focus(); return; }
+  state.roles.push(n);
+  state.raci.forEach((row) => row.cells.push(""));
+  $("newRole").value = "";
+  save(); renderAll(); flash("Role column added.");
+});
+$("addDeliverable").addEventListener("click", () => {
+  const n = $("newDeliverable").value.trim();
+  if (!n) { $("newDeliverable").focus(); return; }
+  state.raci.push({ del: n, cells: state.roles.map(() => "") });
+  $("newDeliverable").value = "";
+  save(); renderAll(); flash("Deliverable row added.");
+});
+$("addDecision").addEventListener("click", () => {
+  const req = $("newDecReq").value.trim();
+  if (!req) { $("newDecReq").focus(); return; }
+  const nn = "D-" + String(state.decisions.length + 1).padStart(2, "0");
+  state.decisions.push({ id: nn, req, owner: $("newDecOwner").value.trim() || "TBD",
+    due: $("newDecDue").value.trim() || "—", opt: "Approve / hold", rec: "Approve" });
+  $("newDecReq").value = ""; $("newDecOwner").value = ""; $("newDecDue").value = "";
+  save(); renderAll(); flash(nn + " logged as an open decision.");
+});
+
+/* ── Filters ── */
+document.querySelectorAll("#riskFilts .filtbtn").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("#riskFilts .filtbtn").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on"); riskFilt = b.dataset.f; renderRisks();
+}));
+document.querySelectorAll("#raidFilts .filtbtn").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("#raidFilts .filtbtn").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on"); raidFilt = b.dataset.f; renderRaid();
+}));
+
+/* ── Sorting (th[data-sort]) ── */
+document.querySelectorAll("#pane-risks th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+  const k = th.dataset.sort;
+  if (riskSort.k === k) riskSort.d *= -1; else { riskSort.k = k; riskSort.d = 1; }
+  renderRisks();
+}));
+document.querySelectorAll("#pane-raid th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+  const k = th.dataset.sort;
+  if (raidSort.k === k) raidSort.d *= -1; else { raidSort.k = k; raidSort.d = 1; }
+  renderRaid();
+}));
+
+/* ── Tabs ── */
+document.querySelectorAll(".tabbtn").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabbtn").forEach((x) => x.classList.remove("on"));
+  document.querySelectorAll(".pane").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on"); $("pane-" + b.dataset.tab).classList.add("on");
+}));
+
+/* ── Readiness sliders ── */
+["cTr","cCh","cPo","cSp"].forEach((id) => $(id).addEventListener("input", readiness));
+
+/* ═══════════ EXPORT / IMPORT ═══════════ */
+function textToFile(name, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 300);
+}
+$("btnExport").addEventListener("click", () => {
+  const payload = { frozenAt: new Date().toISOString(), state };
+  textToFile("project-nova-pmo.json", JSON.stringify(payload, null, 2), "application/json");
+  flash("Program exported as JSON.");
+});
+$("btnImport").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const s = parsed && parsed.state ? parsed.state : parsed;
+      if (s && Array.isArray(s.risks) && Array.isArray(s.raid) && Array.isArray(s.milestones) &&
+          Array.isArray(s.phases) && Array.isArray(s.roles) && Array.isArray(s.raci) &&
+          Array.isArray(s.deck) && Array.isArray(s.decisions)) {
+        state = s;
+        save(); renderAll();
+        flash("Program imported and saved.");
+      } else {
+        flash("File doesn't look like a Project Nova export.");
+      }
+    } catch (err) {
+      flash("Could not read that JSON file.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+/* ═══════════ MARKDOWN + PRINT READY EXPORTS ═══════════ */
+const SNAPSHOT = [
+  ["Mandate", "Replace legacy on-premise ERP/CRM with a cloud-native SaaS suite across 4 regional BUs"],
+  ["Business value", "−30% TCO by Year 3 · 99.9% availability SLA · continuous delivery · mobile-first UX"],
+  ["Guardrails", "Legacy vendor support ends 18 months after charter · budget within ±5% · zero open P1/P2 at cutover"],
+  ["Waves", "Wave 1 → BU-A · Wave 2 → BU-B & BU-C · Wave 3 → full cutover"],
+  ["Governance", "Weekly SteerCo · stage gates G1–G3 · single-threaded “A” per deliverable"],
+];
+const mdCell = (s) => String(s == null ? "" : s).replace(/\|/g, "\\|").replace(/\n/g, " ");
+const mdTable = (header, rows) =>
+  "| " + header.join(" | ") + " |\n| " + header.map(() => "---").join(" | ") + " |\n" +
+  rows.map((r) => "| " + r.map(mdCell).join(" | ") + " |").join("\n");
+
+function buildMarkdown() {
+  const lines = [];
+  lines.push("# Project Nova — PMO Artifact Export");
+  lines.push("_Generated " + new Date().toISOString().slice(0, 10) + " · from pmo-nova-command-center.html_");
+  lines.push("");
+  lines.push("## 1 · Program Snapshot");
+  lines.push(mdTable(["Attribute","Value"], SNAPSHOT));
+  lines.push("");
+  lines.push("## 2 · Milestone Roadmap");
+  lines.push(mdTable(["ID","Milestone","Detail","Date","Exit criterion","Status"],
+    state.milestones.map((m) => [m.m, m.t, m.d, m.date, m.crit,
+      m.state === "done" ? "Closed" : m.state === "act" ? "In flight" : "Planned"])));
+  lines.push("");
+  lines.push("## 3 · Phase Progress");
+  lines.push(mdTable(["Phase","Progress"], state.phases.map((p) => [p.n, p.pct + "%"])));
+  lines.push("");
+  lines.push("## 4 · Risk Register & Early Warning");
+  lines.push(mdTable(["Risk ID","Description","Probability","Impact","RAG","Mitigation Strategy","Trigger Metric","Owner"],
+    state.risks.map((r) => { const rag = ragOf(r.prob, r.impact).toUpperCase();
+      return [r.id, r.desc, r.prob, r.impact, rag, r.mit, r.trig.replace(/&gt;/g, ">").replace(/&lt;/g, "<"), r.owner]; })));
+  lines.push("");
+  lines.push("## 5 · RAID Log");
+  lines.push(mdTable(["Type","ID","Item","Owner","Raised","Action / Status","Due"],
+    state.raid.map((r) => [r.type, r.id, r.item, r.owner, r.raised, r.action, r.due])));
+  lines.push("");
+  lines.push("## 6 · RACI Accountability Matrix");
+  lines.push(mdTable(["Deliverable", ...state.roles],
+    state.raci.map((row) => [row.del, ...row.cells.map((c) => c || "−")])));
+  lines.push("");
+  lines.push("## 7 · Open Decisions");
+  lines.push(mdTable(["ID","Request","Owner","Due","Options","Recommended"],
+    state.decisions.map((d) => [d.id, d.req, d.owner, d.due, d.opt, d.rec])));
+  lines.push("");
+  lines.push("## 8 · Weekly SteerCo Deck Template");
+  lines.push(mdTable(["Slide","Slot","Content"], state.deck.map((d, i) => [i + 1, d.slot, d.content])));
+  return lines.join("\n");
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => flash("Artifacts copied as Markdown."), () => flash("Could not copy — try Download .md."));
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); flash("Artifacts copied as Markdown."); }
+    catch (err) { flash("Could not copy — try Download .md."); }
+    ta.remove();
+  }
+}
+$("btnCopyMd").addEventListener("click", () => copyText(buildMarkdown()));
+$("btnDownMd").addEventListener("click", () => {
+  textToFile("project-nova-pmo.md", buildMarkdown(), "text/markdown");
+  flash("Markdown artifact downloaded.");
+});
+function buildPrintHtml() {
+  const tables = [];
+  tables.push(`<section><h2>1 · Program Snapshot</h2>` + htmlTable(["Attribute","Value"], SNAPSHOT.map((r) => [r[0], r[1]])) + `</section>`);
+  tables.push(`<section><h2>2 · Milestone Roadmap</h2>` + htmlTable(["ID","Milestone","Detail","Date","Exit criterion","Status"],
+    state.milestones.map((m) => [m.m, m.t, m.d, m.date, m.crit, m.state])) + `</section>`);
+  tables.push(`<section><h2>3 · Phase Progress</h2>` + mdTable(["Phase","Progress"], state.phases.map((p) => [p.n, p.pct + "%"])) + `</section>`);
+  tables.push(`<section><h2>4 · Risk Register & Early Warning</h2>` + htmlTable(["Risk ID","Description","Probability","Impact","RAG","Mitigation","Trigger","Owner"],
+    state.risks.map((r) => [r.id, r.desc, r.prob, r.impact, ragOf(r.prob, r.impact).toUpperCase(), r.mit, r.trig, r.owner])) + `</section>`);
+  tables.push(`<section><h2>5 · RAID Log</h2>` + htmlTable(["Type","ID","Item","Owner","Raised","Action","Due"],
+    state.raid.map((r) => [r.type, r.id, r.item, r.owner, r.raised, r.action, r.due])) + `</section>`);
+  tables.push(`<section><h2>6 · RACI Accountability Matrix</h2>` + htmlTable(["Deliverable", ...state.roles],
+    state.raci.map((row) => [row.del, ...row.cells.map((c) => c || "−")])) + `</section>`);
+  tables.push(`<section><h2>7 · Open Decisions</h2>` + htmlTable(["ID","Request","Owner","Due","Options","Recommended"],
+    state.decisions.map((d) => [d.id, d.req, d.owner, d.due, d.opt, d.rec])) + `</section>`);
+  tables.push(`<section><h2>8 · Weekly SteerCo Deck Template</h2>` + htmlTable(["Slide","Slot","Content"], state.deck.map((d, i) => [i + 1, d.slot, d.content])) + `</section>`);
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Project Nova — PMO Artifacts</title>
+  <style>
+    body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:#111827;line-height:1.5;padding:32px 40px;font-size:13px}
+    h1{font-size:22px;margin:0 0 2px}
+    .sub{color:#6b7280;font-size:12px;margin-bottom:8px}
+    h2{font-size:15px;margin:26px 0 8px;color:#111827;border-bottom:2px solid #e5e7eb;padding-bottom:4px}
+    table{border-collapse:collapse;width:100%;font-size:11.5px;margin:6px 0}
+    th{background:#eef2fb;text-align:left;text-transform:uppercase;font-size:10px;letter-spacing:.4px;padding:6px 8px;border:1px solid #d8dbe6;color:#4b5563}
+    td{padding:6px 8px;border:1px solid #d8dbe6;vertical-align:top}
+    section{page-break-inside:auto}
+    tr{page-break-inside:avoid}
+  </style></head><body>
+  <h1>Project Nova — PMO Artifact Suite</h1>
+  <div class="sub">Legacy-to-cloud migration · generated ` + new Date().toISOString().slice(0, 10) + ` · print-ready export</div>
+  ` + tables.join("\n") + `
+  <div class="sub" style="margin-top:28px">Built by Whitney Smith · Program Management Office &amp; Delivery</div>
+  </body></html>`;
+}
+function htmlTable(hdr, rows) {
+  return "<table><thead><tr>" + hdr.map((h) => "<th>" + esc(h) + "</th>").join("") + "</tr></thead><tbody>" +
+    rows.map((r) => "<tr>" + r.map((c) => "<td>" + esc(c) + "</td>").join("") + "</tr>").join("") + "</tbody></table>";
+}
+$("btnPrint").addEventListener("click", () => {
+  const w = window.open("", "_blank", "width=1100,height=800");
+  if (!w) { flash("Popup blocked — allow popups to print."); return; }
+  w.document.write(buildPrintHtml());
+  w.document.close();
+});
+
+/* ── Reset all ── */
+$("btnResetAll").addEventListener("click", () => {
+  if (window.confirm("Reset the entire program to demo data? Your edits in this browser will be lost.")) {
+    resetState();
+    flash("Program reset to baseline demo data.");
+  }
+});
+
+/* ── Theme (shared key pf-theme with the rest of the portfolio) ── */
+const btn = $("themeBtn");
+const saved = localStorage.getItem("pf-theme") || "light";
+const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+function paintThemeIcon(theme) {
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === "dark" ? MOON : SUN) + '</svg>';
+}
+document.documentElement.setAttribute("data-theme", saved);
+paintThemeIcon(saved);
+btn.addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  paintThemeIcon(next);
+  localStorage.setItem("pf-theme", next);
+});
+
+/* ── First paint ── */
+renderAll();
+</script>
+</body>
+</html>

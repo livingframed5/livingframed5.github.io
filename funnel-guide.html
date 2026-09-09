@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funnel Builder &amp; Leak Analysis &mdash; User Guide</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.65;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:96px 26px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 24px;margin-bottom:14px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.toc{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 22px;margin:26px 0 8px;box-shadow:var(--shadow)}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:sec}
+.toc li{counter-increment:sec;margin:5px 0}
+.toc a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:500}
+.toc a::before{content:counter(sec) ". ";font-weight:800;color:var(--violet)}
+.toc a:hover{text-decoration:underline}
+main{counter-reset:sec}
+h2{font-size:21px;margin:44px 0 12px;display:flex;align-items:center;gap:12px;letter-spacing:-0.01em;counter-increment:sec}
+h2 .n{background:var(--grad);color:#fff;font-size:13px;min-width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+h3{font-size:15.5px;margin:26px 0 8px;color:var(--violet);font-weight:700}
+p{margin:9px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:4px 0}
+strong{font-weight:700}
+code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--edge);border-radius:5px;padding:1px 6px}
+pre{font-family:var(--mono);font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px 18px;overflow:auto;margin:12px 0;line-height:1.55}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:var(--halo)}
+.callout b{color:var(--accent)}
+.tip{border-left:4px solid var(--green);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:rgba(5,150,105,.08)}
+.tip b{color:var(--green)}
+.warn{border-left:4px solid var(--amber);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:rgba(217,119,6,.09)}
+.warn b{color:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--edge)}
+td{padding:9px 12px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--edge);border-radius:4px;padding:1px 6px}
+.good{color:var(--green);font-weight:700}
+.warnc{color:var(--amber);font-weight:700}
+.bad{color:var(--rose);font-weight:700}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:88px 16px 70px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Interactive Prototype &middot; dMPS Managed Services</span>
+  <h1>Funnel Builder &amp; <b>Leak Analysis</b></h1>
+  <div class="tag">Edit stages &middot; counts &middot; deal size &mdash; watch conversion reflow live</div>
+  <div class="chips">
+    <span class="chip">Editable stage model</span>
+    <span class="chip">Live conversion math</span>
+    <span class="chip">Leak / drop-off focus</span>
+    <span class="chip">3 presets + auto-save</span>
+  </div>
+</header>
+
+<div class="card" style="margin:22px 0 6px">
+  <p style="margin:0 0 8px"><strong style="color:var(--accent)">What it does:</strong> models any deal funnel as a set of editable stages &mdash; each with a deal count and an average deal size &mdash; and draws it as a tapered funnel. Conversion between stages is computed automatically, and a leak panel points at the single transition where you lose the most deals.</p>
+  <p style="margin:0"><strong style="color:var(--accent)">The point:</strong> before you can fix a leaky funnel you have to <em>see</em> it. This tool turns a stage model into a picture and a shortlist: which transition costs the most deals, and how much revenue it represents.</p>
+</div>
+<div class="card" style="margin:10px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+    <h3 style="margin:0 0 4px;color:var(--txt)">Just a guide? &mdash; run it</h3>
+    <p style="margin:0;font-size:13px">Open the builder with three seeded presets (MPS pipeline, inbound demo, event leads) plus a blank canvas. Every edit auto-saves to your browser.</p>
+  </div>
+  <a class="back" href="funnel-dashboard.html" style="color:var(--accent);border-color:var(--accent);padding:10px 18px">Open the Funnel Builder &rarr;</a>
+</div>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#start">Getting started</a></li>
+    <li><a href="#layout">Layout at a glance</a></li>
+    <li><a href="#edit">Editing the stage model</a></li>
+    <li><a href="#math">How the numbers are computed</a></li>
+    <li><a href="#leaks">Reading the leak analysis</a></li>
+    <li><a href="#presets">Presets &amp; blank canvas</a></li>
+    <li><a href="#save">Saving, resetting &amp; exporting</a></li>
+    <li><a href="#workflow">Suggested workflow</a></li>
+    <li><a href="#links">Related tools</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h2 id="start"><span class="n">1</span> Getting started</h2>
+<p>Open <code>funnel-dashboard.html</code> in Chrome, Edge, or Firefox. No installation and no external libraries &mdash; it is fully self-contained and works offline.</p>
+<p>The builder opens on the <strong>MPS pipeline</strong> preset: six stages from <code>MQL / Inbound</code> down to <code>Won</code>, pre-populated so every panel means something on first load. Switch presets with the chips in the top control bar, or start clean with <span class="chip">Blank</span>.</p>
+
+<h2 id="layout"><span class="n">2</span> Layout at a glance</h2>
+<div class="card">
+  <ul>
+    <li><strong>Top control bar</strong> &mdash; preset chips, the <em>Show $ value</em> toggle, and <strong>Reset / Print / Export JSON</strong>.</li>
+    <li><strong>KPI row</strong> &mdash; six tiles: leads in, won, overall conversion, pipeline value, estimated won value, and the primary leak (the worst single transition).</li>
+    <li><strong>Funnel view</strong> &mdash; the tapered funnel. Segment width is proportional to deal count; the % between two stages is the conversion for that transition.</li>
+    <li><strong>Leak analysis</strong> &mdash; every transition ranked by drop-off, with the biggest loss highlighted and its bar shown at full width.</li>
+    <li><strong>Editable stage model</strong> &mdash; the table you edit. Rename, set counts and deal sizes, reorder, or remove stages. Conversion and every KPI recompute instantly.</li>
+  </ul>
+</div>
+<p>There is no &ldquo;Apply&rdquo; button &mdash; everything recalculates on every keystroke.</p>
+
+<h2 id="edit"><span class="n">3</span> Editing the stage model</h2>
+<table>
+  <tr><th>Action</th><th>How</th><th>What happens</th></tr>
+  <tr><td>Rename a stage</td><td>Click the stage name and type</td><td>Label updates in the funnel, KPIs, and leak panel</td></tr>
+  <tr><td>Set deal count</td><td>Edit <strong>Deals in</strong></td><td>Funnel width, conversion, pipeline value, and leaks all recompute</td></tr>
+  <tr><td>Set average deal size</td><td>Edit <strong>Avg deal $M</strong></td><td>Pipeline $M and estimated won value update</td></tr>
+  <tr><td>Add a stage</td><td>Click <span class="chip">+ Add stage</span></td><td>Appends a new stage below the last one (seeded at half the prior count)</td></tr>
+  <tr><td>Reorder</td><td>Use <span class="kbd">&uarr;</span> / <span class="kbd">&darr;</span> in a row</td><td>Moves the stage up or down the funnel</td></tr>
+  <tr><td>Remove</td><td>Click <span class="kbd">&#10005;</span></td><td>Deletes the stage; neighbors re-convert automatically</td></tr>
+</table>
+<div class="tip"><b>Tip:</b> keep counts as whole numbers and deal sizes as millions (e.g. <code>0.8</code> = $800K). Counts of <code>0</code> are fine &mdash; the stage still renders at minimum width so you can see a fully-leaked stage.</div>
+
+<h2 id="math"><span class="n">4</span> How the numbers are computed</h2>
+<p>Three derived figures drive everything:</p>
+<ul>
+  <li><strong>Conversion (stage &rarr; next):</strong> <code>count<sub>next</sub> &divide; count<sub>current</sub></code> &times; 100. It is never entered by hand &mdash; it is a consequence of the counts.</li>
+  <li><strong>Pipeline $M (per stage):</strong> <code>count &times; avg deal $M</code>. The <strong>Pipeline value</strong> KPI is the sum across all stages.</li>
+  <li><strong>Estimated won value:</strong> <code>won count &times; won avg deal $M</code> &mdash; what the funnel is worth if it performs exactly as modeled.</li>
+</ul>
+<p><strong>Overall conversion</strong> is the bookend ratio: <code>won &divide; leads in</code>. The status coloring on the KPI tile is a rough guide: <span class="good">&ge;15%</span> strong, <span class="warnc">8&ndash;15%</span> typical for B2B, <span class="bad">&lt;8%</span> worth a hard look at the top of the funnel.</p>
+<div class="callout"><b>What it does not do:</b> this is a deterministic model, not a forecast. It has no time dimension and no Monte Carlo &mdash; it shows the shape of the funnel and the size of the leaks. For revenue forecasting with P50/P70/P90 bands, pair it with the <a href="pipeline-dashboard.html" style="color:var(--accent);font-weight:600">Pipeline Forecast Dashboard</a>.</div>
+
+<h2 id="leaks"><span class="n">5</span> Reading the leak analysis</h2>
+<p>Each row is one stage transition: <code>from &rarr; to</code>. The row shows how many deals were lost and the percentage drop; bar length is scaled to the worst transition, so the full-width bar is your <strong>primary leak</strong>.</p>
+<table>
+  <tr><th>Drop</th><th>Color</th><th>Read as</th></tr>
+  <tr><td>&le; 25%</td><td class="good">Green</td><td>Healthy hand-off &mdash; little is lost here</td></tr>
+  <tr><td>25&ndash;40%</td><td class="warnc">Amber</td><td>Normal leakage for a mid-funnel gate; monitor</td></tr>
+  <tr><td>&gt; 40%</td><td class="bad">Red</td><td>A real leak &mdash; the fix should start here</td></tr>
+</table>
+<div class="tip"><b>Tip:</b> leaks near the <em>top</em> (lead quality, qualification) and near the <em>bottom</em> (price, legal, champion) usually have different root causes. Fix the biggest absolute deal loss first &mdash; a 40% drop at $2M average is worth more than a 60% drop at $50K average.</div>
+
+<h2 id="presets"><span class="n">6</span> Presets &amp; blank canvas</h2>
+<table>
+  <tr><th>Preset</th><th>Stages</th><th>When to use it</th></tr>
+  <tr><td><strong>MPS pipeline</strong></td><td>MQL &rarr; SQL &rarr; Discovery &rarr; Proposal &rarr; Negotiation &rarr; Won</td><td>Managed-services / enterprise selling &mdash; the default starting point</td></tr>
+  <tr><td><strong>Inbound demo</strong></td><td>Visits &rarr; Booked &rarr; Attended &rarr; Qualified &rarr; Trial &rarr; Paid</td><td>Self-serve or product-led funnels with large top-of-funnel volume</td></tr>
+  <tr><td><strong>Event leads</strong></td><td>Attendees &rarr; Scan &rarr; Meeting &rarr; Qualified &rarr; Proposal &rarr; Won</td><td>Field marketing: measuring a campaign&rsquo;s conversion all the way to revenue</td></tr>
+  <tr><td><strong>Blank</strong></td><td>4 generic stages</td><td>Your own model from scratch</td></tr>
+</table>
+<p>Picking a preset <strong>replaces</strong> your current model, so export first if you want to keep it.</p>
+
+<h2 id="save"><span class="n">7</span> Saving, resetting &amp; exporting</h2>
+<ul>
+  <li><strong>Auto-save:</strong> every edit is written to your browser&rsquo;s localStorage the moment you make it. Close the tab, come back later &mdash; your funnel is still there. A green <span class="chip">● auto-saved</span> note confirms each change.</li>
+  <li><strong>Reset:</strong> clears the saved model and restores the MPS pipeline preset. Only do this when you want to discard your edits.</li>
+  <li><strong>Print:</strong> opens the print dialog with a clean, print-friendly render.</li>
+  <li><strong>Export JSON:</strong> downloads <code>funnel-snapshot.json</code> with your stages &mdash; handy for versioning models alongside other pipeline artifacts.</li>
+</ul>
+<div class="warn"><b>Heads-up:</b> the saved model lives in <em>this browser only</em>. Different computers or browsers will not share it &mdash; use Export JSON as your portable copy, and the presets as a fresh baseline.</div>
+
+<h2 id="workflow"><span class="n">8</span> Suggested workflow</h2>
+<ol>
+  <li><strong>Shape it:</strong> load the closest preset (or blank) and enter your real stage counts. Keep stage definitions consistent with how your CRM classifies deals.</li>
+  <li><strong>Find the leak:</strong> look at the leak panel and the <em>primary leak</em> KPI &mdash; that transition is where the biggest number of deals disappear.</li>
+  <li><strong>Size the opportunity:</strong> note the <em>pipeline value</em> tied up above the leak and the <em>estimated won value</em> gain from moving conversion up even 5 points.</li>
+  <li><strong>Model a fix:</strong> raise the count on the stage <em>after</em> the leak to see the funnel re-shape and the won number climb.</li>
+  <li><strong>Export:</strong> snapshot the JSON and pair it with the forecast dashboard or playbook for the action plan.</li>
+</ol>
+
+<h2 id="links"><span class="n">9</span> Related tools</h2>
+<ul>
+  <li><a href="pipeline-dashboard.html" style="color:var(--accent);font-weight:600">Pipeline Forecast &amp; Early-Warning Dashboard</a> &mdash; the revenue-side view of the same funnel, with Monte Carlo P50/P70/P90 and A1&ndash;A10 alerts.</li>
+  <li><a href="pipeline-forecasting-blueprint.html" style="color:var(--accent);font-weight:600">Predictive Pipeline Analytics &amp; Forecasting Blueprint</a> &mdash; the architecture behind the forecast.</li>
+  <li><a href="lead-scoring-blueprint.html" style="color:var(--accent);font-weight:600">AI-Powered Lead Scoring</a> &mdash; what feeds the top of the funnel.</li>
+</ul>
+
+</main>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Commercial Operations</span>
+  <span>Internal · Version 1.0</span>
+</footer>
+</div>
+
+<script>
+  const btn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('pf-theme') || 'light';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', saved);
+  paintThemeIcon(saved);
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('pf-theme', next);
+  });
+</script>
+</body>
+</html>

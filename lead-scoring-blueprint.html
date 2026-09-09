@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Lead Scoring System — Blueprint</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.65;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:96px 26px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 24px;border-bottom:3px solid transparent;margin-bottom:14px;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.brand-dot{width:15px;height:15px;border-radius:50%;background:var(--grad);box-shadow:0 0 16px var(--accent)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.toc{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 22px;margin:26px 0 8px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:sec}
+.toc li{counter-increment:sec;margin:5px 0}
+.toc a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:500}
+.toc a::before{content:counter(sec) ". ";font-weight:800;color:var(--violet)}
+main{counter-reset:sec}
+h2{font-size:21px;margin:44px 0 12px;display:flex;align-items:center;gap:12px;letter-spacing:-0.01em;counter-increment:sec}
+h2 .n{background:var(--grad);color:#fff;font-size:13px;min-width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+h3{font-size:15.5px;margin:26px 0 8px;color:var(--violet);font-weight:700}
+p{margin:9px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:4px 0}
+strong{font-weight:700}
+em{font-style:italic}
+code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--edge);border-radius:5px;padding:1px 6px}
+pre{font-family:var(--mono);font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px 18px;overflow:auto;margin:12px 0;line-height:1.55}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 20px;margin:16px 0;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:var(--halo)}
+.callout b{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--edge)}
+td{padding:9px 12px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.sev{font-weight:700;font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.sev-c{background:rgba(225,29,72,.12);color:var(--rose)}
+.sev-h{background:rgba(217,119,6,.14);color:var(--amber)}
+.sev-m{background:rgba(37,99,235,.12);color:var(--blue)}
+.sev-l{background:var(--halo);color:var(--accent)}
+.good{color:var(--green);font-weight:700}
+.bad{color:var(--rose)}
+.warn{color:var(--amber)}
+.pillscore{display:inline-block;min-width:34px;text-align:center;font-weight:800;font-size:12px;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.scrk{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(109,94,242,.3)}
+.scrc{background:rgba(16,185,129,.14);color:var(--green)}
+.scrm{background:rgba(37,99,235,.12);color:var(--blue)}
+.scrn{background:rgba(217,119,6,.14);color:var(--amber)}
+.scrs{background:rgba(225,29,72,.10);color:var(--rose)}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:88px 16px 70px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Revenue Operations &middot; Machine Learning Blueprint</span>
+  <h1>AI-Powered <b>Lead Scoring</b> System</h1>
+  <div class="tag">Inbound channels &middot; enterprise prospects &middot; dynamic 1&ndash;100 score &middot; autonomous routing</div>
+  <div class="chips">
+    <span class="chip">Inbound Lead Evaluation</span>
+    <span class="chip">Deal Values up to $20M ACV</span>
+    <span class="chip">Rules &middot; ML &middot; LLM Hybrid</span>
+    <span class="chip">Tier &rarr; Rep Routing</span>
+    <span class="chip">Closed-Won/Lost Feedback Loop</span>
+  </div>
+</header>
+
+<div class="card" style="margin:22px 0 6px">
+  <p style="margin:0 0 8px"><strong style="color:var(--accent)">What it does:</strong> intercepts every inbound lead (form, chat, email, event, partner), blends a rule gate, a historical ML model, and an LLM qualitative pass into one <strong>dynamic 1&ndash;100 score</strong>, then routes the lead to the correct tier and sales rep before anyone has to read it.</p>
+  <p style="margin:0"><strong style="color:var(--accent)">The point:</strong> gut-feel lead triage is inconsistent and slow. This design scores prospects on historical engagement patterns and achievable deal size &mdash; capped at <strong>$20M</strong> &mdash; and closes the loop on closed-won/lost outcomes so the weights keep learning.</p>
+</div>
+<div class="card" style="margin:10px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+    <h3 style="margin:0 0 4px;color:var(--txt)">Not just a plan &mdash; run it</h3>
+    <p style="margin:0;font-size:13px">A working interactive prototype with seeded inbound leads: live 1&ndash;100 composite scoring, model-weight sliders, simulated LLM message analysis, tier routing, and a sortable scored inbox.</p>
+  </div>
+  <a class="back" href="lead-scoring-dashboard.html" style="color:var(--accent);border-color:var(--accent);padding:10px 18px">Open the Dashboard &rarr;</a>
+</div>
+<div class="card" style="margin:10px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+    <h3 style="margin:0 0 4px;color:var(--txt)">Built from the blueprint docs</h3>
+    <p style="margin:0;font-size:13px">This page renders the technical blueprint as a portfolio project: reference PostgreSQL schema (<code>schema.sql</code>) and a service contract for the rule + LightGBM + LLM scoring pipeline (<code>scoring_service.py</code>).</p>
+  </div>
+  <span class="back" style="cursor:default;color:var(--muted);border-color:var(--edge)">Blueprint &middot; Version 1.0</span>
+</div>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#data">Data Inputs &amp; Schema</a></li>
+    <li><a href="#model">Scoring Logic &amp; Model Design</a></li>
+    <li><a href="#pipeline">Pipeline Integration</a></li>
+    <li><a href="#feedback">Feedback Loop</a></li>
+    <li><a href="#sla">SLAs, KPIs &amp; Governance</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h2 id="data"><span class="n">1</span> Data Inputs &amp; Schema</h2>
+
+<h3>Source layers</h3>
+<table>
+  <tr><th>Layer</th><th>Source</th><th>Examples</th></tr>
+  <tr><td><strong>Historical</strong></td><td>CRM + Marketing Automation + product analytics</td><td>Deals, contacts, activities, emails, campaign touches</td></tr>
+  <tr><td><strong>Enrichment</strong></td><td>Firmographic API (ZoomInfo / Clearbit)</td><td>Headcount, revenue, industry, tech stack, funding</td></tr>
+  <tr><td><strong>Real-time</strong></td><td>Forms, chat, email gateway, event, partner PUT</td><td>Raw message text, UTM, pages viewed, channel source</td></tr>
+  <tr><td><strong>Outcomes</strong></td><td>CRM pipeline</td><td>Closed Won / Closed Lost, deal value, cycle length</td></tr>
+</table>
+
+<h3>Canonical tables</h3>
+<table>
+  <tr><th>Table</th><th>Grain</th><th>Key fields</th></tr>
+  <tr><td><code>accounts</code></td><td>1 row / company</td><td>industry, employee_count, annual_revenue, company_stage, funding, geo_region, tech_stack, <code>icp_fit_rule_score</code></td></tr>
+  <tr><td><code>contacts</code></td><td>1 row / person</td><td>email (dedupe key), job_title, seniority_tier, buying_committee_role, source_channel, source_utm</td></tr>
+  <tr><td><code>leads</code></td><td>1 row / inbound entry</td><td>lead_source, <code>inbound_message_text</code> (LLM input), budget_range, buying_timeline, status lifecycle</td></tr>
+  <tr><td><code>engagements</code></td><td>1 row / event</td><td>event_type (email_open/click/reply, meeting_booked, demo, download), event_ts, metadata</td></tr>
+  <tr><td><code>deals</code></td><td>1 row / outcome</td><td><code>won_amount_acv &le; 20,000,000</code> (CHECK constraint), stage_history, cycle_length_days, winloss</td></tr>
+  <tr><td><code>features</code></td><td>frozen ML snapshot</td><td>feature_json, model_version, feature_window, as_of_ts (replayability)</td></tr>
+  <tr><td><code>predictions</code></td><td>1 row / score</td><td>base_conv_prob, expected_deal_value, llm_intent/fit scores, composite_score, tier, routing_rule</td></tr>
+  <tr><td><code>outcomes</code></td><td>feedback bridge</td><td>outcome (won/lost/no_deal), final_deal_value, attribution_window_days, closed_ts</td></tr>
+  <tr><td><code>routing_history</code></td><td>audit</td><td>assigned_owner, tier, roundrobin_id, is_override, override_reason</td></tr>
+</table>
+
+<h3>Feature engineering examples</h3>
+<ul>
+  <li><strong>Engagement frequency:</strong> events in trailing 7 / 30 / 90 days per event type; reply rate; meeting-booked &amp; demo counts.</li>
+  <li><strong>Recency decay:</strong> <code>exp(&minus;&Delta;t/&tau;)</code> per event type (&tau; tuned per type &mdash; a booked meeting decays slower than an email click).</li>
+  <li><strong>Firmographic fit:</strong> headcount &ndash; revenue &ndash; industry match vs ICP definition; stage &amp; funding band.</li>
+  <li><strong>Deal-size anchors:</strong> avg won ACV of accounts in the same industry &times; size band; closest comparable deal; median cycle length.</li>
+  <li><strong>Behavioral depth:</strong> pricing-page visits vs blog-only (intent depth); seniority tier &amp; buying-committee role.</li>
+  <li><strong>Base-rate normalization:</strong> channel + UTM medium per lead to correct for source differences.</li>
+</ul>
+<div class="callout"><b>Design rule:</b> the <code>$20M</code> cap is enforced at the schema on <code>deals.won_amount_acv</code> and mirrored in the value model&rsquo;s <em>log-then-clip</em> target &mdash; no enterprise score is ever distorted by an extreme jumbo deal.</div>
+
+<h2 id="model"><span class="n">2</span> Scoring Logic &amp; Model Design</h2>
+<p>Three tiers reconcile into one number <span class="pillscore scrk">1&ndash;100</span>. No single technique owns the score; each has a guardrail.</p>
+
+<h3>Tier A &mdash; Rule-based heuristics (fast deterministic gates, &lt; 5ms)</h3>
+<table>
+  <tr><th>Rule</th><th>Effect</th></tr>
+  <tr><td>Disposable / competitor / student domain</td><td><span class="sev sev-c">Hard disqualify</span> &rarr; score 10, route to Ops/blacklist</td></tr>
+  <tr><td>Budget below floor or geo outside addressable market</td><td><span class="sev sev-c">Hard disqualify</span></td></tr>
+  <tr><td>Bot / spam velocity burst</td><td><span class="sev sev-c">Hard disqualify</span></td></tr>
+  <tr><td>ICP mismatch (firmographic)</td><td><span class="warn">&minus;20</span> dampen</td></tr>
+  <tr><td>Engagement decay (&gt;60d no touch)</td><td><span class="warn">&minus;15</span> dampen</td></tr>
+  <tr><td>Duplicate / known existing account</td><td><span class="warn">&minus;10</span> dampen, merge candidate</td></tr>
+</table>
+
+<h3>Tier B &mdash; Historical ML predictor (LightGBM, wellness inference &lt; 50ms)</h3>
+<ul>
+  <li><strong>Head 1 &mdash; conversion:</strong> binary gradient boosting on <code>P(won)</code> from historical features &harr; outcomes. <strong>Isotonic-calibrated</strong> so 0.70 &asymp; 70% &mdash; honest probabilities, not just rankings.</li>
+  <li><strong>Head 2 &mdash; value:</strong> quantile regression on realized ACV, <em>log-then-clip at $20M</em>, yielding <strong>P10 / P50 / P90</strong> for sizing distributions (not one guess).</li>
+  <li><strong>Imbalance control:</strong> stratified sampling + separate treatment of never-scored leads (censoring &mdash; see feedback loop).</li>
+</ul>
+
+<h3>Tier C &mdash; LLM qualitative analysis (async, rubric-scored)</h3>
+<ul>
+  <li>Reads the prospect&rsquo;s raw message and returns <strong>strict JSON</strong>: intent (budget_ready / assessing / informational / unclear / not_a_buyer), intent confidence, operational fit, technical maturity, urgency signals, red flags.</li>
+  <li><strong>Guardrails:</strong> system prompt declares price band + ICP, temperature &asymp; 0, JSON schema enforced, prompt-injections in the message ignored, and the LLM <em>augments</em> &mdash; it never alone rejects a gate-passed lead.</li>
+</ul>
+
+<h3>Composite score (the dynamic 1&ndash;100)</h3>
+<pre>conv    = 45 &times; calibrated P(won)
+value   = 25 &times; bucket( E[deal_size] )        # &lt;$100k / &lt;$1M / $1M&ndash;$5M / $5M+ / max
+llm     = 20 &times; (0.55&times;operational_fit + 0.25&times;intent + 0.20&times;technical_maturity)/100
+firmo   = 10 &times; icp_fit_score
+
+base    = conv + value + llm + firmo
+score   = clamp( base &times; &Pi;(gate_multipliers), 1, 100 )   # rounded integer</pre>
+<p>Weights are prior means, recalibrated weekly on calibration data (Section 4).</p>
+
+<h3>Tier routing map</h3>
+<table>
+  <tr><th>Composite</th><th>Deal-size signal</th><th>Tier</th><th>Owner</th></tr>
+  <tr><td><span class="pillscore scrk">85&ndash;100</span></td><td>E[value] &ge; $1M</td><td>Strategic / Key</td><td>Enterprise AE (Named)</td></tr>
+  <tr><td><span class="pillscore scrc">70&ndash;84</span></td><td>$250k&ndash;$5M</td><td>Commercial</td><td>AE</td></tr>
+  <tr><td><span class="pillscore scrm">50&ndash;69</span></td><td>&lt;$250k</td><td>Mid-market</td><td>BDR / SDR with playbook</td></tr>
+  <tr><td><span class="pillscore scrn">30&ndash;49</span></td><td>any</td><td>Nurture</td><td>Marketing / auto-nurture</td></tr>
+  <tr><td><span class="pillscore scrs">1&ndash;29</span></td><td>any</td><td>Suppress / Ops</td><td>No outreach, logged</td></tr>
+</table>
+
+<h2 id="pipeline"><span class="n">3</span> Pipeline Integration</h2>
+<pre> 1 INGEST   webhook (form/chat/email/event) &rarr; validate &rarr; dedupe (email+domain)
+ 2 ENRICH   firmographic pull, match/create account      (async &le; 2 s)
+ 3 GATES    Tier A rules (~5 ms)       no &rarr; suppress / route-to-ops
+ 4 FEATURES assemble feature snapshot (feature store, versioned, as_of)
+ 5 ML       P(won) + E[value] predict  (&lt; 50 ms)
+ 6 LLM      enqueue message &rarr; async worker &rarr; rubric JSON (1&ndash;3 s, batched)
+ 7 SCORE    composite 1&ndash;100 + tier
+ 8 ROUTE    round-robin &rarr; owner by territory/segment; SLA timers;
+            outbound-reply override &rarr; straight to owner
+ 9 SYNC     update CRM (Score / Tier / Owner / NextStep);
+            SDR queue push + Slack/Email alert; schedule follow-up
+10 OBSERVE  latency, cost, drift, queue backlog alerts</pre>
+<div class="callout"><b>SLA design:</b> steps 5&ndash;6 run <em>async</em> so the webhook returns in &lt;300ms &mdash; a provisional score is upserted to CRM immediately and the final composite follows. Feature pipeline is idempotent with <code>as_of_ts</code> for replayable training. A <strong>5% control holdout</strong> keeps champion &ne; challenger possible.</div>
+
+<h2 id="feedback"><span class="n">4</span> Feedback Loop (continuous recalibration)</h2>
+<table>
+  <tr><th>Stage</th><th>Action</th><th>Cadence</th></tr>
+  <tr><td><strong>Outcome capture</strong></td><td>CRM webhook / <code>deals</code> sync writes won/lost + value; active-contact attribution required</td><td>Real-time + daily reconcile</td></tr>
+  <tr><td><strong>Label hydration</strong></td><td>Unresolved leads after 90&ndash;180 days &rarr; <code>lost-no-deal</code> (avoid polluting in-play leads)</td><td>Daily batch</td></tr>
+  <tr><td><strong>Ground truth</strong></td><td>Join <code>predictions</code> &harr; <code>outcomes</code>, per model version</td><td>Continuous</td></tr>
+  <tr><td><strong>Retrain ML</strong></td><td>Retrain Tier B, evaluate lift over holdout, register in model registry</td><td>Weekly or event-driven (&ge; N closes)</td></tr>
+  <tr><td><strong>Recalibrate composite</strong></td><td>Re-estimate weights + rule thresholds via historical simulation + bayesian bandit over variants</td><td>Weekly</td></tr>
+  <tr><td><strong>Refine LLM rubric</strong></td><td>Human review of top/bottom decile &rarr; update prompt/rubric, re-validate on eval set</td><td>Monthly</td></tr>
+  <tr><td><strong>Drift monitors</strong></td><td>PSI/KL on features &amp; scores; calibration plot on rolling ground truth; alert on miscalibration</td><td>Continuous</td></tr>
+</table>
+<div class="callout"><b>Bias controls (designed in from day one):</b> routing-position bias is handled by treating never-scored/suppressed leads as censored (inverse-propensity or an always-scored holdout), and a manual override log feeds human routing corrections back into training.</div>
+
+<h2 id="sla"><span class="n">5</span> SLAs, KPIs &amp; Governance</h2>
+<h3>Performance targets</h3>
+<table>
+  <tr><th>Metric</th><th>Target</th></tr>
+  <tr><td>Webhook ingest &rarr; gates</td><td>&lt; 300 ms</td></tr>
+  <tr><td>ML inference</td><td>&lt; 50 ms</td></tr>
+  <tr><td>LLM async analysis</td><td>1&ndash;3 s (batched)</td></tr>
+  <tr><td>Composite score availability</td><td>&lt; 5 s (provisional immediate)</td></tr>
+  <tr><td>Enrichment freshness</td><td>&le; 7 days</td></tr>
+  <tr><td>Label attribution window</td><td>90&ndash;180 days</td></tr>
+</table>
+
+<h3>Success KPIs</h3>
+<ul>
+  <li><strong>Calibration:</strong> Brier score + calibration slope on rolling ground truth.</li>
+  <li><strong>Ranking:</strong> lift curves / AUC@k on routed-converted leads.</li>
+  <li><strong>Business impact:</strong> conversion uplift vs the 5% control model, time-to-first-outreach SLA adherence.</li>
+  <li><strong>Efficiency:</strong> ML-weight share of composite vs rule-only; LLM token + inference cost per scored lead.</li>
+</ul>
+
+<h3>Artifacts in this project</h3>
+<ul>
+  <li><code>blueprint.md</code> &mdash; full technical blueprint (this page&rsquo;s source document).</li>
+  <li><code>schema.sql</code> &mdash; PostgreSQL reference DDL with the $20M CHECK constraint and versioned feature/prediction tables.</li>
+  <li><code>scoring_service.py</code> &mdash; reference SDK contract: RuleGateEngine (Tier A), LightGBM conv + quantile value heads (Tier B), rubric-scored LLM analyzer (Tier C), composite scorer + tiering, async pipeline orchestration, and the feedback-loop hook.</li>
+</ul>
+
+</main>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Revenue Operations &amp; ML</span>
+  <span>Blueprint &middot; Version 1.0</span>
+</footer>
+</div>
+
+<script>
+  const btn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('pf-theme') || 'light';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', saved);
+  paintThemeIcon(saved);
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('pf-theme', next);
+  });
+  
+</script>
+</body>
+</html>

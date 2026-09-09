@@ -1,0 +1,11 @@
+Tier benefits are applied automatically to qualifying activity and are defined by annual contracted value (ACV) bands. The co-marketing fund year runs from the contract anniversary date.
+
+Enterprise tier is granted a 15% rebate on qualifying gross transaction value plus 50,000 euro-units of co-marketing fund per year, and 24x7 priority support. Enterprise eligibility requires more than 250,000 euro-units in annual contracted value.
+
+Growth tier is granted a 10% rebate on qualifying gross transaction value, a 15,000 euro-unit co-marketing fund per year, and business-hours support with SLA. Growth eligibility requires between 40,000 and 250,000 euro-units of annual contracted value.
+
+Startup tier is granted a 5% rebate on qualifying gross transaction value, a 2,000 euro-unit co-marketing fund for the first year, and business-hours support. Startup eligibility requires less than 40,000 euro-units of annual contracted value.
+
+Co-marketing funds are used for joint campaigns, local events, and joint content. Funds must be claimed against eligible activity via the Fund Request form and are approved by the account manager. Unused funds do not roll over to the next year.
+
+Rebates are paid per the commission statement after each quarter in which the partner meets the tier threshold. Rebate rates and fund amounts are reviewed at renewal and can change only through a signed amendment.

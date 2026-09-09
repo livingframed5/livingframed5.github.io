@@ -76,7 +76,13 @@
     padding: 0; width: 40px; height: 40px; border-radius: 10px; transition: transform .15s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
   }
   .icon-btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+  .icon-btn[disabled] { opacity: .38; cursor: not-allowed; }
+  .icon-btn[disabled]:hover { transform: none; border-color: var(--border); color: var(--ink); }
   .icon-btn .ico { font-size: 19px; line-height: 1; }
+
+  @media print {
+    body * { display: none !important; }
+  }
   .hero { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
   .hero > div:first-child { min-width: 0; flex: 1 1 auto; }
   header .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
@@ -335,12 +341,12 @@
       <p>Turn your deal's value into a defensible annual price — and the headroom to negotiate around it.</p>
     </div>
     <div class="ctrl">
-      <button class="icon-btn" id="linkBtn" title="Copy a shareable link that loads this scenario" aria-label="Copy shareable link"><span class="ico">🔗</span></button>
-      <button class="icon-btn" id="csvBtn" title="Export every number as a CSV file" aria-label="Export CSV"><span class="ico">▤</span></button>
-      <button class="icon-btn" id="copyBtn" title="Copy the pricing summary as Markdown for Slack, Notion, or email" aria-label="Share / copy summary"><span class="ico">⧉</span></button>
+      <button class="icon-btn" id="linkBtn" title="Sharing is disabled on this preview" aria-label="Copy shareable link" disabled><span class="ico">🔗</span></button>
+      <button class="icon-btn" id="csvBtn" title="Export disabled on this preview" aria-label="Export CSV" disabled><span class="ico">▤</span></button>
+      <button class="icon-btn" id="copyBtn" title="Copy/Share disabled on this preview" aria-label="Share / copy summary" disabled><span class="ico">⧉</span></button>
       <button class="icon-btn" id="helpBtn" title="What does this tool do?" aria-label="About this tool" aria-expanded="false" aria-controls="helpPanel"><span class="ico">ⓘ</span></button>
       <button class="icon-btn" id="themeBtn" title="Toggle light / dark theme" aria-label="Toggle theme"><svg class="thico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle id="icoSun" cx="12" cy="12" r="5"/><path id="icoSunRays" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
-      <button class="icon-btn" id="printBtn" title="Export summary as PDF" aria-label="Export PDF"><span class="ico">⬇</span></button>
+      <button class="icon-btn" id="printBtn" title="Export disabled on this preview" aria-label="Export PDF" disabled><span class="ico">⬇</span></button>
     </div>
   </div>
 </header>
@@ -1182,6 +1188,16 @@
     applyState(Object.assign({}, urlState));
     toast('Loaded scenario from link');
   }
+
+  // ---- protect against printing / page export ----
+  window.addEventListener('beforeprint', ev => ev.preventDefault());
+  window.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'p') {
+      ev.preventDefault();
+      ev.stopPropagation();
+      toast('Printing is disabled on this preview');
+    }
+  });
 </script>
 </body>
 </html>

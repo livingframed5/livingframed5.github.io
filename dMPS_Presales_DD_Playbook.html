@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dMPS Presales Due Diligence Playbook &amp; Compliance Checklist</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#fbfcff; --border:#dfe4ef; --ink:#17202e; --muted:#5c6b82;
+  --accent:#3456f2; --accent2:#16b8a6; --grad:linear-gradient(135deg,#3456f2,#16b8a6);
+  --r:#d64545; --a:#e08c1f; --g:#1d9e63; --b:#2e6fd3;
+  --shadow:0 1px 2px rgba(23,32,46,.05),0 10px 28px rgba(60,80,150,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:14.5px}
+a{color:var(--accent);text-decoration:none}
+.mono{font-family:Consolas,'Cascadia Code',monospace;font-size:12.5px}
+
+.app{display:flex;min-height:100vh}
+.sidebar{width:262px;flex-shrink:0;background:#0e1424;color:#c7d0e4;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:30}
+.brand{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand b{display:block;color:#fff;font-size:14px;line-height:1.35;letter-spacing:.01em}
+.brand span{font-size:11px;color:#8ea0c4}
+.snav{flex:1;padding:10px 0}
+.snav a{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;color:#c7d0e4;border-left:3px solid transparent}
+.snav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.snav a.on{background:rgba(52,86,242,.18);color:#fff;border-left-color:var(--accent2)}
+.snav .num{font-size:10.5px;font-weight:700;color:#8ea0c4;background:rgba(255,255,255,.09);border-radius:6px;padding:1px 6px;min-width:20px;text-align:center}
+.snav a.on .num{background:var(--accent2);color:#06121f}
+.sfoot{padding:14px 18px;font-size:10.5px;color:#6f7f9e;border-top:1px solid rgba(255,255,255,.08)}
+.main{flex:1;min-width:0;padding:0 34px 80px}
+.mhead{position:sticky;top:0;background:rgba(248,250,253,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 2px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:20}
+.mhead h1{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.mhead .backlink{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#33415e;text-decoration:none;border:1px solid var(--border);border-radius:9px;padding:7px 12px;background:#fff;box-shadow:var(--shadow);white-space:nowrap}
+.mhead .backlink:hover{border-color:var(--accent);color:var(--accent)}
+.mhead .tag{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--border);background:#fff;color:var(--ink);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--grad);border:none;color:#fff}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.danger:hover{border-color:var(--r);color:var(--r)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;filter:grayscale(.4)}
+.btn[disabled]:hover{border-color:var(--border);color:var(--ink,#17202e)}
+section.panel{scroll-margin-top:74px;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-top:22px;box-shadow:var(--shadow)}
+.sec-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sec-h .k{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--grad);color:#fff;font-weight:800;font-size:14px}
+.sec-h h2{font-size:19px;letter-spacing:-.01em}
+.sec-sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
+.h3{font-size:15px;font-weight:700;margin:22px 0 8px;display:flex;align-items:center;gap:8px}
+.h3:first-of-type{margin-top:16px}
+.lead{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin:12px 0}
+.card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--panel2)}
+.card h4{font-size:13.5px;margin-bottom:6px}
+.card p,.card .body{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:10px 0}
+th{background:#eef1f8;color:#33415e;text-align:left;padding:8px 10px;font-weight:700;border:1px solid var(--border);white-space:nowrap}
+td{border:1px solid var(--border);padding:7px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#f9fafd}
+.badd{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.badd.low{background:#d7f2e1;color:#0c7a46}
+.badd.med{background:#fdeec9;color:#96660a}
+.badd.hi{background:#fde0dc;color:#b33127}
+.badd.cri{background:#f3cbc9;color:#7a1210;border:1px solid var(--r)}
+.badd.blue{background:#e3ecfa;color:#1f5bb8}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+.ckgrp{border:1px solid var(--border);border-radius:12px;margin:10px 0;overflow:hidden}
+.ckgrp-h{padding:11px 14px;display:flex;align-items:center;gap:10px;background:#eef1f8;cursor:pointer;user-select:none}
+.ckgrp-h .ttl{font-weight:700;font-size:13.5px;color:#33415e;flex:1}
+.ckgrp-h .bar{width:130px;height:7px;background:#d9dfec;border-radius:99px;overflow:hidden}
+.ckgrp-h .bar i{display:block;height:100%;width:0%;background:var(--grad);transition:width .3s}
+.ckgrp-h .pc{font-size:11.5px;font-weight:700;color:#33415e;min-width:38px;text-align:right}
+.ckgrp-b{padding:8px 12px;background:#fbfcff}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:7px 6px;border-radius:8px;font-size:13.2px;line-height:1.45}
+.ck:hover{background:#f2f5fc}
+.ck input{margin-top:3px;flex-shrink:0;width:16px;height:16px;accent-color:#1d9e63;cursor:pointer}
+.ck.off{color:#9aa7bd;text-decoration:line-through;text-decoration-color:#c3cbd9}
+.ck b{color:var(--ink)}
+.attest{border:2px solid var(--accent2);border-radius:12px;padding:16px 18px;background:linear-gradient(180deg,#effcf8,#fff);margin-top:16px}
+
+.riskband{border-radius:12px;padding:12px 14px;margin:8px 0;font-size:13px;border-left:5px solid var(--g);background:#fbfcff}
+.riskband b{color:#0c7a46}
+select,input[type=text],input[type=date],input[type=number],textarea{font-family:inherit;font-size:12.8px;border:1px solid var(--border);border-radius:8px;padding:6px 9px;background:#fff;color:var(--ink)}
+.rowform{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin:10px 0}
+.rowform label{font-size:11px;font-weight:700;color:#6b7794;display:flex;flex-direction:column;gap:3px}
+.rtab td input,.rtab td select{width:100%;min-width:0;padding:4px 6px;font-size:12.2px}
+button.mini{border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer;padding:3px 7px;font-size:11.5px;font-family:inherit}
+button.mini:hover{border-color:var(--r);color:var(--r)}
+
+.flow{list-style:none;position:relative;margin:14px 0 4px;padding-left:0}
+.flow>li{position:relative;padding:0 0 18px 38px;border-left:2px dashed var(--accent2)}
+.flow>li:last-child{border-left-color:transparent}
+.flow>li::before{content:'';position:absolute;left:-9px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--grad);border:3px solid #fff;box-shadow:var(--shadow)}
+.flow .p{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.flow .pn{font-weight:800;color:var(--accent2);font-size:12px;min-width:64px}
+.flow .pt{font-weight:700}
+.flow .pw{font-size:11.5px;color:var(--muted)}
+.flow ul.tasks{margin:6px 0 0;padding-left:0;list-style:none}
+.flow ul.tasks li{font-size:13px;color:#33415e;padding-left:16px;position:relative}
+.flow ul.tasks li::before{content:'\00BB';position:absolute;left:2px;color:var(--accent2);font-weight:700}
+.gate{display:inline-block;background:#102a43;color:#9ecaff;font-size:11px;font-weight:700;border-radius:7px;padding:2px 8px;margin-left:8px}
+.gate.go{background:#0c3b2e;color:#7bf0c0}
+
+.progbox{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:#fbfcff;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.progbox .px{flex:1;min-width:220px}
+.progbox .px .bar{height:12px;background:#e6eaf3;border-radius:99px;overflow:hidden}
+.progbox .px .bar i{display:block;height:100%;background:var(--grad);transition:width .3s}
+.progbox .num{font-size:22px;font-weight:800;color:#2e4bd8}
+.phasechip{display:inline-block;background:#eef1f8;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12.5px;color:#33415e;font-weight:600}
+.fm{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.fm label{font-size:11px;font-weight:700;color:#52607c;display:flex;flex-direction:column;gap:4px}
+.fm input{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{border:1px solid var(--border);background:#fff;border-radius:8px;font-size:12px;font-weight:600;padding:6px 10px;cursor:pointer;color:#52607a;font-family:inherit}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+table.raci th{font-size:11px;padding:6px 3px;text-align:center;min-width:30px}
+table.raci td{text-align:center;font-size:12.5px;white-space:nowrap}
+table.raci th:first-child,table.raci td:first-child{text-align:left}
+.cell-r{color:var(--accent);font-weight:800}
+.cell-a{background:#e3ecfa;color:#1f5ec0;font-weight:800;border-radius:6px;padding:1px 8px}
+.cell-c{color:#b08a12;font-weight:600}
+.cell-i{color:#8a9bb5}
+.raci-dash{color:#c9d1de}
+.searchbox input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.5px}
+
+#toast{position:fixed;bottom:22px;right:22px;background:#0d1424;color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;max-width:360px}
+#toast.show{opacity:1}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+@media print{
+  .sidebar,.mhead .tag,.mhead .backlink,#toast{display:none!important}
+  .main{padding:0}
+  body{background:#fff}
+  section.panel{box-shadow:none;border:none;break-inside:avoid-page;margin-top:14px;padding:12px 0}
+  .ck{break-inside:avoid}
+  .app{display:block}
+  .grid2{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){.sidebar{display:none}.main{padding:0 14px 60px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <b>Presales Due Diligence Playbook</b>
+    <span>dMPS · Complex Enterprise Managed Services</span>
+  </div>
+  <nav class="snav" id="snav">
+    <a href="#s-overview" class="on"><span class="num">1</span> Overview &amp; How to Use</a>
+    <a href="#s-context"><span class="num">2</span> Deal Context &amp; Metadata</a>
+    <a href="#s-workflow"><span class="num">3</span> Workflow &amp; Timeline</a>
+    <a href="#s-raci"><span class="num">4</span> RACI &amp; Accountability</a>
+    <a href="#s-risk"><span class="num">5</span> Risk Framework &amp; Escalation</a>
+    <a href="#s-controls"><span class="num">6</span> Business Controls Checklist</a>
+    <a href="#s-artifacts"><span class="num">7</span> Artifact Repository &amp; Sign-off</a>
+    <a href="#s-governance"><span class="num">8</span> Governance, Metrics &amp; Audit</a>
+    <a href="#s-terms"><span class="num">9</span> Terminology &amp; Acronyms</a>
+  </nav>
+  <div class="sfoot">Version 1.0 · Corporate Business Controls<br/>State persists in this browser.</div>
+</aside>
+
+<div class="main">
+
+<div class="mhead">
+      <a class="backlink" href="index.html" title="Back to portfolio">← Portfolio</a>
+      <h1>dMPS Presales Due Diligence Playbook &amp; Compliance Checklist</h1>
+<div class="tag">
+      <span class="phasechip" id="dealChip">No deal loaded</span>
+      <button class="btn" id="btnPrint" disabled title="Printing is locked by the author to protect the deal pack">Print / PDF</button>
+      <button class="btn" id="btnExport" disabled title="Export is locked by the author to protect the deal pack">Export JSON</button>
+      <button class="btn" id="btnImport" disabled title="Import is locked by the author to protect the deal pack">Import</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)"/>
+      <button class="btn danger" id="btnReset" title="Reset and clear the saved playbook state">Reset</button>
+    </div>
+  </div>
+
+  <!-- ============ 1 OVERVIEW ============ -->
+  <section class="panel" id="s-overview">
+    <div class="sec-h"><div class="k">1</div><h2>Purpose, Scope &amp; How to Use</h2></div>
+    <p class="sec-sub">One operating playbook that connects opportunity consulting, risk assurance, and due-diligence design coordination from first qualification through final deal sign-off — and leaves an auditable trail.</p>
+
+    <div class="grid2">
+      <div class="card"><h4>What this playbook governs</h4><p>Complex enterprise <b>managed print &amp; device services (dMPS)</b> pursuits — multi-site fleets, custom pricing, service-level commitments, financing structures, third-party labor, and multi-entity contracts.</p></div>
+      <div class="card"><h4>Who runs it</h4><p>The <b>Deal Assurance Control Room</b>: pursuit lead, finance controller (deal economics), business controls/compliance, legal counsel, and delivery design — operating on one checklist and one risk register.</p></div>
+      <div class="card"><h4>What it produces</h4><p>(1) a phased DD roadmap, (2) RACI-protected accountability, (3) a scored risk &amp; escalation framework, (4) an audit-ready business controls checklist, and (5) a documented artifact &amp; sign-off repository.</p></div>
+      <div class="card"><h4>How evidence is proven</h4><p>Every checkpoint has an owner + evidence. Every risk has a mitigation owner and a sign-off band. Nothing reaches final sign-off with open Critical/High or unapproved red-flag items.</p></div>
+    </div>
+
+    <div class="h3">How to use this tool</div>
+    <ol class="lead" style="padding-left:20px;display:grid;gap:6px;max-width:880px">
+      <li><b>Setup (5 min):</b> In the Deal Context tab fill in opportunity metadata, target dates, and confirm the pursuit roster. The header chip updates automatically.</li>
+      <li><b>Drive the phases:</b> Work top-to-bottom through the workflow tab. Each phase lists activities, gates, and artifacts with its RACI anchor.</li>
+      <li><b>Score risk early:</b> Register every concern in the risk engine. Likelihood × Impact auto-bands the risk and dictates escalation path &amp; mandatory sign-off.</li>
+      <li><b>Validate on the checklist:</b> Complete the business controls as work is validated. Each block shows live % complete; the Pre-Submit bar gates the submission.</li>
+      <li><b>Track artifacts &amp; sign-offs:</b> Use the artifact register to trace each deliverable to an owner, status, evidence, and approver. This becomes your audit-proof pack.</li>
+      <li><b>Close the loop:</b> The governance tab defines cadence, standing agenda, and the metrics you report to the approval board. State persists in this browser; export JSON before archiving.</li>
+    </ol>
+
+    <div class="h3">Operating principles</div>
+    <ul class="lead" style="padding-left:20px;display:grid;gap:4px;max-width:880px">
+      <li><b>No price exception without risk banding:</b> every non-standard pricing &amp; SLA clause is mirrored by a risk line with a named mitigation owner.</li>
+      <li><b>One version of the truth:</b> risk register, checklist, and artifact tracker always reflect the same deal snapshot. No parallel logs.</li>
+      <li><b>Sign-off follows the money:</b> booking, recognition, and margin gates are controlled by Finance, independent of the pursuit team.</li>
+      <li><b>Audit-ready at every cutoff:</b> the pack must survive an internal audit or governance review on any working day, not just at submission.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 2 DEAL CONTEXT ============ -->
+  <section class="panel" id="s-context">
+    <div class="sec-h"><div class="k">2</div><h2>Deal Context &amp; Metadata</h2></div>
+    <p class="sec-sub">Persist once, print everywhere. Used as the header of every output token and audit artifact.</p>
+
+    <div class="fm">
+      <label>Opportunity / Quote ID<input type="text" id="m-oppno" placeholder="e.g., OPP-2026-00412"/></label>
+      <label>Customer / Account<input type="text" id="m-cust" placeholder="Customer legal entity"/></label>
+      <label>Pursuit Lead (name &amp; email)<input type="text" id="m-lead"/></label>
+      <label>Submission target date<input type="date" id="m-subdate"/></label>
+      <label>Contract term (months)<input type="text" id="m-term" placeholder="48"/></label>
+      <label>Est. TCV (currency)<input type="text" id="m-tcv" placeholder="e.g., $ 2,450,000"/></label>
+      <label>Devices / locations (scope)<input type="text" id="m-scope" placeholder="e.g., 3,200 devices · 214 sites"/></label>
+      <label>Country / tax entity<input type="text" id="m-entity" placeholder="e.g., US · NY entity"/></label>
+      <label>Pricing model applied<input type="text" id="m-pricing" placeholder="e.g., Blended CPP + labor + transition"/></label>
+      <label>Complexity rating (L / M / H / XXL)<input type="text" id="m-complex" placeholder="e.g., H"/></label>
+    </div>
+
+    <div class="h3">Pursuit roster (RACI anchors)</div>
+    <p class="lead">Codes are stable across the RACI matrix and the risk sign-off bands.</p>
+    <table>
+      <tr><th>Code</th><th>Role</th><th>Code</th><th>Role</th><th>Code</th><th>Role</th></tr>
+      <tr><td>SO</td><td>Sales / Opportunity Owner</td><td>DP</td><td>Deal / Pursuit Lead</td><td>PA</td><td>Pricing &amp; Costing Analyst</td></tr>
+      <tr><td>SP</td><td>Sourcing / Procurement (vendor)</td><td>SA</td><td>Solution / Services Architect</td><td>DT</td><td>Delivery / Transition Director</td></tr>
+      <tr><td>FC</td><td>Finance Controller — Deal Assurance</td><td>BC</td><td>Business Controls / Compliance</td><td>LG</td><td>Legal Counsel</td></tr>
+      <tr><td>IS</td><td>IT &amp; Information Security</td><td>CM</td><td>Contract Manager</td><td>ES</td><td>Executive Sponsor / Approver</td></tr>
+    </table>
+  </section>
+
+  <!-- ============ 3 WORKFLOW & TIMELINE ============ -->
+  <section class="panel" id="s-workflow">
+    <div class="sec-h"><div class="k">3</div><h2>End-to-End Workflow, Timeline &amp; Gates</h2></div>
+    <p class="sec-sub">Phased roadmap from qualification to final sign-off, with a disposition gate at each milestone. Cadence is indicative for a medium-complexity deal (~60–80 business days); compress or extend per the complexity band set in Section 2.</p>
+
+    <div class="grid2" style="margin-top:4px">
+      <div class="card"><h4>Gate discipline</h4><p>Every phase ends in a <b>Go / Conditional-Go / No-Go</b> (G0–G6). No phase is entered before the gate above is closed by the accountable owner. A No-Go parks the deal, not the checklist.</p></div>
+      <div class="card"><h4>Complexity banding</h4><p><b>L/M:</b> standard factory — compressed calendar. <b>H:</b> full playbook required. <b>XXL:</b> global fleets / multi-entity / financing — extended calendar with CFO &amp; Compliance attendance at every gate.</p></div>
+    </div>
+
+    <ol class="flow">
+      <li>
+        <div class="p"><span class="pn">P0</span><span class="pt">Qualification &amp; Intake</span><span class="pw">· Days 0–5</span><span class="gate">G0 · Qualify/Kill</span></div>
+        <ul class="tasks">
+          <li>Opportunity registered in CRM with booking code, owner, and forecast class.</li>
+          <li>Red-flag screen applied (sanctions, credit, conflict of interest, export/regulatory). Kill criteria checked before resource burn.</li>
+          <li>Business case outline: strategy fit, rough margin, capacity, competitive must-win view.</li>
+          <li>Pursuit roster assigned to complexity band; NDA confirmed before any baseline data access.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P1</span><span class="pt">Discovery, Baseline &amp; Data Capture</span><span class="pw">· Days 5–20</span><span class="gate">G1 · Baseline</span></div>
+        <ul class="tasks">
+          <li>Customer device inventory, print volumes, monthly pages, and service history collected via a structured Intake Workbook.</li>
+          <li>Site survey plan scoped (sites, sampling, remote vs on-site); executed with controlled records and photo/evidence logs.</li>
+          <li>Third-party dependencies inventoried (break/fix subcon, OEM warranty, logistics). Baseline sign-off by Deal Lead; discrepancies become risk lines.</li>
+          <li>Pricing data set is version-stamped — a single source of truth workbook.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P2</span><span class="pt">Solution Design, Cost Build &amp; Pricing</span><span class="pw">· Days 15–35</span><span class="gate">G2 · Cost</span></div>
+        <ul class="tasks">
+          <li>Service-design blueprint: fleet refresh, people model, labor pools, break-fix, stock strategy, tooling.</li>
+          <li>Cost build in the corporate cost workbook: component-level TCO (fleet/lease, labor with utilization, toner/parts, transition, software).</li>
+          <li>Pricing model produced (CPP tiers, labor, transition, invoicing structure). All non-standard pricing mirrored to the risk register.</li>
+          <li>Costing sign-off by Pricing Analyst + Finance Controller at the cost gate.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P3</span><span class="pt">Risk Quantification, Mitigation &amp; Escalation</span><span class="pw">· Days 25–42</span><span class="gate">G3 · Risk</span></div>
+        <ul class="tasks">
+          <li>Full risk register scored (likelihood × impact), mitigated, and signed under the escalation bands.</li>
+          <li>Red-flag items swept at every node — none hidden. Contingencies quantified (baseline + transition + SLA).</li>
+          <li>Risk register signed by Finance Controls at the Risk Gate before the offer is finalized.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P4</span><span class="pt">Contract, Legal, Security &amp; Terms Review</span><span class="pw">· Days 30–46</span><span class="gate">G4 · Legal</span></div>
+        <ul class="tasks">
+          <li>Draft contract / schedules reviewed: SLAs, termination, liability caps, indexation, insurance, taxes, DPA/SCCs.</li>
+          <li>Non-standard terms logged in the Terms Exception Log and mirrored into risk / contingency.</li>
+          <li>Infosec cleared for data and endpoint scope; any PII / third-party flows sanctioned.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P5</span><span class="pt">Business Controls, Booking &amp; Pre-Submit Validation</span><span class="pw">· Days 44–52</span><span class="gate">G5 · Controls</span></div>
+        <ul class="tasks">
+          <li>Business controls checklist completed to 100% by outcome — no blockers.</li>
+          <li>Order-booking, cost-management, labor-allocation, and revenue-recognition reviews closed by Finance Controller.</li>
+          <li>Artifact pack assembled and every artifact signed. Pre-submit attestation by Business Controls / Compliance.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P6</span><span class="pt">Final Approval &amp; Deal Sign-Off</span><span class="pw">· Days 52–60</span><span class="gate">G6 · DOA</span></div>
+        <ul class="tasks">
+          <li>Approval for the DOA band obtained (sponsor chain / CFO for H and XXL).</li>
+          <li>Final GO: all gates green OR approved TIBA waivers filed on the official record.</li>
+          <li>Deal milestone locked in system (forecast + booking intent); execution-hands on planned.</li>
+        </ul>
+      </li>
+      <li>
+        <div class="p"><span class="pn">P7</span><span class="pt">Handover, Transition &amp; Embedding Controls</span><span class="pw">· Days 60–75 (post-sign)</span><span class="gate gate-go">Handover</span></div>
+        <ul class="tasks">
+          <li>Signed contract, baselines, and risk register handed to Delivery / Transition with named owners.</li>
+          <li>Contract Manager creates the clauses matrix; project code &amp; cost structure set; onboarding plan activated.</li>
+          <li>Post-sign compliance check at t-30/60/90 confirms cost vs plan and no booking leaks.</li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="h3">Milestone targets &amp; owners</div>
+    <table>
+      <tr><th>Gate</th><th>When</th><th>Accountable owner</th><th>Evidence required to pass</th><th>Escalate if</th></tr>
+      <tr><td><span class="gate">G0</span></td><td>Day 0–5</td><td>SO</td><td>Intake + screening + roster signed</td><td>Red flag on customer / sanctions / credit</td></tr>
+      <tr><td><span class="gate">G1</span></td><td>Day 20</td><td>DP</td><td>Baseline validated &amp; stamped; surveys done</td><td>Fleet/volume delta outside the variance band</td></tr>
+      <tr><td><span class="gate">G2</span></td><td>Day 35</td><td>FC</td><td>Cost signed; margin ≥ threshold; quote config validated</td><td>Negative or below-margin at forecast volumes</td></tr>
+      <tr><td><span class="gate">G3</span></td><td>Day 42</td><td>DP</td><td>Risk register scored, mitigations owned, red flags cleared</td><td>Critical remains open or unapproved</td></tr>
+      <tr><td><span class="gate">G4</span></td><td>Day 46</td><td>LG</td><td>Terms cleared; exceptions logged</td><td>Any unlimited or non-bindable clause</td></tr>
+      <tr><td><span class="gate">G5</span></td><td>Day 52</td><td>FC / BC</td><td>Controls checklist 100%; artifacts signed</td><td>Any open blocker / missing sign-off</td></tr>
+      <tr><td><span class="gate">G6</span></td><td>Day 60</td><td>ES</td><td>DOA approvals logged; TIBA requests filed</td><td>Approval authority exceeded or absent</td></tr>
+      <tr><td><span class="gate">G7</span></td><td>Day 75</td><td>DT</td><td>Handover pack accepted; contract manager onboarding</td><td>Delivery rejects scope / baseline</td></tr>
+    </table>
+
+    <div class="h3">Standing gate-review cadence</div>
+    <table>
+      <tr><th>Ceremony</th><th>Cadence</th><th>Attendees</th><th>Purpose</th></tr>
+      <tr><td>Deal Control Room stand-up</td><td>Weekly</td><td>DP, FC, BC, SA, PA</td><td>Progress, blockers, risk thinning, checklist sweep</td></tr>
+      <tr><td>Finance &amp; controls lock-check</td><td>Weekly</td><td>FC, BC, PA</td><td>Cost / margin / booking / revenue validation</td></tr>
+      <tr><td>Legal red-line working group</td><td>As scheduled</td><td>LG, DP, IS</td><td>Terms negotiation; DPA / security back-fill</td></tr>
+      <tr><td>Go-Gate board</td><td>Per gate</td><td>Gate owner, FC, LG, ES</td><td>Formal Go / No-Go decision recorded in the log</td></tr>
+      <tr><td>Deal Sanity / fresh-eyes review</td><td>At G3</td><td>Independent (non-pursuit) reviewer</td><td>Second-opinion on assumptions &amp; price realism</td></tr>
+    </table>
+  </section>
+
+  <!-- ============ 4 RACI ============ -->
+  <section class="panel" id="s-raci">
+    <div class="sec-h"><div class="k">4</div><h2>RACI — Roles, Accountabilities &amp; Controls</h2></div>
+    <p class="sec-sub">R = Responsible (executes) · A = Accountable (owns outcome) · C = Consulted · I = Informed. One A per activity. The RACI is the anchor for gate sign-off chains and risk-band approvals.</p>
+
+    <div class="legend">
+      <span><i class="dot" style="background:#3456f2"></i>R — Responsible</span>
+      <span><i class="dot" style="background:#e3ecfa"></i>A — Accountable</span>
+      <span><i class="dot" style="background:#b08a12"></i>C — Consulted</span>
+      <span><i class="dot" style="background:#8a9bb5"></i>I — Informed</span>
+    </div>
+
+    <div class="tabs" id="raciTabs">
+      <button class="on" data-f="all">All phases</button>
+      <button data-f="phase0">P0–P1</button>
+      <button data-f="phase2">P2–P3</button>
+      <button data-f="phase4">P4–P5</button>
+      <button data-f="phase6">P6–P7</button>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="raci">
+        <thead><tr><th style="text-align:left;min-width:240px">Activity</th><th>SO</th><th>DP</th><th>PA</th><th>SP</th><th>SA</th><th>DT</th><th>FC</th><th>BC</th><th>LG</th><th>IS</th><th>CM</th><th>ES</th></tr></thead>
+        <tbody id="raciBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 5 RISK ============ -->
+  <section class="panel" id="s-risk">
+    <div class="sec-h"><div class="k">5</div><h2>Risk Assessment, Categorization &amp; Escalation</h2></div>
+    <p class="sec-sub">Score every risk on Likelihood × Impact (1–5). The engine auto-computes the band, the mandatory sign-off chain, and the mitigation protocol. Nothing is submitted without its risk line closed.</p>
+
+    <div class="h3">Category index</div>
+    <table>
+      <tr><th>Cat</th><th>Category</th><th>Example exposure in dMPS deals</th><th>Common control</th></tr>
+      <tr><td>TCD</td><td>Technical</td><td>Baseline under/over-statement; unverified device counts &amp; volumes; onboarding capacity (e.g., 4,500 devices in 30 days); telemetry gaps.</td><td>Structured baseline + sampled surveys; contingency %; onboarding plan validation.</td></tr>
+      <tr><td>OPR</td><td>Operational / Delivery</td><td>Field coverage in remote / bandwidth-limited sites; labor-tracking disputes (clock / geo / per-install); technician leverage &amp; variability; stock &amp; SLA attack.</td><td>Labor model by site cluster; measurable SLAs; escalation to delivery design.</td></tr>
+      <tr><td>FIN</td><td>Financial</td><td>Unit-economics distortion; non-standard pricing &amp; indexation; upfront fleet financing asset risk; FX on multi-country; margin below threshold.</td><td>Cost workbook audits; pricing exceptions log; contingency reserve; FX hedging.</td></tr>
+      <tr><td>CNT</td><td>Contractual</td><td>Custom / unlimited SLAs, liability caps &amp; indemnity; termination / AIC penalty &amp; exit device disposition; guarantees.</td><td>Legal redline &amp; exception log; TIBA; insurance &amp; indemnity check.</td></tr>
+      <tr><td>CPR</td><td>Compliance / Privacy / Reg</td><td>PII in print / billing data; subprocessors; export / tax; new entity enablement; sanctions awareness.</td><td>DPA/SCC; DPIA; infosec sign-off; compliance screening.</td></tr>
+      <tr><td>BOK</td><td>Booking / Revenue</td><td>Order-booking split (device vs service vs cloud); recognition deferral; materially incorrect booking value.</td><td>Finance Controller sign-off; recognition memo; booking audit.</td></tr>
+    </table>
+
+    <div class="h3">Score bands &amp; mandatory response</div>
+    <div class="riskband" style="border-color:#1d9e63"><b>Low (1–4)</b> — Standard offer with a named risk owner; tracked on the register only. No escalation required.</div>
+    <div class="riskband" style="border-color:#e08c1f"><b>Medium (5–9)</b> — Requires a mitigation plan plus <b>Finance Controller</b> and <b>Deal Lead</b> sign-off before submission.</div>
+    <div class="riskband" style="border-color:#d64545"><b>High (10–15)</b> — Requires a formal mitigation plan, <b>Business Controls + Legal</b> review, and written sign-off. No GO without an approved waiver (TIBA). Escalates via Section 5 path.</div>
+    <div class="riskband" style="border-color:#7a1210"><b>Critical (16–25)</b> — Deal does not sign without <b>Executive Sponsor / CFO sign-off</b>, <b>Compliance</b> endorsement, and an approved <b>TIBA</b> or exemption. Board-level review required.</div>
+
+    <div class="h3">Red-flag / auto-escalation triggers</div>
+    <p class="lead" style="display:grid;gap:5px;margin:8px 0">
+      <span>• Any deal that would run with <b>negative or below-threshold margin</b> at forecast volumes.</span>
+      <span>• Sanctions, KYC/AML, export, or regulatory red flags at screening.</span>
+      <span>• <b>Unlimited liability</b> or an indemnity cap below the corporate floor (or any clause the company cannot bind).</span>
+      <span>• Custom SLA: penalty exposure with no agreed measurement / baseline for the metric.</span>
+      <span>• <b>Guaranteed savings</b> clauses without an enforceable delivery process owning them.</span>
+      <span>• Customer credit score, adverse financials, or dispute history that fails credit approval.</span>
+      <span>• New country / entity launch not enabled for this line of business (tax, employment, data residency).</span>
+      <span>• A deviation from the DOA, or non-standard terms without a waiver on file.</span>
+      <span>• Any requested change to order-booking, recognition, or revenue rules.</span>
+    </p>
+    <p class="lead" style="font-weight:600;color:#b33127;background:#fdeceb;padding:8px 12px;border-radius:8px">Rule: a red-flag trigger cannot be cleared below <b>Executive Sponsor + Compliance sign-off</b> and must be logged in the Escalation Log with the decision and approved record.</p>
+
+    <div class="h3">Online risk register</div>
+    <p class="lead">Copy from the Common Exposure Library or create a custom line. The band computes instantly; ticking “Red flag” forces the Critical band.</p>
+
+    <div class="grid2" style="margin-top:10px">
+      <div class="card">
+        <h4>Copy a common risk into the register</h4>
+        <select id="riskLib" style="width:100%;margin-bottom:8px"></select>
+        <button class="btn primary" onclick="addLibRisk()">Add to register</button>
+      </div>
+      <div class="card">
+        <h4>Mandatory approvers by band</h4>
+        <table>
+          <tr><th>Band</th><th>Required before ANY submission</th></tr>
+          <tr><td>Low</td><td>Deal Lead + risk owner</td></tr>
+          <tr><td>Medium</td><td>Finance Controller + Deal Lead</td></tr>
+          <tr><td>High</td><td>FC + Legal + Business Controls</td></tr>
+          <tr><td>Critical</td><td>Executive Sponsor / CFO + Compliance + TIBA (if waiving)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="rtab" id="riskTable">
+        <thead><tr>
+          <th style="width:44px">#</th><th style="width:70px">Cat</th><th style="min-width:250px">Risk description</th>
+          <th style="width:82px">Likelihood</th><th style="width:74px">Impact</th><th style="width:54px">Score</th><th style="width:120px">Band</th>
+          <th style="width:120px">Mitigation owner</th><th style="min-width:170px">Mitigation / control</th><th style="width:78px">Red flag</th><th style="width:80px">Sign-off</th><th style="width:34px">×</th>
+        </tr></thead>
+        <tbody id="riskBody"></tbody>
+      </table>
+    </div>
+    <div class="rowform">
+      <label><span>Category</span><select id="riskCat"><option>TCD</option><option>OPR</option><option>FIN</option><option>CNT</option><option>CPR</option><option>BOK</option></select></label>
+      <label style="flex:1;min-width:280px"><span>Risk description</span><input type="text" id="riskDesc" placeholder="e.g., Custom SLA guarantees 4-hour fix with no measurement"/></label>
+      <label><span>Likelihood</span><select id="riskL"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
+      <label><span>Impact</span><select id="riskI"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option></select></label>
+      <button class="btn primary" onclick="addRiskRow()">+ Add risk</button>
+    </div>
+    <p class="hint">Score = Likelihood × Impact · 1–4 Low · 5–9 Medium · 10–15 High · 16–25 Critical. A red flag forces Critical regardless of numeric score.</p>
+
+    <div class="h3">Escalation path (High / Critical)</div>
+    <table>
+      <tr><th>Level</th><th>Escalated to</th><th>Scope</th><th>Decision timeframe</th></tr>
+      <tr><td>L1</td><td>Deal Lead + PA / SA</td><td>Assess, document, define mitigation</td><td>Within 2 business days</td></tr>
+      <tr><td>L2</td><td>Finance Controller (Deal Assurance)</td><td>Economics &amp; booking impact; contingency</td><td>Within 5 business days</td></tr>
+      <tr><td>L3</td><td>Business Controls / Compliance + Legal</td><td>Exceptions, redline, TIBA eligibility</td><td>Within the gate calendar</td></tr>
+      <tr><td>L4</td><td>Executive Sponsor / CFO / Board Committee</td><td>Critical only; sign-off or kill</td><td>Before next gate</td></tr>
+    </table>
+
+    <div class="h3">Escalation &amp; decision log (audit trail)</div>
+    <div style="overflow-x:auto">
+      <table class="rtab" id="escalTable">
+        <thead><tr><th style="width:96px">Date</th><th style="width:64px">Phase</th><th style="width:110px">Ctrl ref</th><th style="min-width:240px">Entry</th><th style="width:150px">Decided by</th><th style="width:110px">Decision / status</th><th style="width:34px">×</th></tr></thead>
+        <tbody id="escalBody"></tbody>
+      </table>
+    </div>
+    <div class="rowform">
+      <label><span>Date</span><input type="date" id="escalDate"/></label>
+      <label><span>Phase</span><input type="text" id="escalPhase" placeholder="e.g., P3" style="width:70px"/></label>
+      <label><span>Ctrl ref</span><input type="text" id="escalRef" placeholder="e.g., CNT-14" style="width:120px"/></label>
+      <label style="flex:1;min-width:240px"><span>Entry</span><input type="text" id="escalText" placeholder="Decision / issue / trigger fired"/></label>
+      <label><span>Decided by</span><input type="text" id="escalBy" style="width:160px"/></label>
+      <label><span>Status</span><select id="escalStatus"><option>Open</option><option>Mitigated</option><option>Waived</option><option>Closed</option></select></label>
+      <button class="btn primary" onclick="addEscalRow()">+ Log entry</button>
+    </div>
+  </section>
+
+  <!-- ============ 6 CONTROLS ============ -->
+  <section class="panel" id="s-controls">
+    <div class="sec-h"><div class="k">6</div><h2>Audit-Ready Business Controls &amp; Compliance Checklist</h2></div>
+    <p class="sec-sub">The corporate “book of controls” applied to any customer submission. Each block shows live progress; the Pre-Submit bar must read 100% for the offer to be submitted.</p>
+
+    <div class="progbox" style="margin-bottom:6px">
+      <div class="px">
+        <div style="font-size:12.5px;font-weight:700;color:#33415e">Pre-Submit completion</div>
+        <div class="bar"><i id="bigBar" style="width:0%"></i></div>
+      </div>
+      <div class="num" id="bigPct">0%</div>
+      <div style="font-size:12px;color:var(--muted)"><span id="bigDone">0</span> of <span id="bigTotal">0</span> controls validated</div>
+    </div>
+
+    <div id="ctrlWrap"></div>
+
+    <div class="attest">
+      <div style="font-weight:800;color:#0d5c4a;font-size:14px">Attestation — Pre-Submit</div>
+      <div style="font-size:13px;color:#33415e;margin:8px 0">
+        I confirm per the Delegation of Authority that: (1) this controls pack is complete and every open item is signed; (2) no High/Critical risk remains without approved sign-off; (3) booking, cost, labor, and revenue-recognition rules have been applied; (4) the artifact pack is signed in Section 7.
+      </div>
+      <div class="rowform">
+        <label><span>Finance Controller</span><input type="text" id="attestFC" style="width:220px" placeholder="Name"/></label>
+        <label><span>Business Controls / Compliance</span><input type="text" id="attestBC" style="width:220px" placeholder="Name"/></label>
+        <label><span>Deal / Pursuit Lead</span><input type="text" id="attestDP" style="width:220px" placeholder="Name"/></label>
+        <label><span>Date</span><input type="date" id="attestDate"/></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7 ARTIFACTS ============ -->
+  <section class="panel" id="s-artifacts">
+    <div class="sec-h"><div class="k">7</div><h2>Artifact &amp; Documentation Repository — DD Pack</h2></div>
+    <p class="sec-sub">The signed artifact pack is what any audit or governance review will request. Every deliverable maps to a template, an owner, a status, and an approver. Keep the tracker current.</p>
+
+    <div class="h3">Deliverable catalog (expected pack)</div>
+    <table>
+      <tr><th>ID</th><th>Artifact</th><th>Purpose / signature content</th><th>Default owner</th></tr>
+      <tr><td>A-01</td><td>Opportunity Intake &amp; Screening Form</td><td>CRM ID, complexity band, screening outcome, kill/continue decision</td><td>SO</td></tr>
+      <tr><td>A-02</td><td>Customer Baseline Data Workbook</td><td>Device inventory, volumes, utilization, site list — stamped, single source of truth</td><td>SA</td></tr>
+      <tr><td>A-03</td><td>Site Survey Findings Log</td><td>Survey plan, per-site observations, photos, sampling method, readiness score</td><td>SA / DT</td></tr>
+      <tr><td>A-04</td><td>Third-Party Vendor Dependency Register</td><td>Subcons, OEM warranties, logistics, single points of failure, exit plans</td><td>SP</td></tr>
+      <tr><td>A-05</td><td>Cost Build &amp; TCO Workbook</td><td>Component cost, labor &amp; utilization, contingency — source of margin</td><td>PA + FC</td></tr>
+      <tr><td>A-06</td><td>Pricing Model &amp; Commercial Terms</td><td>Configured quote, CPP tiers, indexation, exceptions</td><td>PA</td></tr>
+      <tr><td>A-07</td><td>Risk Register &amp; Mitigations</td><td>Scored risk, owners, red-flag confirmation</td><td>DP</td></tr>
+      <tr><td>A-08</td><td>Legal / Terms Exception Log &amp; Redlines</td><td>MSA / schedules, liability, indemnity, termination, DPA/SCC</td><td>LG</td></tr>
+      <tr><td>A-09</td><td>Security &amp; Privacy Assessment (Infosec)</td><td>Vendor / data security, PII flows, DPIA outcome</td><td>IS</td></tr>
+      <tr><td>A-10</td><td>Delivery / Transition &amp; Onboarding Plan</td><td>Onboarding, labor &amp; stock loading plan, schedules</td><td>DT</td></tr>
+      <tr><td>A-11</td><td>Business Controls Compliance Pack</td><td>Section 6 checklist export + attestations</td><td>BC / FC</td></tr>
+      <tr><td>A-12</td><td>Deal Approval / GO Record</td><td>Approvals by band, TIBA / waivers, e-sign record</td><td>DP / CM</td></tr>
+    </table>
+    <p class="hint"><b>Stamping rule:</b> every data-bearing artifact is named <b>&lt;Opportunity-ID&gt;_&lt;Artifact-ID&gt;_&lt;version&gt;_&lt;date&gt;</b>, version-controlled, stored in the deal repository with permissions per role. No artifacts on personal drives.</p>
+
+    <div class="h3">Artifact sign-off tracker</div>
+    <div style="overflow-x:auto">
+      <table class="rtab" id="artTable">
+        <thead><tr>
+          <th style="width:70px">Artifact ID</th><th style="min-width:200px">Artifact name</th>
+          <th style="width:140px">Owner</th><th style="width:120px">Status</th><th style="width:80px">Complete %</th>
+          <th style="width:140px">Verifier</th><th style="width:96px">Sign-off date</th><th style="width:130px">Approved by</th>
+          <th style="width:34px">×</th>
+        </tr></thead>
+        <tbody id="artBody"></tbody>
+      </table>
+    </div>
+    <div class="rowform">
+      <label><span>ID</span><select id="artId">
+        <option value="A-01">A-01</option><option value="A-02">A-02</option><option value="A-03">A-03</option>
+        <option value="A-04">A-04</option><option value="A-05">A-05</option><option value="A-06">A-06</option>
+        <option value="A-07">A-07</option><option value="A-08">A-08</option><option value="A-09">A-09</option>
+        <option value="A-10">A-10</option><option value="A-11">A-11</option><option value="A-12">A-12</option>
+        <option value="CUS">CUS</option>
+      </select></label>
+      <label style="flex:1;min-width:220px"><span>Artifact name</span><input type="text" id="artName"/></label>
+      <label><span>Owner</span><input type="text" id="artOwner" style="width:150px"/></label>
+      <label><span>Status</span><select id="artStatus"><option>Not started</option><option>Draft</option><option>In review</option><option>Complete</option><option>Approved</option><option>Waived</option></select></label>
+      <label><span>Complete %</span><input type="number" id="artComp" min="0" max="100" value="0" style="width:70px"/></label>
+      <label><span>Verifier</span><input type="text" id="artVerif" style="width:140px"/></label>
+      <label><span>Sign-off date</span><input type="date" id="artDate"/></label>
+      <label><span>Approved by</span><input type="text" id="artBy" style="width:140px"/></label>
+      <button class="btn primary" onclick="addArtRow()">+ Add artifact</button>
+    </div>
+
+    <div class="progbox" style="margin-top:14px">
+      <div class="px">
+        <div style="font-size:12.5px;font-weight:700;color:#33415e">Artifact pack sign-off completeness</div>
+        <div class="bar"><i id="artBar" style="width:0%"></i></div>
+      </div>
+      <div class="num" id="artPct">0%</div>
+      <div style="font-size:12px;color:var(--muted)"><span id="artCount">0</span> artifacts tracked</div>
+    </div>
+    <p class="hint">Status <b>Approved</b> (or <b>Waived</b> with a TIBA) counts as signed for the pack. Completeness % is informational; sign-off status is the gate.</p>
+  </section>
+
+  <!-- ============ 8 GOVERNANCE ============ -->
+  <section class="panel" id="s-governance">
+    <div class="sec-h"><div class="k">8</div><h2>Governance, Review Cadence &amp; Audit Trail</h2></div>
+    <p class="sec-sub">How the control room meets, what a gate looks like, and the metrics the board sees.</p>
+
+    <div class="h3">Standing meeting rhythm</div>
+    <table>
+      <tr><th>Meeting</th><th>Cadence</th><th>Owner</th><th>Minimum standing agenda</th></tr>
+      <tr><td>Deal control room</td><td>Weekly</td><td>Deal / Pursuit Lead</td><td>Phase status, gate flags, risk-band delta, checklist progress, next-gate slip risk</td></tr>
+      <tr><td>Finance &amp; controls check</td><td>Weekly</td><td>FC</td><td>Cost vs plan, booking vs forecast, recognition memo, margin heat</td></tr>
+      <tr><td>Go / No-Go gate board</td><td>Per gate</td><td>Gate owner</td><td>Evidence review, banded risk report, decision + rationale into the log</td></tr>
+      <tr><td>Fresh-eyes review</td><td>Once, at G3</td><td>Independent reviewer</td><td>Assumption stress, price realism, baseline premise, blocker identification</td></tr>
+      <tr><td>Status to leadership</td><td>Milestone</td><td>Deal Lead</td><td>Complexity, TCV, key risks, deadline risk, decision asks</td></tr>
+    </table>
+
+    <div class="h3">Deal health metrics (report to approval board)</div>
+    <div class="grid2">
+      <div class="card"><h4>Gate health</h4><p>Traffic-light status per G0–G7 with the accountable owner named. A red-active gate stops submission. Chase the amber before it turns red.</p></div>
+      <div class="card"><h4>Risk posture</h4><p># High/Critical open, # mitigated, # waivers, red-flag count — trended week over week.</p></div>
+      <div class="card"><h4>Control completeness</h4><p>% of Section 6 validated and artifact pack signed %. Must read 100 / 100 at pre-submit.</p></div>
+      <div class="card"><h4>Velocity &amp; quality</h4><p>Days per phase vs plan; % of gates passed at first attempt; count of deals re-spun at G5 — an early-warning signal.</p></div>
+    </div>
+
+    <div class="h3">Audit trail rules (for internal audit / governance review)</div>
+    <p class="lead" style="display:grid;gap:6px;margin:8px 0;color:#33415e">
+      <span><b>1. Immutable log:</b> the Escalation &amp; Decision Log (Section 5) and sign-off dates (Section 7) are the formal record. Appends only; no deletions without Business Controls approval.</span>
+      <span><b>2. Version stamping:</b> artifacts follow the stamping rule in Section 7; version history retained in the repository.</span>
+      <span><b>3. Who-what-when:</b> each control in Section 6 is tied to a named verifier. Attestation means the named people attest.</span>
+      <span><b>4. Exemptions:</b> any deliberate override of a control is recorded as a TIBA / waiver artifact routed via the Section 5 escalation path — never silent.</span>
+      <span><b>5. Archival:</b> at deal end, export this playbook JSON and store it in the contract folder of the repository. Retention per the record schedule.</span>
+    </p>
+  </section>
+
+  <!-- ============ 9 TERMS ============ -->
+  <section class="panel" id="s-terms">
+    <div class="sec-h"><div class="k">9</div><h2>Terminology, Acronyms &amp; Rules of Reference</h2></div>
+    <table>
+      <tr><th style="width:130px">Term</th><th>Definition in this playbook</th></tr>
+      <tr><td>dMPS</td><td>Digital managed print &amp; device services — complex enterprise print / device fleet outsourcing.</td></tr>
+      <tr><td>CPP</td><td>Pay-per-page / click pricing, often tiered by mono / color / machine class.</td></tr>
+      <tr><td>Baseline</td><td>The certified customer data set (devices, volumes, sites) underlying pricing. One source of truth, stamped.</td></tr>
+      <tr><td>Contingency</td><td>Risk-appropriated cost add (baseline %, transition %, SLA %) approved and earmarked — not a margin slush fund.</td></tr>
+      <tr><td>TIBA / TIV</td><td>Transaction In Business Approval / Transaction In Violation — the formal waiver process for a control exception.</td></tr>
+      <tr><td>DOA</td><td>Delegation of Authority — the approval limits and sign-off chain a deal tier must run.</td></tr>
+      <tr><td>RACI</td><td>Responsible / Accountable / Consulted / Informed.</td></tr>
+      <tr><td>Rate card</td><td>Standard hourly / unit labor price list that must not be deviated from without exception sign-off.</td></tr>
+      <tr><td>SLA</td><td>Service level agreement — committed metric + remedy. Measurement must exist or the SLA is a red flag.</td></tr>
+      <tr><td>Utilization</td><td>Billable vs paid hours for labor; non-billable, standby, and warranty hours quantified and priced.</td></tr>
+      <tr><td>Recognition</td><td>Revenue recognition policy mapping contract obligations to a recognising period (e.g., over time vs point in time).</td></tr>
+      <tr><td>Booking</td><td>Order-booking rule set — what value can be booked at signing and what is deferred.</td></tr>
+    </table>
+  </section>
+
+  <div style="height:30px"></div>
+</div>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+var NS="ddp.v1.";
+var LOCK=true; /* set to false (or open the file with #unlock in the URL) to re-enable Print / Export / Import / Reset for the author */
+if(location.hash.indexOf("unlock")>-1)LOCK=false;
+function assertUnlocked(){if(LOCK){toast("Locked by author — printing & export are protected.");return false}return true}
+function doPrint(){if(!assertUnlocked())return;window.print()}
+function syncLockUI(){
+  var locked=LOCK;
+  var map={btnPrint:locked?"Printing is locked by the author to protect the deal pack":"Print / PDF",btnExport:locked?"Export is locked by the author to protect the deal pack":"Export JSON",btnImport:locked?"Import is locked by the author to protect the deal pack":"Import"};
+  ["btnPrint","btnExport","btnImport"].forEach(function(id){
+    var b=document.getElementById(id);if(!b)return;
+    b.disabled=locked;
+    b.title=map[id];
+  });
+  var rb=document.getElementById("btnReset");if(rb){rb.disabled=false;rb.title="Reset: clear saved playbook state"}
+}
+function get(k,d){try{var r=localStorage.getItem(NS+k);return r===null?(d===undefined?null:d):JSON.parse(r)}catch(e){return d===undefined?null:d}}
+function set(k,v){try{localStorage.setItem(NS+k,JSON.stringify(v))}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show")},2200)}
+
+/* ============ 2 · META ============ */
+var META=["oppno","cust","lead","subdate","term","tcv","scope","entity","pricing","complex"];
+function metaData(){var o={};META.forEach(function(k){o[k]=get("m-"+k,"")});return o}
+function loadMeta(){META.forEach(function(k){var el=document.getElementById("m-"+k);if(el)el.value=get("m-"+k,"")});chip()}
+function bindMeta(){META.forEach(function(k){var el=document.getElementById("m-"+k);if(!el)return;el.addEventListener("input",function(){set("m-"+k,el.value);chip()})})}
+function chip(){var m=metaData();var s=(m.oppno?m.oppno+"":"");if(m.cust)s+=(s?" · ":"")+m.cust;var c=document.getElementById("dealChip");if(s){c.textContent="Deal: "+s;c.style.display="inline-block"}else{c.textContent="No deal loaded";c.style.display="inline-block"}}
+
+/* ============ 4 · RACI ============ */
+var ROLES=["SO","DP","PA","SP","SA","DT","FC","BC","LG","IS","CM","ES"];
+function cell(mark,key){
+  if(mark==="R")return '<span class="cell-r" data-t="'+key+'">R</span>';
+  if(mark==="A")return '<span class="cell-a">A</span>';
+  if(mark==="C")return '<span class="cell-c">C</span>';
+  if(mark==="I")return '<span class="cell-i">I</span>';
+  return '<span class="raci-dash">·</span>';
+}
+var RACI=[
+["P0–P1","Opportunity intake, classification & CRM registration",["R","A","C","","","","C","C","","","","I"]],
+["P0–P1","Screening: sanctions, credit, conflict, export & kill decision",["R","I","","","","","C","A","","","","I"]],
+["P0–P1","NDA & data-access governance",["R","A","","","C","","I","C","C","C","",""]],
+["P0–P1","Baseline data capture, validation & stamping",["C","A","C","C","R","C","C","","","","",""]],
+["P0–P1","Site survey planning & execution",["C","A","","C","R","C","","","","","",""]],
+["P0–P1","Third-party dependency register & SPOF analysis",["C","A","","R","","C","I","","C","C","",""]],
+["P2–P3","Solution & delivery design blueprint",["C","A","C","C","R","C","C","","","","",""]],
+["P2–P3","Cost build & TCO workbook",["C","C","R","C","C","","A","","","","",""]],
+["P2–P3","Pricing model, quote configuration & exceptions",["C","A","R","","","","C","C","","","",""]],
+["P2–P3","Margin & booking-value economics validation",["I","C","C","","","","RA","C","I","","","I"]],
+["P2–P3","Risk register build, scoring & mitigation",["C","RA","C","C","C","C","C","C","C","C","",""]],
+["P2–P3","Red-flag escalation & waiver decisions",["I","R","","","","","C","C","C","","I","A"]],
+["P4–P5","Legal / contract review & redlines",["C","A","","","","","","C","R","","C","I"]],
+["P4–P5","Security, privacy & DPIA",["C","A","","","C","","C","C","C","R","",""]],
+["P4–P5","Business controls pre-submit validation",["I","C","","","","","A","R","C","C","",""]],
+["P4–P5","Booking & revenue recognition sign-off",["I","I","","","","","RA","C","","","I",""]],
+["P6–P7","DOA approval chain & GO record",["I","R","","","","","C","C","C","","","A"]],
+["P6–P7","Contract execution & handover to delivery",["I","C","","","","A","C","I","","","R","C"]],
+["P6–P7","Post-sign compliance check (t-30/60/90)",["","C","","","","C","R","C","","","C",""]]
+];
+var raciPhase=function(row){return row[0]};
+function renderRaci(filter){
+  var tb=document.getElementById("raciBody");tb.innerHTML="";
+  RACI.forEach(function(row){
+    if(filter!=="all"&&row[0].indexOf(filter.replace("phase","P"))!==0)return;
+    var tr=document.createElement("tr");
+    var td0=document.createElement("td");td0.innerHTML=esc(row[1]);
+    tr.appendChild(td0);
+    for(var i=0;i<ROLES.length;i++){
+      var td=document.createElement("td");td.innerHTML=cell(row[2][i]||"",ROLES[i]);tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  });
+}
+function bindRaciTabs(){
+  var tabs=document.getElementById("raciTabs");if(!tabs)return;
+  tabs.addEventListener("click",function(e){
+    if(e.target.tagName!=="BUTTON")return;
+    var f=e.target.getAttribute("data-f");
+    Array.prototype.forEach.call(tabs.children,function(b){b.classList.remove("on")});
+    e.target.classList.add("on");
+    renderRaci(f);
+  });
+}
+
+/* ============ 5 · RISK ============ */
+var LIB=[
+["R1","Baseline fidelity — device counts / volumes understated","4","4","TCD"],
+["R2","Fleet & refresh volatility over term distort unit economics","3","4","TCD"],
+["R3","Custom / low-baseline SLA (penalty, unmeasurable)","3","5","TCD"],
+["R4","Onboarding / transition capacity shortfall (sites or devices)","3","4","OPR"],
+["R5","Unusual labor-tracking requirement (clock / geo / per-install)","3","3","OPR"],
+["R6","Field coverage / remote-site access gaps","3","3","OPR"],
+["R7","Third-party / subcon dependencies — OEM warranty & labor","3","3","OPR"],
+["R8","Data & privacy flows (PII, DPIA, subprocessors, SCC)","2","4","CPR"],
+["R9","Non-standard pricing / indexation distorts margin","3","4","FIN"],
+["R10","Fleet financing / lease & asset-disposition exposure","3","4","FIN"],
+["R11","FX / multi-country currency exposure","2","3","FIN"],
+["R12","Booking / revenue-split complexity (device vs service vs cloud)","3","4","BOK"],
+["R13","Non-standard liability / indemnity or unlimited clause","2","5","CNT"],
+["R14","Termination / AIC penalty & exit disposition exceed plan","2","4","CNT"],
+["R15","Guaranteed savings without enforceable process","2","4","CNT"]
+];
+function fillLib(){
+  var s=document.getElementById("riskLib");
+  LIB.forEach(function(r){var o=document.createElement("option");o.value=r.join("|");o.textContent=r[0]+" — "+r[1];s.appendChild(o)});
+}
+function bandInfo(r){
+  var sc=r.l*r.i;var band,cls;
+  if(r.rf){band="Critical";cls="cri"}else if(sc<=4){band="Low";cls="low"}else if(sc<=9){band="Medium";cls="med"}else if(sc<=15){band="High";cls="hi"}else{band="Critical";cls="cri"}
+  return {sc:sc,band:band,cls:cls}
+}
+function defaultRisks(){return [
+ {cat:"BOK",desc:"Booking / revenue-split complexity — device vs service vs cloud components must be recognised correctly.",l:3,i:4,rf:false,owner:"",mit:"Recognition memo prepared by Finance Controller; deferrals logged.",sig:""},
+ {cat:"CNT",desc:"Custom SLA exposure — service commitments beyond the standard catalogue without agreed measurement.",l:3,i:5,rf:false,owner:"",mit:"SLA baseline measurement plan; penalty cap agreed; contingency reserved.",sig:""},
+ {cat:"OPR",desc:"Unusual labor-tracking requirement — customer demands clock / geo / per-install capture.",l:3,i:3,rf:false,owner:"",mit:"Labor-capture method mapped with Delivery; cost impact priced and logged.",sig:""}
+]}
+function loadRisks(){var r=get("risk",null);return r?r:defaultRisks()}
+function saveRisks(){set("risk",loadRisks())}
+function renderRisks(){
+  var rs=loadRisks();var tb=document.getElementById("riskBody");tb.innerHTML="";
+  rs.forEach(function(r,i){
+    var bi=bandInfo(r);var tr=document.createElement("tr");
+    tr.innerHTML='<td class="center">'+(i+1)+'</td>'+
+      '<td>'+esc(r.cat)+'</td>'+
+      '<td><input type="text" value="'+esc(r.desc)+'" data-rk="desc" style="width:100%"/></td>'+
+      '<td><select data-rk="l">'+selOpts([1,2,3,4,5],r.l)+'</select></td>'+
+      '<td><select data-rk="i">'+selOpts([1,2,3,4,5],r.i)+'</select></td>'+
+      '<td class="center" style="font-weight:800">'+bi.sc+'</td>'+
+      '<td><span class="badd '+bi.cls+'">'+bi.band+'</span></td>'+
+      '<td><input type="text" value="'+esc(r.owner)+'" data-rk="owner" style="width:100%" placeholder="FC / DP / LG ..."/></td>'+
+      '<td><input type="text" value="'+esc(r.mit)+'" data-rk="mit" style="width:100%" placeholder="Mitigation / control"/></td>'+
+      '<td class="center"><input type="checkbox" '+(r.rf?"checked":"")+' data-rk="rf"/></td>'+
+      '<td><input type="text" value="'+esc(r.sig)+'" data-rk="sig" style="width:100%" placeholder="Approver / date"/></td>'+
+      '<td class="center"><button class="mini" data-del="risk">×</button></td>';
+    tr.setAttribute("data-idx",i);tb.appendChild(tr);
+  });
+}
+function selOpts(vals,cur){return vals.map(function(v){return '<option value="'+v+'"'+(v===cur?' selected':'')+'>'+v+'</option>'}).join("")}
+function addRiskRow(){
+  var rs=loadRisks();
+  rs.push({cat:document.getElementById("riskCat").value,desc:document.getElementById("riskDesc").value||"New risk",l:+document.getElementById("riskL").value,i:+document.getElementById("riskI").value,rf:false,owner:"",mit:"",sig:""});
+  set("risk",rs);renderRisks();toast("Risk added");
+}
+function addLibRisk(){
+  var v=document.getElementById("riskLib").value;if(!v)return;
+  var p=v.split("|");var rs=loadRisks();
+  rs.push({cat:p[4]||"CNT",desc:p[0]+" — "+p[1],l:+p[2],i:+p[3],rf:false,owner:"",mit:"",sig:""});
+  set("risk",rs);renderRisks();toast("Library risk added");
+}
+
+/* ============ 5 · ESCALATION LOG ============ */
+function loadEsc(){return get("escal",[])||[]}
+function saveEsc(){set("escal",loadEsc())}
+function renderEsc(){
+  var es=loadEsc();var tb=document.getElementById("escalBody");tb.innerHTML="";
+  es.forEach(function(e,i){
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td>'+esc(e.d)+'</td><td>'+esc(e.p)+'</td><td>'+esc(e.r)+'</td><td>'+esc(e.t)+'</td><td>'+esc(e.b)+'</td><td><span class="badd '+(e.s==="Open"?"hi":e.s==="Waived"?"med":e.s==="Closed"?"low":"med")+'">'+esc(e.s)+'</span></td>'+
+      '<td class="center"><button class="mini" data-del="escal">×</button></td>';
+    tr.setAttribute("data-idx",i);tb.appendChild(tr);
+  });
+}
+function addEscalRow(){
+  var es=loadEsc();
+  es.push({d:document.getElementById("escalDate").value||new Date().toISOString().slice(0,10),p:document.getElementById("escalPhase").value,r:document.getElementById("escalRef").value,t:document.getElementById("escalText").value,b:document.getElementById("escalBy").value,s:document.getElementById("escalStatus").value});
+  set("escal",es);renderEsc();toast("Log entry added");
+}
+
+/* ============ 6 · CONTROLS ============ */
+var CTRL=[
+ {g:"A",t:"A · Deal Governance & Qualification (Gate 0)",items:[
+   ["A1","Opportunity registered in CRM with booking code & forecast class."],
+   ["A2","Complexity band set and pursuit roster assigned."],
+   ["A3","NDA executed before any baseline data access."],
+   ["A4","Red-flag screen passed (sanctions, credit, conflict, export)."],
+   ["A5","Cost-to-win / resource plan approved."]]},
+ {g:"B",t:"B · Order Booking & Revenue Recognition",items:[
+   ["B1","Quote built from the approved price book (configured, not typed)."],
+   ["B2","Assumptions & contingencies quantified and approved."],
+   ["B3","Booking value computed per booking policy & reviewed by Finance Controller."],
+   ["B4","No unbundling / artificial splits; device vs service split approved."],
+   ["B5","Performance obligations & recognition profile documented (IFRS 15 / ASC 606)."],
+   ["B6","Price indexation / escalation clauses approved; no unfunded inflation."],
+   ["B7","Payment terms & credit reviewed against DSO target."],
+   ["B8","Reseller / rebate pricing checked against program policy."]]},
+ {g:"C",t:"C · Cost & Margin / Project Cost Management",items:[
+   ["C1","Cost build complete to component TCO (fleet, labor, toner/parts, transition, software)."],
+   ["C2","Margin validated at or above threshold; exceptions approved."],
+   ["C3","Labor rate card loaded; no hidden hours."],
+   ["C4","Contingency quantified, approved, release rules documented."],
+   ["C5","FX / currency risk assessed and covered where applicable."],
+   ["C6","Costs locked to term; no back-end leakage."],
+   ["C7","GL project codes / cost ownership defined for post-sale setup."],
+   ["C8","Capital vs operating classification confirmed (lease / finance)."]]},
+ {g:"D",t:"D · Labor Allocation & Delivery Tracking",items:[
+   ["D1","Deliverable labor plan with target utilization."],
+   ["D2","Labor capture method mapped & confirmed with Delivery (clock / geo / work-order)."],
+   ["D3","Non-billable, standby & burden hours quantified and priced."],
+   ["D4","Subcontractor timesheets & rates verified to contract."],
+   ["D5","Labor tags (project / service) defined before close."],
+   ["D6","Reconciliation plan: timesheet → invoice → order actuals."],
+   ["D7","Overtime / shift premiums built into TCO."],
+   ["D8","Work order / POS structure defined for technician scheduling."]]},
+ {g:"E",t:"E · Legal & Contractual",items:[
+   ["E1","Draft contract reviewed by Legal (MSA, SLA schedules, SOW)."],
+   ["E2","Non-standard terms in Terms Exception Log with banding."],
+   ["E3","Payment / invoice terms consistent with commercial."],
+   ["E4","Termination & post-termination (exit, data return, device disposition) defined."],
+   ["E5","DPA / SCC / data flows approved."],
+   ["E6","Taxes, duties & imports for device placement confirmed."],
+   ["E7","Dispute resolution & waivers defined."]]},
+ {g:"F",t:"F · Security, Data & Third Parties",items:[
+   ["F1","Infosec assessment complete for scope."],
+   ["F2","PII & data flows assessed (DPIA where required)."],
+   ["F3","Remote access / endpoint approach sanctioned."],
+   ["F4","Subcontractor agreements executed (back-to-back warranty & SLA)."],
+   ["F5","Vendor dependency register complete (SPOF + exit plan)."],
+   ["F6","Regulatory checks complete (export, environmental / waste)."],
+   ["F7","Insurance / liability evidence collected."]]},
+ {g:"G",t:"G · Deal Sign-Off & Post-Submission Controls",items:[
+   ["G1","Risk register fully reviewed & signed; High/Critical owned."],
+   ["G2","Controls checklist 100% & no open blockers."],
+   ["G3","Finance Controller + Compliance sign-off; no exceptions without TIBA."],
+   ["G4","DOA approvals received per band."],
+   ["G5","Gate decisions & lessons recorded in CRM; pack archived to repository."],
+   ["G6","Post-sign handover completed (contract, baseline, risk register to delivery)."]]}
+];
+function renderControls(){
+  var wrap=document.getElementById("ctrlWrap");wrap.innerHTML="";
+  var total=0,done=0;
+  CTRL.forEach(function(grp){
+    var gid=grp.g;
+    var div=document.createElement("div");div.className="ckgrp";
+    var h=document.createElement("div");h.className="ckgrp-h";
+    h.innerHTML='<span class="ttl">'+esc(grp.t)+'</span><span class="bar"><i id="bar-'+gid+'"></i></span><span class="pc" id="pc-'+gid+'">0%</span>';
+    var b=document.createElement("div");b.className="ckgrp-b";
+    grp.items.forEach(function(it){
+      var key="ck:"+gid+"-"+it[0];
+      var label=document.createElement("label");label.className="ck";
+      var cb=document.createElement("input");cb.type="checkbox";cb.id=key;cb.dataset.key=key;cb.checked=!!get(key,false);
+      var span=document.createElement("span");span.innerHTML="<b>"+esc(it[0])+"</b>&nbsp;&nbsp;"+esc(it[1]);
+      label.appendChild(cb);label.appendChild(span);
+      if(cb.checked)label.classList.add("off");
+      cb.addEventListener("change",function(){
+        set(key,cb.checked);label.classList.toggle("off",cb.checked);recount();
+      });
+      b.appendChild(label);
+      total++;if(cb.checked)done++;
+    });
+    div.appendChild(h);div.appendChild(b);wrap.appendChild(div);
+    h.addEventListener("click",function(){var nb=b.style.display==="none";b.style.display=nb?"block":"none"});
+  });
+  updateProg(done,total);
+}
+function updateProg(done,total){
+  CTRL.forEach(function(grp){
+    var gid=grp.g;var d=0,n=grp.items.length;
+    grp.items.forEach(function(it){if(get("ck:"+gid+"-"+it[0],false))d++});
+    var pct=Math.round(d/n*100);
+    var bar=document.getElementById("bar-"+gid);if(bar)bar.style.width=pct+"%";
+    var pc=document.getElementById("pc-"+gid);if(pc)pc.textContent=pct+"%";
+  });
+  var big=Math.round(done/total*100);
+  var bBar=document.getElementById("bigBar");if(bBar)bBar.style.width=big+"%";
+  var bPct=document.getElementById("bigPct");if(bPct)bPct.textContent=big+"%";
+  document.getElementById("bigDone").textContent=done;
+  document.getElementById("bigTotal").textContent=total;
+}
+function recount(){var d=0,t=0;CTRL.forEach(function(g){g.items.forEach(function(it){t++;if(get("ck:"+g.g+"-"+it[0],false))d++})});updateProg(d,t)}
+
+/* ============ 7 · ARTIFACT TRACKER ============ */
+function loadArt(){return get("art",[])||[]}
+function renderArt(){
+  var as=loadArt();var tb=document.getElementById("artBody");tb.innerHTML="";
+  as.forEach(function(a,i){
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td class="center"><span class="badd blue">'+esc(a.id)+'</span></td>'+
+      '<td>'+esc(a.n)+'</td><td>'+esc(a.o)+'</td>'+
+      '<td><span class="badd '+(a.s==="Approved"?"low":a.s==="Waived"?"med":a.s==="Complete"?"blue":"neu")+'">'+esc(a.s)+'</span></td>'+
+      '<td class="center">'+esc(a.c)+'%</td><td>'+esc(a.v)+'</td><td>'+esc(a.d)+'</td><td>'+esc(a.b)+'</td>'+
+      '<td class="center"><button class="mini" data-del="art">×</button></td>';
+    tr.setAttribute("data-idx",i);tb.appendChild(tr);
+  });
+  var signed=as.filter(function(a){return a.s==="Approved"||a.s==="Waived"}).length;
+  var pct=as.length?Math.round(signed/as.length*100):0;
+  document.getElementById("artBar").style.width=pct+"%";
+  document.getElementById("artPct").textContent=pct+"%";
+  document.getElementById("artCount").textContent=as.length;
+}
+function addArtRow(){
+  var as=loadArt();
+  var id=document.getElementById("artId").value;
+  var nm=document.getElementById("artName").value;
+  if(id==="CUS"&&!nm)nm="Custom artifact";
+  as.push({id:id,n:nm,o:document.getElementById("artOwner").value,s:document.getElementById("artStatus").value,c:+document.getElementById("artComp").value||0,v:document.getElementById("artVerif").value,d:document.getElementById("artDate").value,b:document.getElementById("artBy").value});
+  set("art",as);renderArt();toast("Artifact added");
+}
+
+/* ============ ATTESTATION ============ */
+function bindAttest(){
+  ["attestFC","attestBC","attestDP","attestDate"].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    el.value=get("att-"+id,"");
+    el.addEventListener("input",function(){set("att-"+id,el.value)});
+  });
+}
+
+/* ============ EXPORT / IMPORT / RESET ============ */
+function exportData(){
+  if(!assertUnlocked())return;
+  var o={meta:metaData(),risk:loadRisks(),escal:loadEsc(),art:loadArt(),_version:"1.0"};
+  META.forEach(function(k){o["m-"+k]=metaData()[k]});
+  CTRL.forEach(function(g){g.items.forEach(function(it){var k="ck:"+g.g+"-"+it[0];o[k]=get(k,false)})});
+  ["attestFC","attestBC","attestDP","attestDate"].forEach(function(k){o["att-"+k]=get("att-"+k,"")});
+  var blob=new Blob([JSON.stringify(o,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=(metaData().oppno||"deal")+"_DD_Playbook.json";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href)},200);
+  toast("JSON exported");
+}
+function importData(input){
+  if(!assertUnlocked())return;
+  var f=input.files[0];if(!f)return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var o=JSON.parse(fr.result);
+      Object.keys(o).forEach(function(k){set(k,o[k])});
+      location.reload();
+    }catch(e){toast("Import failed: "+e.message)}
+  };
+  fr.readAsText(f);
+}
+function resetAll(){
+  if(!confirm("Clear ALL saved playbook state in this browser?"))return;
+  for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);if(k&&k.indexOf(NS)===0)localStorage.removeItem(k)}
+  location.reload();
+}
+function renderAll(){renderRisks();renderEsc();renderArt()}
+
+/* ============ NAV HIGHLIGHT ============ */
+function bindNav(){
+  var links=document.querySelectorAll(".snav a");
+  window.addEventListener("scroll",function(){
+    var pos=window.scrollY+110;var cur="";
+    links.forEach(function(a){var s=document.querySelector(a.getAttribute("href"));if(s&&s.offsetTop<=pos)cur=a.getAttribute("href")});
+    links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")===cur)});
+  });
+}
+
+/* ============ GLOBAL DELEGATION ============ */
+document.addEventListener("click",function(e){
+  var del=e.target.closest("[data-del]");if(!del)return;
+  var table=del.closest("tbody");
+  if(!table)return;
+  var tr=del.closest("tr[data-idx]");if(!tr)return;
+  var idx=+tr.getAttribute("data-idx");
+  if(table.id==="riskBody"){var rs=loadRisks();rs.splice(idx,1);set("risk",rs);renderRisks();}
+  else if(table.id==="escalBody"){var es=loadEsc();es.splice(idx,1);set("escal",es);renderEsc();}
+  else if(table.id==="artBody"){var as=loadArt();as.splice(idx,1);set("art",as);renderArt();}
+});
+document.addEventListener("change",function(e){
+  var rk=e.target.getAttribute&&e.target.getAttribute("data-rk");
+  if(!rk||!e.target.closest("#riskBody"))return;
+  var tr=e.target.closest("tr[data-idx]");if(!tr)return;
+  var idx=+tr.getAttribute("data-idx");
+  var rs=loadRisks();
+  if(rk==="l"||rk==="i")rs[idx][rk]=+e.target.value;
+  else if(rk==="rf")rs[idx][rk]=e.target.checked;
+  else rs[idx][rk]=e.target.value;
+  set("risk",rs);renderRisks();
+});
+
+/* ============ ACTION GUARDS (lock) ============ */
+function bindActions(){
+  var p=document.getElementById("btnPrint"),x=document.getElementById("btnExport"),im=document.getElementById("btnImport"),rs=document.getElementById("btnReset");
+  if(p)p.addEventListener("click",doPrint);
+  if(x)x.addEventListener("click",exportData);
+  if(rs)rs.addEventListener("click",resetAll);
+  if(im)im.addEventListener("click",function(){if(assertUnlocked())document.getElementById("importFile").click()});
+  if(LOCK){
+    document.addEventListener("contextmenu",function(e){e.preventDefault()});
+    window.addEventListener("beforeprint",function(e){e.preventDefault()});
+    document.addEventListener("keydown",function(e){
+      var k=(e.key||"").toLowerCase();
+      var ctrl=e.ctrlKey||e.metaKey;
+      if(ctrl&&(k==="p"||k==="s"||k==="u"||k==="j"))e.preventDefault();
+      if(ctrl&&e.shiftKey&&(k==="i"||k==="c"||k==="j"))e.preventDefault();
+      if(e.key==="F12")e.preventDefault();
+    });
+  }
+  syncLockUI();
+}
+
+/* ============ INIT ============ */
+loadMeta();bindMeta();fillLib();renderRaci("all");bindRaciTabs();
+renderControls();renderRisks();renderEsc();renderArt();bindAttest();bindNav();bindActions();
+</script>
+</body>
+</html>

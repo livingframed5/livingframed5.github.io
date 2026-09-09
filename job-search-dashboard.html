@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Job Search Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #f6f8fc;
+    --panel: #ffffff;
+    --panel2: #fbfcff;
+    --border: #e6e9f2;
+    --ink: #111827;
+    --muted: #6b7280;
+    --accent: #6d5ef2;
+    --accent2: #22d3ee;
+    --grad: linear-gradient(135deg, #6d5ef2, #22d3ee);
+    --shadow: 0 1px 2px rgba(17,24,39,.04), 0 12px 32px rgba(60,60,140,.08);
+    --halo: rgba(109,94,242,.14);
+    --good: #10b981;
+    --goodbg: rgba(16,185,129,.12);
+    --bad: #ef4444;
+    --badbg: rgba(239,68,68,.12);
+    --warn: #f59e0b;
+    --warnbg: rgba(245,158,11,.14);
+    --stage-applied: #22d3ee;
+    --stage-screening: #6d5ef2;
+    --stage-interview: #f59e0b;
+    --stage-offer: #10b981;
+    --stage-rejected: #ef4444;
+  }
+  [data-theme="dark"] {
+    --bg: #0c0f1c;
+    --panel: #141827;
+    --panel2: #191f30;
+    --border: #232a40;
+    --ink: #eef1f9;
+    --muted: #9aa3bd;
+    --accent: #8b7dff;
+    --accent2: #38e5ff;
+    --grad: linear-gradient(135deg, #8b7dff, #38e5ff);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px rgba(0,0,0,.35);
+    --halo: rgba(139,125,255,.16);
+    --goodbg: rgba(16,185,129,.16);
+    --badbg: rgba(239,68,68,.16);
+    --warnbg: rgba(245,158,11,.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.5;
+    min-height: 100vh; transition: background .3s ease, color .3s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(40rem 30rem at 8% -8%, var(--halo), transparent 65%),
+      radial-gradient(34rem 26rem at 92% 4%, rgba(34,211,238,.10), transparent 60%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 86px 26px 80px; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between; padding: 16px 30px;
+  }
+  .brand { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; color: #fff; font-size: 14px; box-shadow: 0 6px 16px rgba(109,94,242,.35); }
+  .brand .divider { color: var(--muted); font-weight: 700; }
+  .brand small { font-weight: 600; color: var(--muted); }
+  .navbtn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--ink); cursor: pointer; font-size: 15px; box-shadow: var(--shadow); transition: transform .15s ease; }
+  .navbtn:hover { transform: translateY(-1px) rotate(8deg); }
+
+  .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); box-shadow: var(--shadow); }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--grad); }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin-top: 14px; }
+  h1 .stroke { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 15px; max-width: 620px; margin-top: 8px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 13.5px; font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--panel); color: var(--ink); box-shadow: var(--shadow); transition: transform .15s ease, border-color .15s ease, filter .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.primary { background: var(--grad); color: #fff; border: none; box-shadow: 0 10px 22px rgba(109,94,242,.35); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn.danger { color: var(--bad); }
+  .btn.danger:hover { border-color: var(--bad); background: var(--badbg); }
+
+  .importZone { margin-top: 26px; border: 2px dashed var(--border); border-radius: 20px; padding: 34px 22px; text-align: center; background: var(--panel); transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+  .importZone.drag { border-color: var(--accent); background: var(--halo); transform: scale(1.01); }
+  .importZone .big { font-size: 30px; }
+  .importZone h3 { font-size: 15px; font-weight: 700; margin-top: 8px; }
+  .importZone p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 14px; margin-top: 26px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .kpi .label { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .kpi .value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-top: 4px; }
+  .kpi .foot { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kpi.good .value { color: var(--good); }
+  .kpi.bad .value { color: var(--bad); }
+  .kpi.warn .value { color: var(--warn); }
+
+  .sectionTitle { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 30px 0 14px; }
+  .sectionTitle h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+  .sectionTitle .hint { font-size: 12.5px; color: var(--muted); }
+
+  .board { display: grid; grid-template-columns: repeat(5, minmax(212px, 1fr)); gap: 14px; align-items: start; }
+  .col { background: var(--panel2); border: 1px solid var(--border); border-radius: 16px; padding: 12px; min-height: 220px; display: flex; flex-direction: column; gap: 8px; }
+  .colHead { display: flex; align-items: center; gap: 8px; padding: 2px 2px 8px; }
+  .colHead .swatch { width: 9px; height: 9px; border-radius: 50%; }
+  .colHead .name { font-size: 12.5px; font-weight: 800; letter-spacing: .02em; }
+  .colHead .count { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; }
+  .col.col-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 13px; box-shadow: var(--shadow); cursor: grab; transition: transform .15s ease, border-color .15s ease; }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card .company { font-size: 13.5px; font-weight: 700; }
+  .card .role { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .card .meta { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+  .card .meta .ago { margin-left: auto; }
+  .card .tag { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .card .tag.rej { background: var(--badbg); color: var(--bad); }
+  .card .tag.offer { background: var(--goodbg); color: var(--good); }
+  .card .tag.none { background: var(--halo); color: var(--accent); }
+
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); }
+  .panel h3 { font-size: 14px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 .n { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 600; }
+  canvas.chart { width: 100%; height: 236px; display: block; }
+
+  .barRow { display: flex; flex-direction: column; gap: 12px; }
+  .barItem .barTop { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+  .barItem .barTop b { font-weight: 700; }
+  .barItem .barTop span { color: var(--muted); }
+  .barTrack { height: 8px; border-radius: 999px; background: var(--panel2); overflow: hidden; border: 1px solid var(--border); }
+  .barFill { height: 100%; border-radius: 999px; background: var(--grad); }
+
+  table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  table.table td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  table.table tr:last-child td { border-bottom: none; }
+  .pct { font-weight: 700; }
+  .rateWrap { display: flex; align-items: center; gap: 8px; }
+  .rate { height: 6px; width: 64px; border-radius: 999px; background: var(--panel2); overflow: hidden; border: 1px solid var(--border); }
+  .rate i { display: block; height: 100%; border-radius: 999px; }
+  .rate.over i { background: var(--good); }
+  .rate.partial i { background: var(--warn); }
+
+  .deadline { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; background: var(--panel2); cursor: pointer; }
+  .deadline .day { flex: none; width: 46px; text-align: center; border-radius: 10px; padding: 6px 0; background: var(--panel); border: 1px solid var(--border); }
+  .deadline .day b { display: block; font-size: 15px; font-weight: 800; }
+  .deadline .day span { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .deadline .txt { flex: 1; min-width: 0; }
+  .deadline .txt b { display: block; font-size: 13px; }
+  .deadline .txt span { font-size: 12px; color: var(--muted); }
+  .deadline.overdue { border-color: var(--bad); background: var(--badbg); }
+  .deadline.soon { border-color: var(--warn); background: var(--warnbg); }
+  .deadline .when { font-size: 11.5px; font-weight: 700; flex: none; }
+  .deadline .when.overdue { color: var(--bad); }
+  .deadline .when.soon { color: var(--warn); }
+  .empty { color: var(--muted); font-size: 13px; padding: 24px 8px; text-align: center; }
+
+  .modalBack { position: fixed; inset: 0; z-index: 60; display: none; align-items: flex-start; justify-content: center; background: rgba(9,12,22,.55); backdrop-filter: blur(4px); padding: 40px 20px; overflow-y: auto; }
+  .modalBack.open { display: flex; }
+  .modal { width: 100%; max-width: 620px; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+  .modalHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 12px; }
+  .modalHead h2 { font-size: 17px; font-weight: 800; }
+  .modalHead .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .modalClose { border: none; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; color: var(--ink); font-size: 15px; flex: none; background: var(--panel2); border: 1px solid var(--border); }
+  .modalBody { padding: 0 22px 20px; }
+  .fieldGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .field input, .field select, .field textarea { font: inherit; font-size: 13.5px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel2); color: var(--ink); width: 100%; }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .thread { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .mail { border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; background: var(--panel2); }
+  .mail .from { font-size: 12.5px; font-weight: 700; display: flex; gap: 8px; align-items: baseline; }
+  .mail .from time { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: auto; white-space: nowrap; }
+  .mail .subj { font-size: 12px; color: var(--ink); margin-top: 2px; }
+  .mail .snip { font-size: 12px; color: var(--muted); margin-top: 6px; max-height: 92px; overflow: hidden; }
+  .mail .snip.open { max-height: none; }
+  .mail .snipbtn { font-size: 11px; color: var(--accent); font-weight: 700; cursor: pointer; background: none; border: none; padding: 4px 0 0; }
+  .stagePill { display: inline-block; width: 11px; height: 11px; border-radius: 50%; }
+  .modalFoot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px 20px; border-top: 1px solid var(--border); margin-top: 16px; }
+  .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 999px; opacity: 0; pointer-events: none; z-index: 80; transition: opacity .25s ease, transform .25s ease; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .chip { font: inherit; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); cursor: pointer; transition: all .15s ease; }
+  .chip:hover { color: var(--ink); }
+  .chip.on { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(109,94,242,.3); }
+
+  @media (max-width: 1080px) {
+    .board { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <nav>
+    <div class="brand"><span class="mark">&#10022;</span> Job Search<span class="divider">&#183;</span><small>Application Watch</small></div>
+    <button class="navbtn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme"></button>
+  </nav>
+
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> Application intelligence from your inbox</span>
+        <h1>Your job search,<br /><span class="stroke">on one screen.</span></h1>
+        <p class="sub">Drop in your exported <b>.eml</b>, <b>.mbox</b> or <b>.csv</b> files and the dashboard infers company, role, status and deadlines. Everything parses locally in your browser &mdash; nothing is uploaded.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="sampleBtn">Load sample data</button>
+        <button class="btn" id="exportBtn">Export JSON</button>
+        <button class="btn" id="importBtn">Import JSON</button>
+        <button class="btn primary" id="addBtn">&#43; Add application</button>
+        <button class="btn danger" id="clearBtn">Clear</button>
+        <input type="file" id="importFile" accept=".json" hidden />
+      </div>
+    </div>
+
+    <div class="importZone" id="dropZone" tabindex="0" role="button" aria-label="Import email exports">
+      <div class="big">&#8688;</div>
+      <h3>Drop .eml / .mbox / .csv files here, or click to browse</h3>
+      <p>Multiple files allowed. Re-importing is safe &mdash; duplicate emails are ignored.</p>
+      <input type="file" id="fileInput" multiple accept=".eml,.mbox,.csv,text/plain,text/csv,message/rfc822" hidden />
+    </div>
+
+    <div id="filters" class="filters"></div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="sectionTitle"><h2>Pipeline</h2><span class="hint">Drag cards between columns to update status &#183; plain-dot cards have unparsed roles to review</span></div>
+    <div class="board" id="board"></div>
+
+    <div class="grid2" style="margin-top:30px">
+      <div class="panel"><h3>Applications &amp; outcomes over time <span class="n" id="timeHint"></span></h3><canvas class="chart" id="timeChart"></canvas></div>
+      <div class="panel"><h3>Status mix <span class="n" id="donutHint"></span></h3><canvas class="chart" id="donutChart"></canvas></div>
+    </div>
+
+    <div class="grid3" style="margin-top:18px">
+      <div class="panel">
+        <h3>By company <span class="n" id="companyHint"></span></h3>
+        <div class="barRow" id="companyBars"></div>
+      </div>
+      <div class="panel">
+        <h3>Deadlines &amp; reminders <span class="n">click to open</span></h3>
+        <div id="deadlines"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3>Applications <span class="n" id="tableHint"></span></h3>
+      <div style="overflow-x:auto"><table class="table">
+        <thead><tr><th>Company</th><th>Role</th><th>Applied</th><th>Stage</th><th>Source</th><th>Response time</th></tr></thead>
+        <tbody id="appRows"></tbody>
+      </table></div>
+    </div>
+
+    <div class="foot" style="margin-top:44px; text-align:center; color:var(--muted); font-size:12.5px" id="footNote"></div>
+  </div>
+
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="stagePill" id="mStagePill"></span><h2 id="mTitle">Application</h2></div>
+          <div class="sub" id="mSub">&mdash;</div>
+        </div>
+        <button class="modalClose" id="mClose" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="modalBody">
+        <div class="fieldGrid">
+          <div class="field"><label>Company</label><input id="mCompany" /></div>
+          <div class="field"><label>Role / job title</label><input id="mRole" /></div>
+          <div class="field"><label>Source / portal</label><input id="mSource" /></div>
+          <div class="field"><label>Location</label><input id="mLocation" /></div>
+          <div class="field full"><label>Link</label><input id="mLink" placeholder="https://&hellip;" /></div>
+          <div class="field"><label>Applied date</label><input type="date" id="mApplied" /></div>
+          <div class="field"><label>Stage</label><select id="mStage"></select></div>
+          <div class="field full"><label>Notes</label><textarea id="mNotes"></textarea></div>
+        </div>
+        <div class="thread" id="mThread"></div>
+      </div>
+      <div class="modalFoot">
+        <button class="btn danger" id="mDelete">Delete</button>
+        <button class="btn primary" id="mSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.prototype.slice.call((el || document).querySelectorAll(s));
+
+const STAGES = [
+  { id: 'applied',   label: 'Applied',   color: 'var(--stage-applied)' },
+  { id: 'screening', label: 'Screening', color: 'var(--stage-screening)' },
+  { id: 'interview', label: 'Interview', color: 'var(--stage-interview)' },
+  { id: 'offer',     label: 'Offer',     color: 'var(--stage-offer)' },
+  { id: 'rejected',  label: 'Rejected',  color: 'var(--stage-rejected)' }
+];
+const stageById = id => STAGES.find(s => s.id === id) || STAGES[0];
+const stageRank = id => STAGES.findIndex(s => s.id === id);
+const LS_KEY = 'jobsearch-dashboard-v1';
+
+let state = { apps: [] };
+let activeFilter = 'all';
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function save() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state.apps.map(serializeApp)));
+  } catch (e) {}
+}
+function serializeApp(a) {
+  return {
+    id: a.id, company: a.company, role: a.role, source: a.source, link: a.link, location: a.location,
+    notes: a.notes, stage: a.stage, applied: a.applied, stageDate: a.stageDate, salary: a.salary,
+    emails: a.emails, deadlines: a.deadlines
+  };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) state.apps = JSON.parse(raw).map(normalizeApp);
+  } catch (e) { state.apps = []; }
+}
+function normalizeApp(a) {
+  if (!a.id) a.id = uid();
+  return {
+    id: a.id, company: a.company || 'Unknown company', role: a.role || '',
+    source: a.source || '', link: a.link || '', location: a.location || '',
+    notes: a.notes || '', stage: stageById(a.stage).id, applied: a.applied || todayStr(),
+    stageDate: a.stageDate || a.applied || todayStr(), salary: a.salary || '',
+    emails: (a.emails || []).map(normalizeMail).sort((x, y) => (x.date < y.date ? -1 : 1)),
+    deadlines: (a.deadlines || []).filter(d => d && d.date).sort((x, y) => (x.date < y.date ? -1 : 1))
+  };
+}
+function normalizeMail(e) {
+  return {
+    id: e.id || uid(), from: e.from || '', fromName: e.fromName || '',
+    subject: e.subject || '', date: e.date || '', body: e.body || '', href: e.href || ''
+  };
+}
+function uid() { return 'x' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+function todayStr() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+const ATS_DOMAINS = new Set([
+  'greenhouse.io', 'greenhouse-mail.io', 'us.greenhouse-mail.io', 'myworkday.com', 'workday.com',
+  'lever.co', 'ashbyhq.com', 'icims.com', 'smartrecruiters.com', 'jazz.co', 'workable.com',
+  'jobvite.com', 'indeed.com', 'linkedin.com', 'ziprecruiter.com', 'monster.com', 'glassdoor.com',
+  'zoho.com', 'recruitee.com', 'pinpointhq.com', 'teamtailor.com', 'breezy.hr', 'comeet.co',
+  'jobylon.com', 'bamboo.com', 'adp.com', 'talenthq.com', 'hirevue.com', 'goodtime.io', 'tempo.io',
+  'calendly.com', 'gem.com', 'appreview.gem.com', 'catalight-mail.com'
+]);
+const ATS_SUFFIXES = [/\.greenhouse-mail\.io$/i, /\.gem\.com$/i, /\.myworkday\.com$/i];
+
+function parseHeaders(text) {
+  const headers = {};
+  const lines = text.split(/\r?\n/);
+  let last = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) break;
+    if (line[0] === ' ' || line[0] === '\t') {
+      if (last) headers[last] += ' ' + line.trim();
+      continue;
+    }
+    const m = line.match(/^([^\s:]+):\s*(.*)$/);
+    if (m) { headers[m[1].toLowerCase()] = m[2]; last = m[1].toLowerCase(); }
+    else last = null;
+  }
+  return headers;
+}
+
+function decodeMime(s) {
+  if (!s) return s;
+  return String(s).replace(/=\?([^?]+)\?([bqBQ])\?([^?]*)\?=/g, (whole, cs, enc, txt) => {
+    try {
+      if (/b/i.test(enc)) return decodeURIComponent(escape(atob(txt.replace(/\s/g, ''))));
+      return decodeURIComponent(txt.replace(/_/g, ' ').replace(/=([0-9A-Fa-f]{2})/g, (m2, h) => '%' + h));
+    } catch (e) { return txt; }
+  });
+}
+
+function fromHeader(s) {
+  if (!s) return '';
+  const m = String(s).match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  return m ? m[0] : '';
+}
+function fromName(s) {
+  if (!s) return '';
+  const str = String(s);
+  const lt = str.indexOf('<');
+  const raw = (lt >= 0 ? str.slice(0, lt) : str).replace(/^["']|["']\s*$/g, '').trim();
+  if (!raw) return '';
+  if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(raw)) return '';
+  return decodeMime(raw);
+}
+
+function parseEML(text, meta) {
+  const headers = parseHeaders(text);
+  const cte = (headers['content-transfer-encoding'] || '').toLowerCase().trim();
+  const ct = (headers['content-type'] || '').toLowerCase();
+  const bodyArr = text.split(/\r?\n\r?\n/);
+  let body = bodyArr.slice(1).join('\n\n') || '';
+  const b64decode = s => { try { return decodeURIComponent(escape(atob(String(s).replace(/[\r\n\s]/g, '')))); } catch (e) { return ''; } };
+  const qpdecode = s => String(s).replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (mQ, h) => { try { return decodeURIComponent('%' + h); } catch (e) { return mQ; } });
+  if (ct.indexOf('base64') !== -1) {
+    body = b64decode(body) || body;
+  } else if (ct.indexOf('quoted') !== -1) {
+    body = qpdecode(body);
+  } else if (ct.indexOf('multipart') !== -1) {
+    const bc = ct.match(/boundary="?([^";]+)"?/i);
+    if (bc) {
+      const segs = String(body).split('--' + bc[1]);
+      const out = [];
+      segs.forEach(seg => {
+        const mSep = /\r?\n\r?\n/.exec(seg);
+        if (!mSep) return;
+        const hd = seg.slice(0, mSep.index).toLowerCase();
+        if (/content-disposition:\s*attachment/i.test(hd)) return;
+        if (/content-type:/i.test(hd) && !/content-type:\s*text\/(?:plain|html)/i.test(hd)) return;
+        let t = seg.slice(mSep.index + mSep[0].length);
+        if (/content-transfer-encoding:\s*base64/i.test(hd)) t = b64decode(t) || t;
+        else if (/content-transfer-encoding:\s*quoted-printable/i.test(hd)) t = qpdecode(t);
+        if (t.trim()) out.push(t);
+      });
+      if (out.length) body = out.join('\n\n');
+    }
+  }
+  body = body
+    .replace(/\r?\n/g, '\n')
+    .replace(/\n[ \t]+\n/g, '\n\n')
+    .replace(/^--[A-Za-z0-9=_.-]+-*[ \t]*$/gm, '')
+    .replace(/^(?:Content-(?:Type|Transfer-Encoding|Disposition|Description|ID)|Charset|Boundary):\s.*$/gim, '');
+  const dateStr = headers['date'] || '';
+  const d = new Date(dateStr);
+  return {
+    id: uid(),
+    from: fromHeader(headers['from']),
+    fromName: fromName(headers['from']),
+    subject: decodeMime(headers['subject'] || ''),
+    date: dateStr && !isNaN(d) ? d.toISOString() : '',
+    body: body.slice(0, 90000),
+    href: (meta && meta.href) || ''
+  };
+}
+
+function parseMBOX(text) {
+  const blocks = [];
+  let cur = [];
+  const lines = text.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^From \S+ .*\d{4}$/.test(line.trim()) && cur.length) {
+      blocks.push(cur.join('\n'));
+      cur = [];
+    }
+    cur.push(line);
+  }
+  if (cur.length) blocks.push(cur.join('\n'));
+  return blocks.map(b => parseEML(b)).filter(e => e.subject || e.body || e.from);
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    }
+    else cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+const CSV_COLS = [
+  { col: 'company',  keys: ['company', 'employer', 'organization', 'org', 'business'] },
+  { col: 'role',     keys: ['role', 'title', 'job', 'position', 'job title', 'position title'] },
+  { col: 'date',     keys: ['date', 'applied', 'applied date', 'date applied', 'submitted', 'submission date'] },
+  { col: 'status',   keys: ['status', 'stage', 'pipeline stage'] },
+  { col: 'source',   keys: ['source', 'via', 'portal', 'board', 'site'] },
+  { col: 'link',     keys: ['link', 'url', 'posting', 'job link', 'posting url'] },
+  { col: 'location', keys: ['location', 'city', 'remote'] },
+  { col: 'salary',   keys: ['salary', 'comp', 'pay'] },
+  { col: 'notes',    keys: ['notes', 'comments', 'details'] }
+];
+
+function csvApps(text) {
+  const rows = parseCSV(text);
+  if (!rows.length) return [];
+  const head = (rows[0] || []).map(h => (' ' + (h || '').toLowerCase()).replace(/[^a-z ]/g, '').trim());
+  const idx = {};
+  CSV_COLS.forEach(cfg => { idx[cfg.col] = head.findIndex(h => cfg.keys.includes(h)); });
+  const apps = [];
+  const seen = new Map();
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const get = c => (idx[c] >= 0 && idx[c] < r.length) ? (r[idx[c]] || '').trim() : '';
+    const app = normalizeApp({
+      company: get('company') || 'Unknown company',
+      role: get('role'), source: get('source') || 'CSV', link: get('link'),
+      location: get('location'), salary: get('salary'), notes: get('notes'),
+      applied: toISO(get('date')) || todayStr(),
+      stage: mapCsvStatus(get('status')), emails: [], deadlines: []
+    });
+    const key = app.source + '|' + slug(app.company) + '|' + slug(app.role) + '|' + app.applied;
+    const dup = seen.get(key);
+    if (dup) {
+      if (app.notes && !dup.notes.includes(app.notes)) dup.notes = ampJoin(dup.notes, app.notes);
+      continue;
+    }
+    seen.set(key, app);
+    apps.push(app);
+  }
+  return apps;
+}
+function ampJoin(a, b) { return a ? a + '\n' + b : b; }
+
+function toISO(s) {
+  if (!s) return '';
+  const t = String(s).trim();
+  const iso = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) return iso[1] + '-' + pad(+iso[2]) + '-' + pad(+iso[3]);
+  const m = t.match(/^\s*(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\s*$/);
+  if (m) {
+    let y = +m[3];
+    if (y < 100) y += (y < 50 ? 2000 : 1900);
+    return y + '-' + pad(+m[1]) + '-' + pad(+m[2]);
+  }
+  const d = new Date(t);
+  return isNaN(d) ? '' : d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+function mapCsvStatus(s) {
+  const v = (s || '').toLowerCase();
+  if (/offer|hired|accepted/.test(v)) return 'offer';
+  if (/interview|phone screen|final round|onsite|on-site/.test(v)) return 'interview';
+  if (/reject|not selected|closed|cancelled|unfortunate|declined/.test(v)) return 'rejected';
+  if (/screen|review|under consideration|received|short.?list|in progress|active/.test(v)) return 'screening';
+  if (/applied|submitted|sent|new/.test(v)) return 'applied';
+  return 'applied';
+}
+
+function safeDomain(addr) {
+  const m = String(addr || '').match(/@([A-Za-z0-9.-]+)/);
+  return m ? m[1].toLowerCase() : '';
+}
+function isAtsDomain(domain) {
+  if (!domain) return false;
+  if (ATS_DOMAINS.has(domain)) return true;
+  return ATS_SUFFIXES.some(re => re.test(domain));
+}
+function titleize(s) {
+  const skip = ['And', 'Or', 'The', 'Of', 'For', 'Llc', 'Inc', 'Corp', 'Co', 'Ltd', 'Gmbh', 'Llc.', 'Inc.'];
+  return String(s || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/(^|[\s.])[a-z]/g, c => c.toUpperCase())
+    .split(' ')
+    .map(w => (skip.includes(w) ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w))
+    .join(' ')
+    .trim();
+}
+function cleanCompany(s) {
+  return String(s || '')
+    .replace(/\s*[-–—]\s*(?:no[ -]?reply|careers|jobs|team|recruiting|talent|hr)\b.*$/gi, '')
+    .replace(/\s*(?:careers|recruiting|talent acquisition|talent team|career opportunities|talent acquisition team|notification)\b\s*$/gi, '')
+    .replace(/\s*\((?:dba|do not reply)\)\s*.*$/gi, '')
+    .replace(/[",]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+const STOP = /\b(?:your|we|our|please|thank|hello|hi|dear|recently|currently|today|tomorrow|week|next|this|for|to|at|the|an?|and|about|application|status|update|confirmation|received|respectfully|sincerely|from|team|department|notification|interest|opportunity|opening|position|role)\b/i;
+const ROLE_TAG = /(?:manager|director|analyst|lead|specialist|consultant|engineer|developer|strategy|strategist|operations|coordinator|planner|pricing|finance|financial|product|marketing|sales|business|revenue|growth|monetization|transformation|principal|senior|owner|architect|scientist|designer)/i;
+
+function infoFromMail(e) {
+  const sub = (e.subject || '').trim().replace(/^\s*(re|fw|fwd)\s*:\s*/i, '');
+  const body0 = (e.body || '').replace(/\s+/g, ' ').slice(0, 2000);
+  const domain = safeDomain(e.from);
+  const isAts = isAtsDomain(domain) || /workday|greenhouse|gem\.com|recruitee/i.test(e.from + ' ' + (e.fromName || ''));
+  const senderName = (e.fromName || '').trim();
+  let company = extractCompany(sub, body0, senderName, domain, e.from);
+  let role = extractRole(sub, sub + ' ' + (e.body || '').replace(/\s+/g, ' ').slice(0, 3000), e.from, senderName);
+  return { company: company || 'Unknown company', role: role || '', domain: domain, isAts: isAts };
+}
+
+const GENERIC_LABEL = /^(?:com|co|net|org|io|dev|us|apply|jobs|careers|hr|mail|email|my|app|recruiting|talent)$/i;
+function atsSubdomainCompany(addr) {
+  const loc = String(addr || '').match(/@([A-Za-z0-9.-]+)/);
+  if (!loc) return '';
+  const orig = loc[1].toLowerCase();
+  let d = orig;
+  for (const sfx of ['.us.greenhouse-mail.io', '.greenhouse-mail.io', '.myworkdayjobs.com', '.myworkday.com', '.gem.com', '.icims.com', '.ashbyhq.com', '.lever.co', '.recruitee.com', '.smartrecruiters.com', '.teamtailor.com', '.pinpointhq.com', '.workable.com', '.breezy.hr', '.comeet.co', '.jobvite.com']) {
+    if (d.endsWith(sfx)) { d = d.slice(0, -sfx.length); break; }
+  }
+  if (d === orig || !d) return '';
+  const labels = d.split('.').filter(l => l && !GENERIC_LABEL.test(l));
+  const core = labels[labels.length - 1] || '';
+  if (!core || /^(?:no[- ]?reply|noreply|workday|greenhouse|icims|lever|ashby)$/i.test(core)) return '';
+  return titleize(core);
+}
+
+function extractCompany(sub, body, senderName, domain, from) {
+  const sn = String(senderName || '').replace(/@.*$/, '').trim();
+  const cands = [];
+
+  const push = c => {
+    c = cleanCompany(String(c || '').trim());
+    if (c && c.length >= 2 && !/^(?:no[- ]?reply|do not reply|notification|noreply|workday|careers|jobs)$/i.test(c)) cands.push(c);
+  };
+
+  const atC = body.match(/\b(?:considering a career at|what we do at)\s+([A-Z][A-Za-z0-9&.,' -]{2,60}?)(?=[,.;!]| and|\s+for\b|\s+role\b|\s+opening\b|\s+position\b|\s+opportunity\b|\s*$)/i);
+  if (atC) push(atC[1]);
+
+  const interest = body.match(/\b(?:your )?interest in\s+(?:what we do at\s+|the\s+)?([A-Z][A-Za-z0-9&.,' -]{2,60}?)(?=,|;|\.|!| and|\s+for\b|\s+role\b|\s+opening\b|\s+position\b|\s+opportunity\b|\s*$)/i);
+  if (interest) push(interest[1]);
+
+  const appAt = sub.match(/\b(?:application|opportunity)\b.{0,40}?\b(?:at|with)\s+(?:the\s+)?([A-Z][A-Za-z0-9&.,' -]{2,60}?)(?=[ ,.;!]|$)/i);
+  if (appAt && !ROLE_TAG.test(appAt[1])) push(appAt[1]);
+
+  const appTo = sub.match(/\bapplication\s+to\s+([A-Z][A-Za-z0-9&.,' -]{2,50}?)\s*[-–—]/i);
+  if (appTo) push(appTo[1]);
+
+  const dashAfter = sub.match(/[-–—]\s*([A-Z][A-Za-z0-9&.,' -]{2,55}?)(?=[,;.?!]|$)/i);
+  if (dashAfter && !/^(?:application|status|update|confirmation|your|the|job|position|opportunity|offer|receipt)/i.test(dashAfter[1]) && !ROLE_TAG.test(dashAfter[1])) push(dashAfter[1]);
+
+  const dashBefore = sub.match(/^([A-Z][A-Za-z0-9&.,' -]{2,55}?)\s*[-–—]\s*(?:application|status|update|confirmation|opportunity|position|job|receipt)\b/i);
+  if (dashBefore && !ROLE_TAG.test(dashBefore[1])) push(dashBefore[1]);
+
+  const conf = sub.match(/\b(?:confirmation|confirmed|received)\b.{0,25}?[-–—]\s*([A-Z][A-Za-z0-9&.,' -]{2,60}?)(?=[ ,;.!]|$)/i);
+  if (conf && !ROLE_TAG.test(conf[1])) push(conf[1]);
+
+  if (/\b(?:update|status|follow|information|notification)\b/i.test(sub)) {
+    const fromX = sub.match(/\b(?:update|status|information|notification)\s+from\s+([A-Z][A-Za-z0-9&.,' -]{2,55}?)(?=[ ,.;!]|$)/i);
+    if (fromX) push(fromX[1]);
+  }
+
+  const uname = sub.match(/^([A-Z][A-Za-z0-9&.,' -]{2,35}?)\s+(?:Update|Status)\s*[-–—](?:Your|the)?\s*(?:Application|Status)/i);
+  if (uname) push(uname[1]);
+
+  const empUpd = sub.match(/^(?:employment|application)\s+update\s*[-–—]\s*([A-Z][A-Za-z0-9&.,' ]{2,55}?)(?:[,]|$)/i);
+  if (empUpd) push(empUpd[1]);
+
+  const BARJUNK = /^(?:thank|update|your|application|applying|regarding|status|confirmation|notification|opportunity|position|job)$/i;
+  if (sub.indexOf('|') !== -1) {
+    const parts = sub.split('|').map(p => cleanCompany(p.trim()));
+    const comp = parts.find(p => p && p.length >= 2 && !BARJUNK.test(p) && !ROLE_TAG.test(p));
+    if (comp) push(comp);
+  }
+
+  if (isAtsDomain(domain) || /workday|greenhouse|gem|icims|lever|ashby|recruitee|smartrecruiters|ashbyhq/i.test(domain)) {
+    const subCmp = atsSubdomainCompany(from || domain);
+    if (subCmp) push(subCmp);
+  } else if (domain && !/^no[- ]?reply@/.test(from || '')) {
+    const base = titleize(domain.split('.').slice(-2)[0]);
+    if (!/^(?:no[- ]?reply|notification|workday|myworkday|outlook|gmail|yahoo|aol|icloud|proton|hotmail|careers|jobs|talent|hr)$/i.test(base)) push(base);
+  }
+
+  if (sn) {
+    const st = sn.replace(/\b(?:career opportunities|talent(?: acquisition)?|talent (?:acquisition )?team|recruiting|jobs?|hr|people team|notification|team)\b/gi, ' ').replace(/\s{2,}/g, ' ').trim();
+    if (st && (st.split(/\s+/).length > 1 || /\b(?:inc|corp|co$|ltd|gmbh|llc|technolog|software|systems|labs|analytics|industries|international|solutions|group)\b/i.test(st))) push(st);
+  }
+
+  return cands[0] || '';
+}
+
+function extractRole(sub, low, from, senderName) {
+  const cands = [];
+
+  const inBody = low.match(/\b(?:for|regarding|about)\s+the\s+([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)\s+(?:role|position|opening|opportunity)\b/i);
+  if (inBody) cands.push(inBody[1]);
+
+  const inBodyOf = low.match(/\b(?:the\s+)?role\s+of\s+([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)(?=\s+(?:was|is|at|with|as)\b|[,.;!]|\|)/i);
+  if (inBodyOf && inBodyOf[1].toUpperCase() !== 'CORNER') cands.push(inBodyOf[1]);
+
+  const appTo = low.match(/\bappl(?:ying|ication)\s+(?:to|for)\s+(?:the\s+)?([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)\s+(?:role|position|opening|opportunity)\b/i);
+  if (appTo) cands.push(appTo[1]);
+
+  const afterDash = sub.match(/\s*[-–—]\s*([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)(?:[\s]*$|,)/);
+  if (afterDash) cands.push(afterDash[1]);
+
+  const piped = sub.match(/\b(?:regarding|application for|candidacy for)\s+([^|]{2,70}?)\s*(?:\||$)/i);
+  if (piped) cands.push(piped[1]);
+
+  const pipedSeg = sub.match(/^\s*[^|]+\|\s*([^|]{2,70}?)\s*(?:\||$)/);
+  if (pipedSeg && !/^(?:application status|status|your application)/i.test(pipedSeg[1])) cands.push(pipedSeg[1]);
+
+  const bodyOur = low.match(/\b(?:our|this)\s+([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)\s+(?:role|position|opening|opportunity|candidacy)\b/i);
+  if (bodyOur && bodyOur[1].toUpperCase() !== 'CORNER') cands.push(bodyOur[1]);
+  if (!cands.length) {
+    const ftag = sub.match(/\b(?:for|to)\s+(?:a\s+|the\s+|an\s+)?([A-Z][A-Za-z0-9&.,' /:&-]{2,60}?)\s+(?:|role|position|opening)(?:\s+at\b|\s*$)/i);
+    if (ftag) cands.push(ftag[1]);
+  }
+
+  const pick = c => {
+    let cc = String(c || '').replace(/\.+$/g, '').trim();
+    cc = cc
+      .replace(/^(?:your\s+)?(?:application|applying)\s+for\s+/i, '')
+      .replace(/^applying\s+to\s+/i, '')
+      .replace(/^(?:the|our|this|an?)\s+/i, '')
+      .replace(/\s+(?:at|with)\b.+$/i, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    return cc;
+  };
+  const ok = cc => cc && cc.length >= 2 && !STOP.test(cc) && ROLE_TAG.test(cc);
+  return cands.map(pick).find(ok) || '';
+}
+
+function stageOfMail(e) {
+  const s = (e.subject || '') + ' ' + (e.body || '').slice(0, 5000);
+  const t = s.toLowerCase();
+    if (/(unfortunately|we regret|regretfully)\b|not (?:moving|going|able to) (?:forward|ahead)|no longer (?:under consideration|being considered)|another candidate|other candidates|move.{0,25}?\bwith (?:other|another) candidates?|position (?:has been )?(?:filled|closed|cancelled)|(?:we|we'?ll) (?:won'?t|will not|cannot|can'?t) (?:be )?(?:moving|scheduling|proceeding)|decided (?:to )?(?:not|against)|didn'?t (?:have|match)|not (?:be )?(?:selected|short.?listed)|close (?:out )?(?:this|your|the) (?:application|position)|we (?:have|'?ve) (?:decided|chosen)|not able to (?:offer|continue|move)|unable to (?:move|proceed|continue)|we will not (?:be |keep )?you/.test(t))
+    return 'rejected';
+  if (/(?:job )?offer|pleased to (?:extend|offer)|happy to (?:extend|offer)|signed offer|congratulations.{0,30}(?:offer|join)/.test(t))
+    return 'offer';
+  if (/\binterview\b|invite.{0,20}(?:interview|call|chat)|schedule.{0,20}(?:interview|call|chat|screen)|(?:assessment|assignment|take.?home|case study|skills test)|hiring manager|phone screen|video (?:call|screen)|zoom (?:call|interview)|next step|meet (?:the|our) team|onsite|on-site|coding challenge|technical (?:screen|test)/.test(t))
+    return 'interview';
+  if (/under (?:consideration|review)|being (?:reviewed|considered)|application (?:received|confirmation)|thank you for (?:your|applying|taking)|we (?:received|got|have) (?:your|the) (?:application|resume|cv|submission)|delighted to (?:receive|accept)|confirmation.{0,15}receipt|your application.{0,35}(?:active|in|is being)|we'?ll (?:be )?(?:reviewing|get back)|we will (?:get back|be in touch)|submitted to|we should have/.test(t))
+    return 'screening';
+  return 'applied';
+}
+
+const MONTHS_RE = /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t)?(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b/i;
+
+function cookDate(s) {
+  if (!s) return '';
+  const m = s.match(/^\s*(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\s*$/);
+  if (m) {
+    let y = m[3] ? +m[3] : new Date().getFullYear();
+    if (y < 100) y += (y < 50 ? 2000 : 1900);
+    return y + '-' + pad(+m[1]) + '-' + pad(+m[2]);
+  }
+  return '';
+}
+
+function extractDeadlines(e) {
+  const res = [];
+  const body = (e.body || '').replace(/\s+/g, ' ').slice(0, 20000);
+  const now = new Date();
+  const YY = now.getFullYear();
+  const monthNum = mm => ({ jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 }[mm.toLowerCase().slice(0, 3)]);
+  const cookLong = s => {
+    const mm = s.match(MONTHS_RE);
+    if (!mm) return '';
+    let y = mm[3] ? +mm[3] : YY;
+    const cand = new Date(y, monthNum(mm[1]), +mm[2]);
+    if (!mm[3] && cand < new Date(now.getFullYear(), now.getMonth(), now.getDate()) && cand < new Date(YY, 11, 31)) y++;
+    return y + '-' + pad(monthNum(mm[1]) + 1) + '-' + pad(+mm[2]);
+  };
+  const cookWeekday = wd => {
+    const wdn = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+    const d = new Date(YY, now.getMonth(), now.getDate());
+    let add = (wdn[wd.toLowerCase()] - d.getDay() + 7) % 7;
+    if (add === 0) add = 7;
+    d.setDate(d.getDate() + add);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  };
+
+  const grabFirstWeekday = () => {
+    const wk = body.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b(?:\s*,\s*(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t)?(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2})?/i);
+    if (!wk) return;
+    const ctx = body.slice(Math.max(0, wk.index - 90), wk.index + 20);
+    if (!/(?:interview|call|screen|meet|assessment|session|on\s)/i.test(ctx)) return;
+    res.push({ label: 'Interview', date: cookWeekday(wk[1]) });
+  };
+
+  const grab = (re, label, dateGroup) => {
+    let m;
+    re.lastIndex = 0;
+    while ((m = re.exec(body)) !== null) {
+      const cooked = cookLong(m[dateGroup || 1]) || cookDate(m[dateGroup || 1]);
+      if (!cooked) continue;
+      let lbl = label;
+      if (label === 'Interview') {
+        const ctx = body.slice(Math.max(0, m.index - 70), m.index + 70);
+        const tm = ctx.match(/(?:at\s+)?(\d{1,2}:\d{2}\s*(?:am|pm)?|\d{1,2}\s*(?:am|pm))\b/i);
+        if (tm) lbl += ' \u00b7 ' + tm[1];
+      }
+      res.push({ label: lbl, date: cooked });
+    }
+  };
+
+  const datePart = '(?:' + MONTHS_RE.source + '|\\d{1,2}[/-]\\d{1,2}[/-]?\\d{0,4})';
+  grab(new RegExp('((?:interview|meeting|call|video (?:call|chat)|phone screen|assessment|test|take.home|assignment|recruiter (?:call|chat|screen)|technical screen|case study)\\b.{0,55}?\\b(?:on|for)\\b\\s+(' + datePart + '))', 'gi'), 'Interview', 2);
+  grab(new RegExp('(?:deadline|due)\\b.{0,40}?(?:is\\s+|on\\s+|by\\s+|before\\s+)?(' + datePart + ')', 'gi'), 'Deadline', 1);
+  grab(new RegExp('scheduled\\s+for\\s+(' + datePart + ')', 'gi'), 'Scheduled', 1);
+  grab(new RegExp('(?:start(?:ing| date)?|begins?|expected\\s+(?:start|to start))\\b.{0,20}?(?:on\\s+|is\\s+|will\\s+be\\s+)?(' + datePart + ')', 'gi'), 'Start date', 1);
+  grabFirstWeekday();
+
+  const uniq = new Map();
+  res.forEach(r => { const k = r.date + '|' + r.label; if (!uniq.has(k)) uniq.set(k, r); });
+  return Array.from(uniq.values()).slice(0, 10).map(r => ({ label: r.label, date: r.date }));
+}
+
+function slug(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '-');
+}
+
+function daysBetween(a, b) {
+  const da = new Date(a + 'T00:00:00');
+  const db = new Date(b + 'T00:00:00');
+  return Math.round((db - da) / 86400000);
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso.length === 10 ? iso + 'T00:00:00' : iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function ago(iso) {
+  const appDate = iso.length === 10 ? iso + 'T00:00:00' : iso;
+  const ms = Date.now() - new Date(appDate).getTime();
+  if (isNaN(ms)) return '';
+  const days = Math.floor(ms / 86400000);
+  if (days <= 0) return 'today';
+  if (days === 1) return '1d ago';
+  if (days < 30) return days + 'd ago';
+  const mo = Math.floor(days / 30);
+  return mo + (mo === 1 ? 'mo' : 'mo') + ' ago';
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------- import pipeline ---------- */
+
+async function importFiles(files) {
+  let added = 0;
+  const list = Array.prototype.slice.call(files || []);
+  for (const f of list) {
+    try {
+      const name = f.name || '';
+      // Get file data based on type
+      const isPdf = /\.pdf$/i.test(name);
+      let data, text;
+      if (isPdf) {
+        // For PDFs, get arrayBuffer
+        data = await f.arrayBuffer();
+      } else {
+        // For text files, read as text
+        text = await readText(f);
+      }
+      if (isPdf) {
+        // PDF import using pdf.js
+        const pdf = await pdfjsLib.getDocument(data).promise;
+        let pdfText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          pdfText += content.items.map(s => s.str).join(' ') + ' ';
+        }
+        const mockEmail = {
+          from: "PDF Import",
+          subject: "PDF Document",
+          date: todayStr(),
+          body: pdfText.slice(0, 90000)
+        };
+        const mails = [parseEML(mockEmail)];
+        added += mergeMails(mails);
+        toast(mails.length + ' emails parsed from ' + name);
+      } else if (/\.csv$/i.test(name)) {
+        // For CSV, get text
+        const text = await readText(f);
+        const cs = csvApps(text);
+        mergeCsvApps(cs);
+        added += cs.length;
+        toast(cs.length + ' rows from ' + name);
+      } else {
+        // For .eml, .mbox, etc., get text
+        const text = await readText(f);
+        const mails = /\.mbox$/i.test(name) ? parseMBOX(text) : [parseEML(text)];
+        added += mergeMails(mails);
+        toast(mails.length + ' emails parsed from ' + name);
+      }
+    } catch (e) {
+      console.error(e);
+      toast('Failed to parse ' + (f.name || 'file'));
+    }
+  }
+  if (added > 0) { save(); render(); toast(added + ' new record(s) imported'); }
+  else if (list.length) toast('Nothing new to add');
+}
+
+async function readText(file) {
+  try { return await file.text(); }
+  catch (e) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = () => rej(r.error);
+      r.readAsText(file);
+    });
+  }
+}
+
+function mailKey(e) {
+  return slug((e.from || '') + '|' + (e.subject || '') + '|' + (e.date || ''));
+}
+
+function mergeMails(mails) {
+  let added = 0;
+  const bySlug = new Map();
+  const existingKeys = new Set();
+  state.apps.forEach(a => {
+    bySlug.set(slug(a.company), a);
+    a.emails.forEach(e => existingKeys.add(mailKey(e)));
+  });
+  mails.forEach(e => {
+    const k = mailKey(e);
+    if (existingKeys.has(k)) return;
+    existingKeys.add(k);
+    const info = infoFromMail(e);
+    const fallback = info.company && info.company !== 'Unknown company' ? info.company : (atsSubdomainCompany(e.from) || titleize(safeDomain(e.from).split('.').slice(-2)[0]));
+    let app = bySlug.get(slug(fallback));
+    if (!app) {
+      app = normalizeApp({
+        company: info.company && info.company !== 'Unknown company' ? info.company : fallback,
+        role: info.role, source: (info.isAts ? 'ATS \u2190 ' : '') + info.domain.replace(/\.co$/i, ''),
+        applied: toISO(e.date) || todayStr(), stage: 'applied', emails: [], deadlines: []
+      });
+      bySlug.set(slug(app.company), app);
+      state.apps.push(app);
+    }
+    if (!app.role && info.role) app.role = info.role;
+    app.emails.push(e);
+    app.emails.sort((x, y) => (x.date < y.date ? -1 : 1));
+    extractDeadlines(e).forEach(d => {
+      if (!app.deadlines.some(x => x.date === d.date && x.label === d.label)) app.deadlines.push(d);
+    });
+    added++;
+  });
+  recomputeStages();
+  return added;
+}
+
+function mergeCsvApps(cs) {
+  const byKey = new Map();
+  state.apps.forEach(a => byKey.set(slug(a.company) + '|' + slug(a.role), a));
+  cs.forEach(c => {
+    const k = slug(c.company) + '|' + slug(c.role);
+    const ex = byKey.get(k);
+    if (ex) {
+      if (!ex.link && c.link) ex.link = c.link;
+      if (!ex.source || ex.source === 'CSV') ex.source = c.source;
+      if (c.notes && !ex.notes.includes(c.notes)) ex.notes = ampJoin(ex.notes, c.notes);
+      if (stageRank(c.stage) > stageRank(ex.stage)) { ex.stage = c.stage; ex.stageDate = c.applied; }
+    } else {
+      byKey.set(k, c);
+      state.apps.push(c);
+    }
+  });
+}
+
+function recomputeStages() {
+  state.apps.forEach(a => {
+    if (!a.emails.length) return;
+    let best = stageRank(a.stage);
+    let bestDate = a.stageDate;
+    let dates = [];
+    a.emails.forEach(e => {
+      const st = stageOfMail(e);
+      const r = stageRank(st);
+      if (toISO(e.date)) dates.push(toISO(e.date));
+      if (r > best) { best = r; if (toISO(e.date)) bestDate = toISO(e.date); }
+    });
+    if (best > stageRank('rejected')) best = stageRank('applied');
+    a.stage = STAGES[Math.min(best, STAGES.length - 1)].id;
+    if (dates.length) {
+      dates.sort();
+      a.applied = dates[0];
+      if (bestDate && bestDate >= a.applied) a.stageDate = bestDate;
+    }
+  });
+}
+
+/* ---------- sample data ---------- */
+
+function seedSample() {
+  const now = new Date();
+  const isoBack = days => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - days);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  };
+  const mk = (company, role, days, stage, source, mails) => {
+    const applied = isoBack(days);
+    const stageDate = stage === 'applied' ? applied : isoBack(Math.max(1, days - 6));
+    const uidMail = i => 'samp-' + slug(company) + '-' + i;
+    const threads = mails.map((m, i) => normalizeMail({
+      id: uidMail(i), from: m.from, fromName: m.fromName, subject: m.subject,
+      date: new Date(isoBack(days - (days - 5 === days ? 0 : 1)) + 'T10:00:00').toISOString(), body: m.body
+    }));
+    return normalizeApp({ company: company, role: role, source: source, applied: applied, stageDate: stageDate, stage: stage, emails: threads, deadlines: [], link: '#' });
+  };
+  state = { apps: [] };
+  state.apps = [
+    mk('Nimbus Labs', 'Senior Revenue Operations Analyst', 62, 'interview', 'greenhouse.io', [
+      { from: 'no-reply@greenhouse.io', fromName: 'Greenhouse Recruiting', subject: 'Application received at Nimbus Labs', body: 'Thank you for applying to the Senior Revenue Operations Analyst role at Nimbus Labs. Your application is under review.' },
+      { from: 'alex@nimbuslabs.com', fromName: 'Alex Rivera', subject: 'Interview invitation - Nimbus Labs', body: 'Hi, we loved your resume. Would you be free for a 30 minute video call with the hiring manager on ' + new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }) + '?' }
+    ]),
+    mk('Forge & Thistle', 'Pricing Strategist', 55, 'screening', 'lever.co', [
+      { from: 'no-reply@lever.co', fromName: 'Lever', subject: 'Forge & Thistle - Pricing Strategist application', body: 'We received your application for Pricing Strategist. Thank you for your interest.' },
+      { from: 'no-reply@lever.co', fromName: 'Talent Team', subject: 'Status update', body: 'Your application for the Pricing Strategist role is still under consideration.' }
+    ]),
+    mk('Harborline Software', 'Sales Operations Manager', 48, 'screening', 'ashbyhq.com', [
+      { from: 'hello@ashbyhq.com', fromName: 'Ashby', subject: 'Application confirmed - Harborline Software', body: 'Your application to Harborline Software was received and is being reviewed by our team.' }
+    ]),
+    mk('Vantage Dynamics', 'G&A Strategy Analyst', 40, 'rejected', 'icims.com', [
+      { from: 'noreply@icims.com', fromName: 'Vantage Dynamics Talent', subject: 'Update on your application', body: 'After careful review, we have decided not to move forward with your application for the G&A Strategy Analyst position.' }
+    ]),
+    mk('Goldenrod Retailing', 'Commercial Finance Analyst', 34, 'rejected', 'direct', [
+      { from: 'careers@goldenrodretail.com', fromName: 'Talent Team', subject: 'Thank you for applying', body: 'Thank you for your application. Unfortunately, we will not be moving forward at this time.' }
+    ]),
+    mk('Empyrean Cloud', 'Business Operations Lead', 29, 'offer', 'greenhouse.io', [
+      { from: 'no-reply@greenhouse.io', fromName: 'Greenhouse Recruiting', subject: 'Interview scheduling at Empyrean Cloud', body: 'We would like to schedule a call with the team.' },
+      { from: 'priya@empyreancloud.io', fromName: 'Priya Menon', subject: 'Employee offer - Empyrean Cloud', body: 'Congratulations! We are pleased to extend you an offer for the Business Operations Lead role.' }
+    ]),
+    mk('Staghorn Robotics', 'GTM Operations Analyst', 25, 'interview', 'direct', [
+      { from: 'talent@staghornrobotics.com', fromName: 'Maria', subject: 'Next step - recruiter screen', body: 'We would like to invite you to an assessment and a conversation with the hiring manager.' }
+    ]),
+    mk('Coralview Systems', 'Deal Desk Analyst', 21, 'applied', 'workday.com', [
+      { from: 'no-reply@workday.com', fromName: 'Workday', subject: 'Application received', body: 'Thank you for your interest in Coralview Systems. Your application has been received.' }
+    ]),
+    mk('Oxbow & Finch', 'Strategy & Operations', 18, 'screening', 'linkedin.com', [
+      { from: 'recruiting@linkedin.com', fromName: 'LinkedIn', subject: 'We received your application', body: 'Your application for the Strategy & Operations role at Oxbow & Finch was received.' }
+    ]),
+    mk('Petrel Analytics', 'Pricing & Margin Analyst', 15, 'rejected', 'ashbyhq.com', [
+      { from: 'hello@ashbyhq.com', fromName: 'Ashby', subject: 'Application update - Petrel Analytics', body: 'We regret to inform you that we have chosen another candidate at this stage.' }
+    ]),
+    mk('Mossfire Energy', 'Sales Strategy Analyst', 11, 'applied', 'direct', [
+      { from: 'careers@mossfireenergy.com', fromName: 'Mossfire Energy', subject: 'Application received - Sales Strategy Analyst', body: 'Thank you for applying to the Sales Strategy Analyst role at Mossfire Energy.' }
+    ]),
+    mk('Aurora Commonwealth', 'Operations Financial Analyst', 7, 'interview', 'greenhouse.io', [
+      { from: 'no-reply@greenhouse.io', fromName: 'Aurora Commonwealth Talent', subject: 'Interview invitation', body: 'We were impressed by your background. Let us know if you can join a phone screen next ' + ['Monday', 'Tuesday', 'Wednesday', 'Thursday'][now.getDay() % 4] + '.' }
+    ])
+  ];
+  // add deadlines to a couple
+  const soon = new Date(now); soon.setDate(soon.getDate() + 3);
+  const soonIso = soon.getFullYear() + '-' + pad(soon.getMonth() + 1) + '-' + pad(soon.getDate());
+  const later = new Date(now); later.setDate(later.getDate() + 12);
+  const laterIso = later.getFullYear() + '-' + pad(later.getMonth() + 1) + '-' + pad(later.getDate());
+  const app = state.apps.find(a => slug(a.company) === 'nimbus-labs');
+  if (app) app.deadlines.push({ label: 'Interview', date: soonIso });
+  state.apps.find(a => slug(a.company) === 'empyrean-cloud').deadlines.push({ label: 'Respond to offer', date: laterIso });
+  save();
+  render();
+}
+
+/* ---------- filtering ---------- */
+
+function filteredApps() {
+  if (activeFilter === 'all') return state.apps;
+  return state.apps.filter(a => a.stage === activeFilter || (activeFilter === 'needs' && !a.role));
+}
+function buildFilters() {
+  const wrap = $('#filters');
+  wrap.innerHTML = '';
+  const opts = [['all', 'All', state.apps.length]];
+  STAGES.forEach(s => opts.push([s.id, s.label, state.apps.filter(a => a.stage === s.id).length]));
+  opts.push(['needs', 'Needs review', state.apps.filter(a => !a.role).length]);
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (activeFilter === o[0] ? ' on' : '');
+    b.textContent = o[1] + ' (' + o[2] + ')';
+    b.addEventListener('click', () => {
+      activeFilter = o[0];
+      buildFilters();
+      renderBoard();
+    });
+    wrap.appendChild(b);
+  });
+  wrap.hidden = state.apps.length === 0;
+}
+
+/* ---------- render ---------- */
+
+function render() {
+  buildFilters();
+  renderKpis();
+  renderBoard();
+  renderCharts();
+  renderCompanies();
+  renderDeadlines();
+  renderTable();
+  $('#footNote').innerHTML = state.apps.length
+    ? state.apps.length + (state.apps.length === 1 ? ' application' : ' applications') + ' tracked in your browser \u00b7 <span style="color:var(--accent)">&#10022; built for your job search</span>'
+    : 'No data yet &mdash; drop exported emails above, or load the sample.';
+}
+
+function renderKpis() {
+  const apps = state.apps;
+  const total = apps.length;
+  const rejected = apps.filter(a => a.stage === 'rejected').length;
+  const interviews = apps.filter(a => a.stage === 'interview').length;
+  const offers = apps.filter(a => a.stage === 'offer').length;
+  const active = apps.filter(a => ['applied', 'screening', 'interview'].includes(a.stage)).length;
+  const responded = apps.filter(a => a.stage !== 'applied').length;
+  const respRate = total ? Math.round(responded / total * 100) : 0;
+  const rejectRate = total ? Math.round(rejected / total * 100) : 0;
+
+  const up = (label, value, foot, cls) => {
+    const d = document.createElement('div');
+    d.className = 'kpi ' + (cls || '');
+    d.innerHTML = '<div class="label">' + label + '</div><div class="value">' + value + '</div><div class="foot">' + foot + '</div>';
+    return d;
+  };
+  const k = $('#kpis');
+  k.innerHTML = '';
+  k.appendChild(up('Applications', total, 'total tracked'));
+  k.appendChild(up('Active', active, 'open opportunities'));
+  k.appendChild(up('Response rate', respRate + '%', responded + ' of ' + total + ' responded', respRate >= 60 ? 'good' : respRate >= 35 ? 'warn' : ''));
+  k.appendChild(up('Interviews', interviews, interviews + ' in conversation'));
+  k.appendChild(up('Offers', offers, offers + ' extended', offers ? 'good' : ''));
+  k.appendChild(up('Rejected', rejected, rejectRate + '% of all', rejected ? 'bad' : ''));
+}
+
+function cardBadge(a) {
+  if (a.stage === 'offer') return '<span class="tag offer">OFFER</span>';
+  if (a.stage === 'rejected') return '<span class="tag rej">REJECTED</span>';
+  if (!a.role) return '<span class="tag none">?</span>';
+  return '';
+}
+function endpointDays(a) {
+  if (a.stage === 'applied') return ago(a.applied);
+  return ago(a.stageDate);
+}
+function stageHtml(stage) { return '<span class="swatch" style="background:' + cssVar(stageById(stage).color) + '"></span>'; }
+
+function renderBoard() {
+  const board = $('#board');
+  board.innerHTML = '';
+  const counted = ['applied', 'screening', 'interview', 'offer', 'rejected'];
+  counted.forEach(sid => {
+    const s = stageById(sid);
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.dataset.stage = sid;
+    col.innerHTML = '<div class="colHead">' + stageHtml(sid) + '<span class="name">' + s.label + '</span><span class="count"></span></div>';
+    const cardsEl = document.createElement('div');
+    cardsEl.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+    col.appendChild(cardsEl);
+    board.appendChild(col);
+  });
+  const cols = {};
+  $$('.col', board).forEach(c => cols[c.dataset.stage] = c);
+  filteredApps().forEach(a => {
+    const cd = document.createElement('div');
+    cd.className = 'card';
+    cd.draggable = true;
+    cd.dataset.id = a.id;
+    cd.innerHTML =
+      '<div class="top">' +
+        '<div><div class="company">' + esc(a.company || '?') + '</div><div class="role">' + esc(a.role || 'edit to add role') + '</div></div>' +
+        cardBadge(a) +
+      '</div>' +
+      '<div class="meta"><span>' + fmtDate(a.applied) + '</span><span class="ago">' + endpointDays(a) + '</span></div>';
+    cd.addEventListener('click', () => openModal(a.id));
+    cd.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', a.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    const col = cols[a.stage];
+    if (col) col.querySelector('div').appendChild(cd);
+  });
+  $$('.col', board).forEach(c => {
+    const n = state.apps.filter(a => a.stage === c.dataset.stage).length;
+    c.querySelector('.count').textContent = n;
+    c.addEventListener('dragover', e => { e.preventDefault(); c.classList.add('col-over'); });
+    c.addEventListener('dragleave', () => c.classList.remove('col-over'));
+    c.addEventListener('drop', e => {
+      e.preventDefault();
+      c.classList.remove('col-over');
+      const id = e.dataTransfer.getData('text/plain');
+      const a = state.apps.find(x => x.id === id);
+      if (a && a.stage !== c.dataset.stage) {
+        a.stage = c.dataset.stage;
+        a.stageDate = todayStr();
+        save(); render();
+      }
+    });
+    if (n === 0) {
+      const em = document.createElement('div');
+      em.className = 'empty';
+      em.textContent = 'empty';
+      em.style.padding = '24px 4px';
+      c.querySelector('div').appendChild(em);
+    }
+  });
+}
+/* ---------- charts ---------- */
+
+function renderCharts() {
+  const apps = state.apps;
+  const n = apps.length;
+  $('#timeHint').textContent = n ? 'last 12 weeks' : '';
+  $('#donutHint').textContent = n ? n + ' apps' : '';
+  drawTimeChart();
+  drawDonut();
+}
+
+function drawTimeChart() {
+  const canvas = $('#timeChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || 600;
+  const H = canvas.clientHeight || 236;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const now = new Date();
+  const startOf = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const weekStart = d => { const x = startOf(d); const day = (x.getDay() + 6) % 7; x.setDate(x.getDate() - day); return x; };
+  const wk = [];
+  for (let i = 11; i >= 0; i--) {
+    const s = weekStart(new Date(now));
+    s.setDate(s.getDate() - i * 7);
+    wk.push(s);
+  }
+  const counts = wk.map(() => ({ applied: 0, rejected: 0, interview: 0, offer: 0 }));
+  state.apps.forEach(a => {
+    const d = a.applied;
+    if (!d) return;
+    const t = weekStart(new Date(d.length === 10 ? d + 'T00:00:00' : d));
+    const i = wk.findIndex(w => +w === +t);
+    if (i >= 0) counts[i].applied++;
+  });
+  state.apps.forEach(a => {
+    const d = a.stageDate;
+    if (!d || a.stage === 'applied') return;
+    const t = weekStart(new Date(d.length === 10 ? d + 'T00:00:00' : d));
+    const i = wk.findIndex(w => +w === +t);
+    if (i >= 0) {
+      if (a.stage === 'rejected') counts[i].rejected++;
+      else if (a.stage === 'interview') counts[i].interview++;
+      else if (a.stage === 'offer') counts[i].offer++;
+    }
+  });
+
+  const padL = 34, padR = 10, padT = 18, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const max = Math.max(1, ...counts.map(c => c.applied));
+  const barW = Math.max(6, Math.min(26, plotW / wk.length * 0.5));
+
+  ctx.font = '10px Inter, sans-serif';
+  ctx.strokeStyle = cssVar('--border');
+  ctx.fillStyle = cssVar('--muted');
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = padT + plotH - (plotH * g / 4);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.fillText(String(Math.round(max * g / 4)), 4, y + 3);
+  }
+  const colW = plotW / wk.length;
+  counts.forEach((c, i) => {
+    const cx = padL + colW * i + colW / 2;
+    const g = (key, color) => {
+      const bh = (key ? c[key] / max : 0) * plotH;
+      const y = padT + plotH - bh;
+      ctx.fillStyle = color;
+      ctx.fillRect(cx - barW / 2, y, barW, bh);
+    };
+    g('applied', cssVar('--stage-applied'));
+    if (c.rejected) g('rejected', cssVar('--stage-rejected'));
+    wk[i].setDate(wk[i].getDate() + 1);
+    ctx.fillStyle = cssVar('--muted');
+    ctx.textAlign = 'center';
+    ctx.fillText(wk[i].toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), cx, H - 10);
+  });
+
+  if (!state.apps.length) {
+    ctx.fillStyle = cssVar('--muted');
+    ctx.textAlign = 'center';
+    ctx.font = '13px Inter, sans-serif';
+    ctx.fillText('Import emails or load sample data to see the trend', W / 2, H / 2);
+  }
+}
+
+function drawDonut() {
+  const canvas = $('#donutChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || 500;
+  const H = canvas.clientHeight || 236;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const counts = STAGES.map(s => ({ s: s, n: state.apps.filter(a => a.stage === s.id).length }));
+  const total = counts.reduce((t, c) => t + c.n, 0);
+  const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 28;
+  if (!total) {
+    ctx.fillStyle = cssVar('--muted');
+    ctx.textAlign = 'center';
+    ctx.font = '13px Inter, sans-serif';
+    ctx.fillText('No data yet', cx, cy);
+    return;
+  }
+  let a0 = -Math.PI / 2;
+  counts.forEach(c => {
+    if (!c.n) return;
+    const a1 = a0 + (c.n / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle = cssVar(c.s.color);
+    ctx.fill();
+    a0 = a1;
+  });
+  ctx.beginPath();
+  ctx.arc(cx, cy, R * 0.62, 0, Math.PI * 2);
+  ctx.fillStyle = cssVar('--panel');
+  ctx.fill();
+  ctx.fillStyle = cssVar('--ink');
+  ctx.textAlign = 'center';
+  ctx.font = '700 26px Inter, sans-serif';
+  ctx.fillText(String(total), cx, cy + 4);
+  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = cssVar('--muted');
+  ctx.fillText('applications', cx, cy + 22);
+
+  const items = STAGES.map(s => ({ s: s, n: state.apps.filter(a => a.stage === s.id).length })).filter(c => c.n > 0);
+  const lc = items.filter(c => c.s.id === 'applied' || c.s.id === 'screening').length;
+  const rc = items.length - lc;
+  if (W > 420 && rc) {
+    items.slice(0, lc).forEach((c, i) => drawLegend(c, i * 17 + 6, 14, false));
+    items.slice(lc).forEach((c, i) => drawLegend(c, i * 17 + 6, W - 14, true));
+  } else {
+    items.forEach((c, i) => drawLegend(c, i * 17 + 6, 14, false));
+  }
+}
+
+function drawLegend(item, y, groupX, right) {
+  const ctx = $('#donutChart').getContext('2d');
+  const sw = 9;
+  const x = right ? groupX - sw : groupX;
+  ctx.fillStyle = cssVar(item.s.color);
+  ctx.fillRect(x, y, sw, sw);
+  ctx.fillStyle = cssVar('--muted');
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = right ? 'right' : 'left';
+  ctx.fillText(item.s.label + ' ' + item.n, right ? x - 2 : x + sw + 4, y + sw + 1);
+}
+
+/* ---------- companies ---------- */
+
+function renderCompanies() {
+  const box = $('#companyBars');
+  box.innerHTML = '';
+  const map = new Map();
+  state.apps.forEach(a => {
+    const k = slug(a.company);
+    const e = map.get(k) || { company: a.company, total: 0, rej: 0 };
+    e.total++;
+    if (a.stage === 'rejected') e.rej++;
+    map.set(k, e);
+  });
+  const list = Array.from(map.values()).filter(c => c.total > 0)
+    .sort((x, y) => y.total - x.total);
+  $('#companyHint').textContent = list.length ? 'top ' + Math.min(list.length, 8) + ' by applications' : '';
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">No companies yet</div>';
+    return;
+  }
+  list.slice(0, 8).forEach(c => {
+    const pct = Math.round(c.rej / c.total * 100);
+    const item = document.createElement('div');
+    item.className = 'barItem';
+    item.innerHTML =
+      '<div class="barTop"><b>' + esc(c.company) + '</b><span>' + c.total + ' app' + (c.total > 1 ? 's' : '') + ' \u00b7 ' + pct + '% rejected</span></div>' +
+      '<div class="barTrack"><div class="barFill" style="width:' + Math.max(4, Math.round(c.total / Math.max(1, list[0].total) * 100)) + '%"></div></div>';
+    box.appendChild(item);
+  });
+}
+
+/* ---------- deadlines ---------- */
+
+function renderDeadlines() {
+  const box = $('#deadlines');
+  box.innerHTML = '';
+  const all = [];
+  state.apps.forEach(a => {
+    (a.deadlines || []).forEach(d => all.push({ app: a, d: d }));
+  });
+  all.sort((x, y) => (x.d.date < y.d.date ? -1 : 1));
+  if (!all.length) {
+    box.innerHTML = '<div class="empty">Dates (interviews, deadlines, offers) found in your emails will appear here.</div>';
+    return;
+  }
+  const now = new Date(todayStr() + 'T00:00:00');
+  all.slice(0, 20).forEach(({ app, d }) => {
+    const dt = new Date(d.date + 'T00:00:00');
+    const diff = Math.round((dt - now) / 86400000);
+    const row = document.createElement('div');
+    row.className = 'deadline' + (diff < 0 ? ' overdue' : diff <= 3 ? ' soon' : '');
+    row.title = app.company + (app.role ? ' \u2014 ' + app.role : '');
+    const when = diff < 0 ? Math.abs(diff) + 'd ago' : diff === 0 ? 'today' : diff === 1 ? 'tomorrow' : diff + 'd left';
+    row.innerHTML =
+      '<div class="day"><b>' + dt.getDate() + '</b><span>' + dt.toLocaleDateString(undefined, { month: 'short' }) + '</span></div>' +
+      '<div class="txt"><b>' + esc(app.company) + '</b><span>' + esc(d.label) + (app.role ? ' \u00b7 ' + esc(app.role) : '') + '</span></div>' +
+      '<div class="when ' + (diff < 0 ? 'overdue' : diff <= 3 ? 'soon' : '') + '">' + when + '</div>';
+    row.addEventListener('click', () => openModal(app.id));
+    box.appendChild(row);
+  });
+}
+
+/* ---------- table ---------- */
+
+function renderTable() {
+  const tbody = $('#appRows');
+  tbody.innerHTML = '';
+  const list = state.apps.slice().sort((x, y) => (y.applied < x.applied ? -1 : 1));
+  $('#tableHint').textContent = list.length ? list.length + ' rows' : '';
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Import your exports to see the full list.</td></tr>';
+    return;
+  }
+  list.forEach(a => {
+    const resp = a.stage !== 'applied' && a.applied ? Math.round(daysBetween(a.applied, a.stageDate || a.applied)) : null;
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.innerHTML =
+      '<td><b>' + esc(a.company) + '</b></td>' +
+      '<td>' + (a.role ? esc(a.role) : '<span style="color:var(--accent)">needs review</span>') + '</td>' +
+      '<td>' + fmtDate(a.applied) + '</td>' +
+      '<td>' + stageHtml(a.stage) + '<span style="margin-left:4px;color:var(--muted)">' + stageById(a.stage).label + '</span></td>' +
+      '<td>' + esc(a.source) + '</td>' +
+      '<td>' + (resp === null ? '\u2014' : resp + 'd') + '</td>';
+    tr.addEventListener('click', () => openModal(a.id));
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---------- modal ---------- */
+
+let modalId = null;
+
+function openModal(id) {
+  const a = state.apps.find(x => x.id === id);
+  if (!a) return;
+  modalId = id;
+  const s = stageById(a.stage);
+  $('#mStagePill').style.background = cssVar(s.color);
+  $('#mTitle').textContent = a.company;
+  $('#mSub').textContent = a.role || 'Role not parsed yet \u2014 add it below';
+  $('#mCompany').value = a.company;
+  $('#mRole').value = a.role;
+  $('#mSource').value = a.source;
+  $('#mLocation').value = a.location || '';
+  $('#mLink').value = a.link || '';
+  $('#mApplied').value = a.applied;
+  $('#mNotes').value = a.notes || '';
+  const sel = $('#mStage');
+  sel.innerHTML = '';
+  STAGES.forEach(st => {
+    const o = document.createElement('option');
+    o.value = st.id;
+    o.textContent = st.label;
+    if (st.id === a.stage) o.selected = true;
+    sel.appendChild(o);
+  });
+  renderThread(a);
+  $('#modalBack').classList.add('open');
+}
+
+function renderThread(a) {
+  const box = $('#mThread');
+  box.innerHTML = '<div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Email thread (' + a.emails.length + ')</div>';
+  if (!a.emails.length) {
+    const d = document.createElement('div');
+    d.className = 'empty';
+    d.textContent = 'No emails linked to this record yet.';
+    box.appendChild(d);
+    return;
+  }
+  a.emails.forEach(e => {
+    const mail = document.createElement('div');
+    mail.className = 'mail';
+    const bodyText = esc((e.body || '').replace(/\n{3,}/g, '\n\n').slice(0, 3000));
+    mail.innerHTML =
+      '<div class="from"><span>' + esc(e.fromName || e.from || 'unknown sender') + '</span><time>' + fmtDate(e.date) + '</time></div>' +
+      '<div class="subj">' + esc(e.subject) + '</div>' +
+      '<div class="snip">' + bodyText + '</div>';
+    if (bodyText.length > 900) {
+      const btn = document.createElement('button');
+      btn.className = 'snipbtn';
+      btn.textContent = 'show more';
+      btn.addEventListener('click', () => {
+        mail.querySelector('.snip').classList.toggle('open');
+        btn.textContent = mail.querySelector('.snip').classList.contains('open') ? 'show less' : 'show more';
+      });
+      mail.appendChild(btn);
+    }
+    box.appendChild(mail);
+  });
+}
+
+function closeModal() { $('#modalBack').classList.remove('open'); modalId = null; }
+
+function saveModal() {
+  const a = state.apps.find(x => x.id === modalId);
+  if (!a) return;
+  a.company = $('#mCompany').value.trim() || 'Unknown company';
+  a.role = $('#mRole').value.trim();
+  a.source = $('#mSource').value.trim();
+  a.location = $('#mLocation').value.trim();
+  a.link = $('#mLink').value.trim();
+  a.notes = $('#mNotes').value.trim();
+  const app = $('#mApplied').value;
+  if (app) a.applied = app;
+  const st = $('#mStage').value;
+  if (st && st !== a.stage) { a.stage = st; a.stageDate = todayStr(); }
+  save(); render(); closeModal();
+  toast('Saved');
+}
+
+/* ---------- events ---------- */
+
+function wireEvents() {
+  const btn = $('#themeBtn');
+  const savedTheme = localStorage.getItem('jobsearch-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  paintTheme(savedTheme);
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('jobsearch-theme', next);
+    paintTheme(next);
+    renderCharts();
+  });
+
+  const drop = $('#dropZone');
+  const input = $('#fileInput');
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+    drop.classList.remove('drag');
+    if (e.dataTransfer.files.length) importFiles(e.dataTransfer.files);
+  });
+  input.addEventListener('change', () => { if (input.files.length) importFiles(input.files); input.value = ''; });
+
+  $('#sampleBtn').addEventListener('click', () => {
+    if (state.apps.length && !confirm('Replace current data with the sample? Your imported records will be overwritten.')) return;
+    seedSample();
+  });
+  $('#clearBtn').addEventListener('click', () => {
+    if (!state.apps.length) return;
+    if (!confirm('Remove all ' + state.apps.length + ' application records?')) return;
+    state.apps = [];
+    localStorage.removeItem(LS_KEY);
+    render();
+    toast('Cleared');
+  });
+  $('#addBtn').addEventListener('click', () => {
+    const a = normalizeApp({ company: 'New application', role: '', applied: todayStr(), emails: [], deadlines: [] });
+    state.apps.push(a);
+    save(); render();
+    openModal(a.id);
+  });
+  $('#exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state.apps.map(serializeApp), null, 2)], { type: 'application/json' });
+    const aEl = document.createElement('a');
+    aEl.href = URL.createObjectURL(blob);
+    aEl.download = 'job-search-data.json';
+    aEl.click();
+    setTimeout(() => URL.revokeObjectURL(aEl.href), 5000);
+    toast('Exported ' + state.apps.length + ' records');
+  });
+  $('#importBtn').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      const arr = JSON.parse(await readText(f));
+      state.apps = (Array.isArray(arr) ? arr : []).map(normalizeApp);
+      save(); render();
+      toast('Imported ' + state.apps.length + ' records');
+    } catch (err) { toast('Invalid JSON file'); }
+    e.target.value = '';
+  });
+
+  $('#mSave').addEventListener('click', saveModal);
+  $('#mDelete').addEventListener('click', () => {
+    const a = state.apps.find(x => x.id === modalId);
+    if (!a) return;
+    if (!confirm('Delete ' + a.company + '?')) return;
+    state.apps = state.apps.filter(x => x.id !== modalId);
+    save(); render(); closeModal();
+    toast('Deleted');
+  });
+  $('#mClose').addEventListener('click', closeModal);
+  $('#modalBack').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  window.addEventListener('resize', () => renderCharts());
+}
+
+function paintTheme(theme) {
+  $('#themeBtn').innerHTML = theme === 'dark'
+    ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+}
+
+</script>
+</body>
+</html>

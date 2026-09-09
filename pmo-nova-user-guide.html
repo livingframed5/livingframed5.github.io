@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Nova PMO Command Center &mdash; User Guide</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.65;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:96px 26px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 24px;margin-bottom:14px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.toc{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 22px;margin:26px 0 8px;box-shadow:var(--shadow)}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:sec}
+.toc li{counter-increment:sec;margin:5px 0}
+.toc a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:500}
+.toc a::before{content:counter(sec) ". ";font-weight:800;color:var(--violet)}
+.toc a:hover{text-decoration:underline}
+main{counter-reset:sec}
+h2{font-size:21px;margin:44px 0 12px;display:flex;align-items:center;gap:12px;letter-spacing:-0.01em;counter-increment:sec}
+h2 .n{background:var(--grad);color:#fff;font-size:13px;min-width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+h3{font-size:15.5px;margin:26px 0 8px;color:var(--violet);font-weight:700}
+p{margin:9px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:4px 0}
+strong{font-weight:700}
+code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--edge);border-radius:5px;padding:1px 6px}
+pre{font-family:var(--mono);font-size:12.5px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px 18px;overflow:auto;margin:12px 0;line-height:1.55}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:var(--halo)}
+.callout b{color:var(--accent)}
+.tip{border-left:4px solid var(--green);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:rgba(5,150,105,.08)}
+.tip b{color:var(--green)}
+.warn{border-left:4px solid var(--amber);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;background:rgba(217,119,6,.09)}
+.warn b{color:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--edge)}
+td{padding:9px 12px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px solid var(--edge);border-radius:4px;padding:1px 6px}
+.good{color:var(--green);font-weight:700}
+.warnc{color:var(--amber);font-weight:700}
+.bad{color:var(--rose);font-weight:700}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:88px 16px 70px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Program Management Office &middot; Interactive Command Center</span>
+  <h1>Project Nova <b>PMO Command Center</b> &mdash; User Guide</h1>
+  <div class="tag">Live risk register &middot; RAID log &middot; RACI &middot; SteerCo deck &middot; change readiness</div>
+  <div class="chips">
+    <span class="chip">Everything editable in place</span>
+    <span class="chip">Auto-saved in your browser</span>
+    <span class="chip">JSON export / import</span>
+    <span class="chip">Markdown + print-ready export</span>
+  </div>
+</header>
+
+<div class="card" style="margin:22px 0 6px">
+  <p style="margin:0 0 8px"><strong style="color:var(--accent)">What it does:</strong> one operating surface for running Project Nova &mdash; the legacy-to-cloud migration program. It holds the milestone roadmap, phase progress, the risk register with an early-warning RAG dashboard, the RAID log, a single-threaded RACI accountability map, the weekly SteerCo deck template, and a change-readiness simulator. Every field is editable in place and auto-saves to your browser.</p>
+  <p style="margin:0"><strong style="color:var(--accent)">The point:</strong> program management artifacts are only useful while they breathe. This suite keeps charter, risk, RAID, RACI and SteerCo content in one shared dataset so nothing drifts out of sync &mdash; and it exports the finished program to JSON, Markdown, or print when it&rsquo;s time to take it to leadership.</p>
+</div>
+<div class="card" style="margin:10px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+  <div style="flex:1;min-width:240px">
+    <h3 style="margin:0 0 4px;color:var(--txt)">Just a guide? &mdash; run it</h3>
+    <p style="margin:0;font-size:13px">Open the command center pre-seeded with the full Project Nova baseline: 7 milestones, 4 phases, 5 risks, a working RAID log, and a 13&times;13 RACI. Every edit auto-saves.</p>
+  </div>
+  <a class="back" href="pmo-nova-command-center.html" style="color:var(--accent);border-color:var(--accent);padding:10px 18px">Open the PMO Command Center &rarr;</a>
+</div>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#start">Getting started</a></li>
+    <li><a href="#layout">Layout at a glance</a></li>
+    <li><a href="#edit">Editing anything, in place</a></li>
+    <li><a href="#risks">Working the risk register &amp; RAG logic</a></li>
+    <li><a href="#raid">RAID log: risks, assumptions, issues, dependencies</a></li>
+    <li><a href="#raci">RACI matrix: one &ldquo;A&rdquo; per deliverable</a></li>
+    <li><a href="#steerco">Running the weekly SteerCo</a></li>
+    <li><a href="#change">Using the change-readiness simulator</a></li>
+    <li><a href="#save">Saving, exporting, importing &amp; printing</a></li>
+    <li><a href="#workflow">Suggested weekly workflow</a></li>
+    <li><a href="#links">Related tools</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h2 id="start"><span class="n">1</span> Getting started</h2>
+<p>Open <code>pmo-nova-command-center.html</code> in Chrome, Edge, or Firefox. No installation, no libraries &mdash; it is fully self-contained and works offline.</p>
+<p>The dashboard opens on the <strong>Overview &amp; KPIs</strong> tab, already populated with the Project Nova baseline so every panel means something on first load. Switch tabs with the numbered pills just below the title: <span class="chip">Overview</span> <span class="chip">Risk Register</span> <span class="chip">RAID Log</span> <span class="chip">RACI</span> <span class="chip">SteerCo</span> <span class="chip">Change Playbook</span>.</p>
+
+<h2 id="layout"><span class="n">2</span> Layout at a glance</h2>
+<div class="card">
+  <ul>
+    <li><strong>Top-left</strong> &mdash; back to portfolio; <strong>top-right</strong> &mdash; light / dark theme (shared with the whole portfolio).</li>
+    <li><strong>Toolbar</strong> &mdash; <em>Export JSON</em>, <em>Import JSON</em>, <em>Copy Markdown</em>, <em>Download .md</em>, <em>Print view</em>, and <em>Reset demo data</em>. The green pulse on the right confirms auto-save is live.</li>
+    <li><strong>KPI row</strong> &mdash; the numbers that matter per tab, recomputed instantly from whatever is in the tables below.</li>
+    <li><strong>Tab bodies</strong> &mdash; six working surfaces, each a set of editable tables plus add/reset controls.</li>
+  </ul>
+</div>
+<p>There is no &ldquo;Apply&rdquo; button &mdash; every edit saves the moment you make it, and every derived number (RAG status, KPI counts, gate verdict) recomputes automatically.</p>
+
+<h2 id="edit"><span class="n">3</span> Editing anything, in place</h2>
+<table>
+  <tr><th>Action</th><th>How</th><th>What happens</th></tr>
+  <tr><td>Edit a text field</td><td>Click the field and type</td><td>Saves on every keystroke; derived KPIs update</td></tr>
+  <tr><td>Change a dropdown</td><td>Click and pick (e.g. Probability, Impact, Type, Status)</td><td>RAG status and KPI cards recompute immediately</td></tr>
+  <tr><td>Delete a row</td><td>Click the <span class="kbd">&#10005;</span>, then click <span class="kbd">Sure?</span></td><td>Removes the item after a two-step confirm (safety against fat-finger deletes)</td></tr>
+  <tr><td>Add a row</td><td>Use the <em>Add</em> forms at the bottom of each tab</td><td>New item appears with auto-generated ID; counters update</td></tr>
+  <tr><td>Reset one list</td><td>e.g. <em>Reset risk demo data</em></td><td>Restores just that list to the baseline seed</td></tr>
+</table>
+<div class="tip"><b>Tip:</b> deleting is always two clicks (<span class="kbd">&#10005;</span> then <span class="kbd">Sure?</span>), and the confirm expires after a few seconds. Additions are single-click because they are easy to reverse.</div>
+
+<h2 id="risks"><span class="n">4</span> Working the risk register &amp; RAG logic</h2>
+<p>Each risk carries a <strong>Probability</strong> and <strong>Impact</strong> (H / M / L). The <strong>RAG</strong> status is never typed by hand &mdash; it is computed:</p>
+<ul>
+  <li><span class="bad">Red</span> &mdash; H&times;H (both high). Must land on the SteerCo agenda.</li>
+  <li><span class="warnc">Amber</span> &mdash; H&times;M or M&times;H. Owner action plan required.</li>
+  <li><span class="good">Green</span> &mdash; everything else.</li>
+</ul>
+<p>Filter the register to <span class="chip">Red</span>, <span class="chip">Amber</span>, or <span class="chip">Green</span> with the chips above the table. Click any column header to sort. The RAG pill in each row updates the instant you change a Probability or Impact dropdown &mdash; so you can pressure-test a risk live during a review.</p>
+<div class="callout"><b>Reading it right:</b> the register is only as honest as the <em>Trigger Metric</em> column. The early-warning dashboard works because each risk names the number you watch weekly &mdash; edit those triggers to your real operational metrics (helpdesk spikes, ETL failure rates, milestone slips, training completion %).</div>
+
+<h2 id="raid"><span class="n">5</span> RAID log: risks, assumptions, issues, dependencies</h2>
+<table>
+  <tr><th>Type</th><th>Rule of thumb</th><th>Color</th></tr>
+  <tr><td><strong>Risk</strong></td><td>May happen in the future &rarr; mitigation</td><td>Rose</td></tr>
+  <tr><td><strong>Issue</strong></td><td>Is happening now &rarr; action + owner + due date</td><td>Amber</td></tr>
+  <tr><td><strong>Assumption</strong></td><td>Believed true, unvalidated &rarr; test it, or it becomes a risk</td><td>Violet</td></tr>
+  <tr><td><strong>Dependency</strong></td><td>External gate we are waiting on &rarr; owner + target date</td><td>Blue</td></tr>
+</table>
+<p>Use the filter chips to collapse the log to a single type. The KPI row keeps the four classes honest at a glance. Add entries from the <em>Add a RAID entry</em> form; the ID prefixes itself correctly (<code>R-</code>, <code>I-</code>, <code>A-</code>, <code>D-</code>) and finds the next free number.</p>
+
+<h2 id="raci"><span class="n">6</span> RACI matrix: one &ldquo;A&rdquo; per deliverable</h2>
+<p>Each cell is a dropdown: <strong>A</strong> (Accountable) / <strong>R</strong> (Responsible) / <strong>C</strong> (Consulted) / <strong>I</strong> (Informed) / <strong>&minus;</strong> (not involved). Click a cell to change it &mdash; the color follows the letter.</p>
+<ul>
+  <li><strong>Add a role column</strong> &mdash; type a role (e.g. <code>Internal Audit</code>) and click <em>Add column</em>. Every deliverable row gains a matching cell.</li>
+  <li><strong>Add a deliverable row</strong> &mdash; type a deliverable and click <em>Add row</em>; all cells start at &ldquo;&minus;&rdquo; so you consciously assign them.</li>
+  <li><strong>Remove</strong> &mdash; click the <span class="kbd">&#10005;</span> in a column header (removes the whole role) or at the end of a row (removes the deliverable). Two-step confirm applies.</li>
+</ul>
+<div class="callout"><b>Exec note:</b> the whole point of the matrix is that accountability is single-threaded &mdash; every deliverable has exactly one <strong>A</strong>. If a row ends up with two A&rsquo;s or none, that row will drift. Keep the rule: one A, R for the doers, C/I for the informed.</div>
+
+<h2 id="steerco"><span class="n">7</span> Running the weekly SteerCo</h2>
+<ul>
+  <li><strong>Deck template</strong> &mdash; the fixed 10-slot structure (cover &rarr; decisions &rarr; status &rarr; schedule &rarr; early-warning &rarr; RAID delta &rarr; financials &rarr; metrics &rarr; next-4-weeks &rarr; approvals). Rename slots or rewrite content to match your board&rsquo;s language.</li>
+  <li><strong>Open decisions</strong> &mdash; the live decision log with owner, due week, options and recommendation. These become slide 2 and slide 10 of the deck automatically.</li>
+  <li><strong>Standing agenda</strong> &mdash; the meeting cadence itself, as a reference table.</li>
+</ul>
+<p>The operating rule is baked into the template: the deck ships 24h ahead, and the meeting is spent only on the Decision Log, the Early-Warning dashboard and Approvals Requests.</p>
+
+<h2 id="change"><span class="n">8</span> Using the change-readiness simulator</h2>
+<p>Drag the four sliders to see the <strong>Wave Readiness</strong> score and the go-live gate verdict change instantly:</p>
+<table>
+  <tr><th>Input</th><th>Weight</th></tr>
+  <tr><td>Training complete before cutover</td><td>30%</td></tr>
+  <tr><td>Power-user adoption (active in sandbox)</td><td>25%</td></tr>
+  <tr><td>Champion enablement (per BU)</td><td>20%</td></tr>
+  <tr><td>Sponsor visibility (planned touchpoints)</td><td>25%</td></tr>
+</table>
+<p>The gate reads <span class="good">GREEN &ge; 80%</span>, <span class="warnc">AMBER 65&ndash;79%</span> (conditions apply), <span class="bad">RED &lt; 65%</span> (wave held). Use it in planning to answer &ldquo;what has to move for Wave 2 to clear the gate?&rdquo; before you commit a date to the SteerCo.</p>
+
+<h2 id="save"><span class="n">9</span> Saving, exporting, importing &amp; printing</h2>
+<ul>
+  <li><strong>Auto-save:</strong> every edit writes to this browser&rsquo;s localStorage instantly. Close the tab, come back &mdash; the program is still there.</li>
+  <li><strong>Export JSON</strong> &mdash; downloads <code>project-nova-pmo.json</code> containing the entire program state. This is your portable, versionable copy (name it per week: <code>nova-pmo-2026-08-13.json</code>).</li>
+  <li><strong>Import JSON</strong> &mdash; loads an exported file back in. The dashboard validates the shape before accepting it, so a wrong file won&rsquo;t corrupt anything.</li>
+  <li><strong>Copy Markdown</strong> / <strong>Download .md</strong> &mdash; all 8 artifact sections as clean GitHub-flavored markdown tables, ready to paste into a wiki, PR, or SteerCo pack.</li>
+  <li><strong>Print view</strong> &mdash; opens a clean, print-styled document (no inputs or controls) and lets you print to PDF for the leadership binder.</li>
+  <li><strong>Reset demo data</strong> &mdash; restores the full baseline. Confirms first, because it discards your current edits.</li>
+</ul>
+<div class="warn"><b>Heads-up:</b> auto-saved data lives in <em>this browser only</em>. Another machine or browser will not share it &mdash; use Export JSON as your portable copy and your normal program repository (wiki / SharePoint) as the durable home.</div>
+
+<h2 id="workflow"><span class="n">10</span> Suggested weekly workflow</h2>
+<ol>
+  <li><strong>Monday &mdash; update the facts:</strong> open the Risk Register and RAID tabs. Tick progress, adjust Prob&times;Impact as things land, update trigger metrics with the real numbers from the weekend report. Add anything that surfaced.</li>
+  <li><strong>Tuesday &mdash; sanity-check the map:</strong> glance at Overview (milestones and phases). Anything slid? Move the status and fix the date before anyone asks.</li>
+  <li><strong>Wednesday &mdash; build the deck:</strong> the SteerCo tab already holds your open decisions. Add the 1&ndash;2 motions you need, then <em>Export JSON</em> (versioned) and <em>Copy Markdown</em> into the deck pack.</li>
+  <li><strong>Thursday &mdash; SteerCo:</strong> present only Decision Log, Early-Warning and Approvals. Log outcomes back into the decisions table.</li>
+  <li><strong>Friday &mdash; read the readiness:</strong> nudge the change sliders to where the numbers actually are and note the gate verdict in next week&rsquo;s plan.</li>
+</ol>
+
+<h2 id="links"><span class="n">11</span> Related tools</h2>
+<ul>
+  <li><a href="SOAR-Governance-Framework.html" style="color:var(--accent);font-weight:600">SOAR Governance &amp; Financial Validation Framework</a> &mdash; the stage-gate governance system for managed-services pursuits, from the same Program Office playbook.</li>
+  <li><a href="sop.html" style="color:var(--accent);font-weight:600">AI Agents with Human Oversight — Full SOP</a> &mdash; how the office runs on AI agents without losing the human in the loop.</li>
+  <li><a href="dMPS_Presales_DD_Playbook.html" style="color:var(--accent);font-weight:600">dMPS Presales Due Diligence Playbook</a> &mdash; deal-assurance control plane with RACI accountability and risk &amp; escalation scoring.</li>
+  <li><a href="intake-command-center.html" style="color:var(--accent);font-weight:600">Cross-Functional Intake &amp; Strategic Alignment</a> &mdash; the intake backlog and triage board this program runs on.</li>
+</ul>
+
+</main>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Program Management Office &amp; Delivery</span>
+  <span>Project Nova · User Guide V1.0</span>
+</footer>
+</div>
+
+<script>
+  const btn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('pf-theme') || 'light';
+  const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  function paintThemeIcon(theme) {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === 'dark' ? MOON : SUN) + '</svg>';
+  }
+  document.documentElement.setAttribute('data-theme', saved);
+  paintThemeIcon(saved);
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    paintThemeIcon(next);
+    localStorage.setItem('pf-theme', next);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Lead Scoring — Interactive Dashboard</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee);
+  --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb; --violet:#7c3aed;
+  --mono:Consolas,'Courier New',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --halo:rgba(139,125,255,.16);
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa; --violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:88px 24px 90px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 60%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:color .15s ease,border-color .15s ease;box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);transition:transform .15s ease}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:12px 2px 22px;border-bottom:3px solid transparent;margin-bottom:6px;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+header h1{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-0.025em;line-height:1.15;margin:14px 0 6px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.chips{margin:12px 0 4px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;background:var(--halo);color:var(--accent);border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:600}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:20px 22px;margin:18px 0;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08)}
+.card h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 .n{background:var(--grad);color:#fff;min-width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+input[type=text],select,textarea{width:100%;padding:9px 12px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);color:var(--txt);font-family:inherit;font-size:13px;transition:border-color .15s ease}
+input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:92px;line-height:1.5}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--grad);border:none;border-radius:10px;padding:9px 16px;cursor:pointer;box-shadow:0 6px 16px rgba(109,94,242,.3);transition:transform .15s ease,box-shadow .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--edge);box-shadow:none}
+.btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.scorepanel{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.bigscore{position:relative;min-width:150px;height:150px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 14px 36px rgba(109,94,242,.4)}
+.bigscore .val{font-size:52px;font-weight:800;letter-spacing:-.03em}
+.bigscore .max{font-size:13px;font-weight:600;opacity:.75;margin-top:26px}
+.bigscore.dim{filter:saturate(.25) brightness(.82)}
+.tiermeta{flex:1;min-width:240px;display:flex;flex-direction:column;gap:6px}
+.tierpill{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:800;padding:7px 16px;border-radius:999px;width:max-content}
+.tierpill .dot{width:9px;height:9px;border-radius:50%;background:currentColor}
+.breakdown{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+.brow{display:grid;grid-template-columns:96px 1fr 56px;gap:10px;align-items:center;font-size:12.5px}
+.brow .k{color:var(--muted);font-weight:600}
+.brow .v{text-align:right;font-weight:700;font-size:12.5px}
+.bar{height:9px;border-radius:999px;background:var(--panel2);overflow:hidden}
+.bar > span{display:block;height:100%;border-radius:999px;background:var(--grad);transition:width .25s ease}
+.gate{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.gate.damp{background:rgba(217,119,6,.14);color:var(--amber)}
+.gate.kill{background:rgba(225,29,72,.12);color:var(--rose)}
+.gate.ok{background:rgba(16,185,129,.12);color:var(--green)}
+.llmline{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed var(--edge);font-size:12.5px}
+.llmline:first-of-type{border-top:none}
+.llmline .key{color:var(--muted);min-width:130px;font-weight:600}
+.llmline .valg{font-weight:800;text-transform:capitalize}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:6px 0;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+th{background:var(--panel2);color:var(--muted);text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--edge);cursor:pointer;user-select:none}
+th:hover{color:var(--accent)}
+td{padding:9px 12px;border-bottom:1px solid var(--edge);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.pillscore{display:inline-block;min-width:38px;text-align:center;font-weight:800;font-size:12.5px;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.scrk{background:var(--grad);color:#fff}
+.scrc{background:rgba(16,185,129,.14);color:var(--green)}
+.scrm{background:rgba(37,99,235,.12);color:var(--blue)}
+.scrn{background:rgba(217,119,6,.14);color:var(--amber)}
+.scrs{background:rgba(225,29,72,.10);color:var(--rose)}
+.owner{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.filts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filtbtn{font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);cursor:pointer;transition:all .15s ease}
+.filtbtn:hover{color:var(--accent);border-color:var(--accent)}
+.filtbtn.on{background:var(--grad);color:#fff;border-color:transparent}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:14px 16px}
+.kpi .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.kpi .num{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.kpi small{color:var(--muted);font-size:11.5px}
+.kpi .num.accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tierd{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px}
+.tierd.strategic{background:var(--grad);color:#fff}
+.tierd.commercial{background:rgba(16,185,129,.14);color:var(--green)}
+.tierd.midmarket{background:rgba(37,99,235,.12);color:var(--blue)}
+.tierd.nurture{background:rgba(217,119,6,.14);color:var(--amber)}
+.tierd.suppress{background:rgba(225,29,72,.10);color:var(--rose)}
+.wlabel{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.wlabel b{color:var(--accent)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.callout{border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13px;background:var(--halo)}
+.callout b{color:var(--accent)}
+footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--edge);color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .hash{color:var(--accent);font-weight:600}
+@media (max-width:640px){.wrap{padding:84px 16px 70px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <a class="back" href="index.html">&larr; Portfolio</a>
+    <a class="back" href="lead-scoring-blueprint.html">Guide &rarr;</a>
+  </div>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Revenue Operations &middot; Interactive Prototype</span>
+  <h1>AI-Powered <b>Lead Scoring</b> — Live Simulator</h1>
+  <div class="tag">rules + LightGBM + LLM hybrid &middot; dynamic 1&ndash;100 &middot; tier routing &middot; $20M cap</div>
+  <div class="chips">
+    <span class="chip">Live composite score</span>
+    <span class="chip">Weight sliders</span>
+    <span class="chip">LLM message analysis</span>
+    <span class="chip">Tier &rarr; owner routing</span>
+    <span class="chip">Scored inbox</span>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Current lead score</div><div class="num accent" id="kpiScore">0</div><small>dynamic 1&ndash;100 composite</small></div>
+  <div class="kpi"><div class="lbl">Likely tier</div><div class="num" id="kpiTier">&mdash;</div><small id="kpiOwner">no owner yet</small></div>
+  <div class="kpi"><div class="lbl">Predicted P(won)</div><div class="num" id="kpiConv">0%</div><small>isotonic-calibrated</small></div>
+  <div class="kpi"><div class="lbl">Expected deal value</div><div class="num" id="kpiVal">$0</div><small>capped at $20M</small></div>
+  <div class="kpi"><div class="lbl">Inbox leads</div><div class="num" id="kpiCount">0</div><small id="kpiCountSub">all tiers</small></div>
+</div>
+
+<div class="grid2">
+  <div class="card" style="margin-top:18px">
+    <h3><span class="n">1</span> Inbound lead</h3>
+    <label>Inbound message (LLM qualitative pass reads this)</label>
+    <textarea id="msg"></textarea>
+    <div class="grid2" style="gap:0 14px">
+      <div>
+        <label>Contact email</label>
+        <input type="text" id="email" value="kathryn@northwind.com">
+      </div>
+      <div>
+        <label>Channel source</label>
+        <select id="channel">
+          <option value="form">Form</option>
+          <option value="chat">Live chat</option>
+          <option value="email">Email gateway</option>
+          <option value="event">Event badge</option>
+          <option value="partner">Partner referral</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2" style="gap:0 14px">
+      <div>
+        <label>Employees (company)</label>
+        <input type="text" id="emp" value="1200">
+      </div>
+      <div>
+        <label>Annual revenue ($M)</label>
+        <input type="text" id="rev" value="220">
+      </div>
+    </div>
+    <div class="grid2" style="gap:0 14px">
+      <div>
+        <label>Budget range (zero-party)</label>
+        <select id="budget">
+          <option value="unknown">Unknown</option>
+          <option value="lt_100k">&lt; $100k</option>
+          <option value="100k_500k">$100k&ndash;$500k</option>
+          <option value="500k_1m">$500k&ndash;$1M</option>
+          <option value="1m_5m" selected>$1M&ndash;$5M</option>
+          <option value="gt_5m">$5M+</option>
+        </select>
+      </div>
+      <div>
+        <label>Buying timeline</label>
+        <select id="timeline">
+          <option value="immediate">Immediate</option>
+          <option value="next_quarter">Next quarter</option>
+          <option value="exploring">Exploring</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+    </div>
+    <label>ICP fit score <span class="hint" style="float:right;margin:0">0 = mismatch, 100 = perfect</span></label>
+    <input type="range" id="icp" min="0" max="100" value="82">
+    <label>Engagement velocity <span class="hint" style="float:right;margin:0">events in trailing 30 days</span></label>
+    <input type="range" id="eng" min="0" max="40" value="14">
+    <div class="btnrow">
+      <button class="btn" id="randBtn">Shuffle random prospect</button>
+      <button class="btn ghost" id="seedBtn">Load seeded example</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3><span class="n">2</span> Pipeline tiers &amp; routing</h3>
+    <label>Model weights — drag to see the composite react</label>
+    <div class="wlabel"><span>Conversion (P won)</span><b id="wConvV">45</b></div>
+    <input type="range" id="wConv" min="0" max="60" value="45">
+    <div class="wlabel"><span>Deal size (E value)</span><b id="wValV">25</b></div>
+    <input type="range" id="wVal" min="0" max="40" value="25">
+    <div class="wlabel"><span>LLM qualitative</span><b id="wLlmV">20</b></div>
+    <input type="range" id="wLlm" min="0" max="40" value="20">
+    <div class="wlabel"><span>Firmographic fit</span><b id="wFirmV">10</b></div>
+    <input type="range" id="wFirm" min="0" max="30" value="10">
+    <div class="hint">Weights are prior means, recalibrated weekly on closed-won / closed-lost outcomes (blueprint §4).</div>
+    <label style="margin-top:16px">Rule gates (Tier A)</label>
+    <div id="gates" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <label style="margin-top:14px">LLM qualitative read (Tier C, simulated rubric)</label>
+    <div id="llmread"></div>
+    <div class="callout" style="margin-top:14px;margin-bottom:2px"><b>Routing logic:</b> strategic &rarr; named Enterprise AE · commercial &rarr; AE · mid-market &rarr; BDR/SDR · nurture &rarr; marketing auto-flow · suppress &rarr; ops/blacklist.</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:0">
+  <h3><span class="n">3</span> Composite score &amp; routing verdict</h3>
+  <div class="scorepanel">
+    <div class="bigscore" id="bigScore"><span class="val">0</span></div>
+    <div class="tiermeta">
+      <span class="tierpill" id="tierPill"><span class="dot"></span><span id="tierLabel">Awaiting inputs</span></span>
+      <div id="routeLine" style="font-size:13px;color:var(--muted);margin-top:4px"></div>
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:0">
+  <h3><span class="n">4</span> Scored inbound inbox</h3>
+  <div class="filts" id="filts">
+    <button class="filtbtn on" data-f="all">All</button>
+    <button class="filtbtn" data-f="strategic">Strategic</button>
+    <button class="filtbtn" data-f="commercial">Commercial</button>
+    <button class="filtbtn" data-f="midmarket">Mid-market</button>
+    <button class="filtbtn" data-f="nurture">Nurture</button>
+    <button class="filtbtn" data-f="suppress">Suppress</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th data-sort="name">Lead</th>
+        <th data-sort="source">Source</th>
+        <th data-sort="conv">P(won)</th>
+        <th data-sort="value">E[value]</th>
+        <th data-sort="score">Score</th>
+        <th>Tier</th>
+        <th>Routed to</th>
+      </tr></thead>
+      <tbody id="inboxBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <span><span class="hash">✦</span> Built by Whitney Smith · Revenue Operations &amp; ML</span>
+  <span>Interactive prototype &middot; matches blueprint V1.0</span>
+</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const r1 = (v, d) => v == null ? '—' : (v % 1 === 0 ? v : v.toFixed(d));
+
+const DISPOSABLE = ["mailinator.com","guerrillamail.com","yopmail.com","tempmail.com"];
+const ICP_FLAGS = ["managed services","dMPS","service desk","SLA","migration","outsourc","support","security","compliance","soc","data center","infrastructure","provision","fleet","monitoring","incident"];
+const MATURITY_FLAGS = ["procurement","legal","security review","compliance","architecture","rollout","integration","rfi","rfp","po number","vendor","pilot","proof of concept"];
+const URGENT_FLAGS = ["asap","immediately","this quarter","urgent","budget approved","signed off","moving fast"];
+
+const OWNERS = {
+  strategic: { r: ["E. Ortiz (Enterprise AE)","R. Chen (Enterprise AE)"] },
+  commercial: { r: ["J. Kim (AE)","M. Rossi (AE)"] },
+  midmarket: { r: ["S. Patel (BDR)","A. Novak (SDR)"] },
+  nurture: { r: ["Marketing Nurture"] },
+  suppress: { r: ["Ops / Blacklist"] },
+};
+const TERRITORIES = ["NA East","NA West","EMEA","APAC"];
+const NAME_PARTS = [["Kathryn","James","Priya","Luis","Amara","Dmitri","Chloe","Omar","Ingrid","Nathan","Sofia","Marcus"],["Walker","Okafor","Lindqvist","Moreau","Tanaka","Bennett","Silva","Haddad","Fischer","Doyle","Kaur","Vasquez"]];
+const DOMAINS = ["northwind.com","acmecorp.com","blueskyenergy.com","globaltelco.io","medcore.com","retailgiant.com","finflux.com","logistech.com","aerolabs.com","vertexdms.com","edgepackaging.com","lvvu.eu"];
+const SOURCES = ["form","chat","email","event","partner"];
+const CHANNEL_LABEL = { form:"Form", chat:"Chat", email:"Email", event:"Event", partner:"Partner" };
+
+function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+
+function analyzeQuote(text, email){
+  const t = (text||"").toLowerCase();
+  const domain = (email||"").split("@").pop().toLowerCase().trim();
+  const gates = [];
+  if (DISPOSABLE.includes(domain) || (text||"").trim().length < 6) gates.push({k:"disposable_or_empty",s:"kill"});
+  if (t.includes("student")) gates.push({k:"student_domain_hit",s:"kill"});
+  const icpHits = ICP_FLAGS.filter(w => t.includes(w)).length;
+  const matHits = MATURITY_FLAGS.filter(w => t.includes(w)).length;
+  const urgHits = URGENT_FLAGS.filter(w => t.includes(w)).length;
+  let intent = "unclear";
+  if (/budget|quote|proposal|rfp|rfi|pricing|purchase|procure|asap|immediate/i.test(t)) intent = urgHits || /budget|approved|signed off/i.test(t) ? "budget_ready" : "assessing";
+  else if (/evaluate|consider|compare|research|assess|going through|exploring/i.test(t)) intent = "assessing";
+  else if (/info|learn|more|whitepaper|case study|newsletter/i.test(t)) intent = "informational";
+  else if (/not|unsubscribe|no thank|stop/i.test(t)) intent = "not_a_buyer";
+  const operational = clamp(Math.round(34 + icpHits*13 + (matHits>0?10:0) + (intent==="budget_ready"?14:0)), 0, 100);
+  const maturity = clamp(Math.round(25 + matHits*16 + (t.includes("security")||t.includes("compliance")?15:0) + (t.includes("legal")?12:0)), 0, 100);
+  const conf = clamp(0.45 + Math.min(icpHits/ICP_FLAGS.length,1)*0.5, 0, 1);
+  return { gates, intent, intent_conf: conf, operational, maturity, urgency: urgHits, icpHits };
+}
+
+const TERR_FROM_EMAIL = (e) => TERRITORIES[Math.abs((e||"").split("").reduce((a,c)=>a+c.charCodeAt(0),0)) % TERRITORIES.length];
+const OWNER_FROM = (tier, email) => {
+  const pool = OWNERS[tier].r;
+  return pool[Math.abs((email||"x").split("").reduce((a,c)=>a+c.charCodeAt(0),0)) % pool.length];
+};
+
+function scoreLead(ld, weights){
+  const q = analyzeQuote(ld.msg, ld.email);
+  const kill = q.gates.some(g => g.s === "kill");
+  const effectiveGates = kill ? 0 : clamp(1 + (ld.icp<40 ? -0.20 : 0) + (ld.eng===0 ? -0.15 : 0), 0.1, 1);
+
+  let conv = sigmoid((ld.eng - 8) * 0.22 + (ld.icp - 60) * 0.035 + (q.operational - 50) / 55 + (ld.timeline === "immediate" ? 0.4 : ld.timeline === "next_quarter" ? 0.15 : -0.2) - 0.7);
+  conv = clamp(conv, 0.01, 0.985);
+
+  const budgetVal = { unknown:0, lt_100k:0.05e6, "100k_500k":0.3e6, "500k_1m":0.75e6, "1m_5m":2.5e6, gt_5m:10e6 }[ld.budget];
+  const rev = (ld.rev||0) * 1e6;
+  const emp = ld.emp||0;
+  let rawVal = Math.max(rev * 0.008, emp * 900, budgetVal) * (0.7 + (q.icpHits>1?0.3:0.1) + (q.intent==="budget_ready"?0.4:0) );
+  const value = clamp(Math.min(rawVal, 20e6), 0, 20e6);
+
+  const intentPts = { budget_ready:100, assessing:60, informational:35, unclear:15, not_a_buyer:0 }[q.intent];
+  const llmSub = (0.55*q.operational + 0.25*intentPts + 0.20*q.maturity)/100;
+
+  const w = weights;
+  const convPts = w.conv * conv;
+  const valPts = w.val * (scoreBucket(value)/100);
+  const llmPts = w.llm * llmSub;
+  const firmPts = w.firm * (ld.icp/100);
+
+  let base = convPts + valPts + llmPts + firmPts;
+  if (kill) base = 10;
+  else base = base * effectiveGates;
+  const score = kill ? 10 : Math.round(clamp(base, 1, 100));
+
+  const tier = kill ? "suppress"
+    : score>=85 && value>=1e6 ? "strategic"
+    : score>=70 && value>=250000 ? "commercial"
+    : score>=50 ? "midmarket"
+    : score>=30 ? "nurture"
+    : "suppress";
+
+  const owner = OWNER_FROM(tier, ld.email);
+  return { ...ld, q, conv, value, score, tier, owner, llmSub, convPts, valPts, llmPts, firmPts, intentEfficiency: intentPts, effectiveGates };
+}
+
+function scoreBucket(v){
+  if (v<=100000) return 25;
+  if (v<=250000) return 50;
+  if (v<=1e6) return 75;
+  if (v<=5e6) return 90;
+  return 100;
+}
+
+const SEEDS = [
+  { email:"kathryn@northwind.com", name:"Kathryn Walker", source:"email", emp:1200, rev:220, budget:"1m_5m", timeline:"immediate", icp:82, eng:14,
+    msg:"We need managed services support for our fleet rollout by next quarter. Budget is approved at $2M, legal is reviewing the MSA now. Can you come back with a proposal this week?" },
+  { email:"james@acmecorp.com", name:"James Okafor", source:"form", emp:450, rev:85, budget:"500k_1m", timeline:"next_quarter", icp:76, eng:9,
+    msg:"Evaluating options for a service desk provider. Comparing a few vendors, planning a pilot in two months. Send an overview." },
+  { email:"priya@blueskyenergy.com", name:"Priya Lindqvist", source:"chat", emp:3200, rev:610, budget:"gt_5m", timeline:"exploring", icp:91, eng:0,
+    msg:"Hi — we're early-stage thinking about infrastructure monitoring for our grid assets. No budget yet. Security and compliance are top priorities." },
+  { email:"luis@globaltelco.io", name:"Luis Moreau", source:"event", emp:5500, rev:980, budget:"gt_5m", timeline:"immediate", icp:95, eng:27,
+    msg:"Met you at the telecom summit. We have an RFP going out this month for a $8M managed services engagement across three regions. Procurement needs first response within a week." },
+  { email:"amara@medcore.com", name:"Amara Tanaka", source:"email", emp:2100, rev:390, budget:"1m_5m", timeline:"next_quarter", icp:70, eng:6,
+    msg:"Can you share pricing and SLA details? We are assessing options for HIPAA-compliant support. Not sure of our budget yet." },
+  { email:"dmitri@retailgiant.com", name:"Dmitri Bennett", source:"form", emp:9000, rev:2400, budget:"unknown", timeline:"unknown", icp:35, eng:1,
+    msg:"Interested in learning more about your company. Please add me to your newsletter." },
+  { email:"chloe@finflux.com", name:"Chloe Silva", source:"chat", emp:380, rev:64, budget:"lt_100k", timeline:"exploring", icp:48, eng:3,
+    msg:"Quick question — do you offer something for a small fintech team? Also what does your free tier look like?" },
+  { email:"omar@logistech.com", name:"Omar Haddad", source:"partner", emp:1700, rev:310, budget:"500k_1m", timeline:"immediate", icp:84, eng:18,
+    msg:"Partner referral — they need logistics fleet management with on-site SLAs. Authorized to negotiate. Timeline is aggressive, asap." },
+  { email:"ingrid@aerolabs.com", name:"Ingrid Fischer", source:"email", emp:720, rev:150, budget:"100k_500k", timeline:"unknown", icp:66, eng:5,
+    msg:"Can you send a case study in your database migration space? Evaluating approaches but not this quarter." },
+  { email:"nathan@vertexdms.com", name:"Nathan Doyle", source:"form", emp:15000, rev:4200, budget:"gt_5m", timeline:"next_quarter", icp:88, eng:22,
+    msg:"Large-scale infrastructure outsourcing evaluation in Q3. Shortlist of three providers. Security review and legal redlines are in progress. Expect an RFP." },
+  { email:"sofia@edgepackaging.com", name:"Sofia Kaur", source:"event", emp:95, rev:18, budget:"unknown", timeline:"unknown", icp:61, eng:4,
+    msg:"Met you at the expo. Curious if you do anything for smaller manufacturers. We're just starting to look around." },
+  { email:"marcus@lvvu.eu", name:"Marcus Vasquez", source:"email", emp:0, rev:0, budget:"unknown", timeline:"unknown", icp:0, eng:0,
+    msg:"Student project question — how does your pricing model compare to competitors? Test email." },
+];
+
+let inbox = [];
+let sortKey = "score";
+let sortDir = -1;
+let filt = "all";
+let lastOwner = {};
+
+function shuffleArr(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function seedInbox(){
+  inbox = SEEDS.map(s => {
+    const ld = { ...s, name: s.name && s.name.split(" ")[0], last: s.name && s.name.split(" ")[1], territory: TERR_FROM_EMAIL(s.email) };
+    return scoreLead(ld, readWeights());
+  });
+  renderInbox();
+}
+
+function readWeights(){
+  return {
+    conv: Number($("wConv").value),
+    val: Number($("wVal").value),
+    llm: Number($("wLlm").value),
+    firm: Number($("wFirm").value),
+  };
+}
+
+function renderInbox(){
+  const rows = inbox.filter(l => filt === "all" || l.tier === filt);
+  const sorted = [...rows].sort((a,b) => (a[sortKey] > b[sortKey] ? 1 : -1) * sortDir);
+  $("inboxBody").innerHTML = sorted.map(l => `
+    <tr>
+      <td><strong>${l.name}</strong> ${l.last}<br><small style="color:var(--muted)">${l.email}</small></td>
+      <td>${CHANNEL_LABEL[l.source]}</td>
+      <td>${r1(l.conv*100,0)}%</td>
+      <td>$${fmtVal(l.value)}</td>
+      <td><span class="pillscore ${pcls(l.score)}">${l.score}</span></td>
+      <td><span class="tierd ${l.tier}">${tierLabel(l.tier)}</span></td>
+      <td><span class="owner">${l.owner}</span></td>
+    </tr>`).join("");
+  $("kpiCount").textContent = sorted.length;
+  $("kpiCountSub").textContent = `${rows.length} of ${inbox.length} leads · ${filt}${filt==="all"?"":""}`;
+}
+
+function tierLabel(t){ return { strategic:"Strategic", commercial:"Commercial", midmarket:"Mid-market", nurture:"Nurture", suppress:"Suppress" }[t]; }
+function pcls(s){ return s>=85?"scrk":s>=70?"scrc":s>=50?"scrm":s>=30?"scrn":"scrs"; }
+function fmtVal(v){
+  if (v >= 1e6) return (v/1e6).toFixed(1).replace(/\.0$/,"") + "M";
+  if (v >= 1e3) return (v/1e3).toFixed(0) + "k";
+  return v;
+}
+
+function renderCurrent(){
+  const ld = readLeadInputs();
+  const w = readWeights();
+  $("wConvV").textContent = w.conv; $("wValV").textContent = w.val; $("wLlmV").textContent = w.llm; $("wFirmV").textContent = w.firm;
+  const r = scoreLead(ld, w);
+  lastOwner = r;
+
+  $("kpiScore").textContent = r.score;
+  $("kpiTier").textContent = tierLabel(r.tier);
+  $("kpiConv").textContent = r1(r.conv*100,0) + "%";
+  $("kpiVal").textContent = "$" + fmtVal(r.value);
+  $("kpiOwner").textContent = r.owner;
+
+  const big = $("bigScore");
+  big.classList.toggle("dim", r.tier === "suppress");
+  big.querySelector(".val").textContent = r.score;
+
+  const pill = $("tierPill");
+  pill.style.cssText = `background:var(--halo);color:var(--accent)`;
+  $("tierLabel").textContent = tierLabel(r.tier) + " tier";
+
+  $("routeLine").innerHTML = `<strong>${r.name||"Unknown"}@${(r.email||"").split("@")[1]||"—"}</strong> · ${CHANNEL_LABEL[r.source]} · territory ${r.territory||"—"} &rarr; <span class="owner">${r.owner}</span>`;
+
+  const bd = $("breakdown");
+  bd.innerHTML = row("Conversion (P won)", r.convPts, w.conv) +
+                 row("Deal size (E value)", r.valPts, w.val) +
+                 row("LLM qualitative", r.llmPts, w.llm) +
+                 row("Firmographic fit", r.firmPts, w.firm) +
+                 row("Rule gate multiplier", 0, 0, r.value, r);
+
+  const gatesEl = $("gates");
+  const gmult = r.q.gates.some(g=>g.s==="kill") ? 0 : 1;
+  const hard = r.q.gates.filter(g=>g.s==="kill").map(g=>g.k).join(", ") || "none";
+  const soft = [];
+  if (!gmult && hard==="none") soft.push("—");
+  if (gmult) {
+    if (r.icp < 40) soft.push("−20 ICP mismatch");
+    if (r.eng === 0) soft.push("−15 engagement decay");
+  }
+  gatesEl.innerHTML =
+    `<span class="gate ${gmult?"ok":"kill"}">${gmult?"gates passed":"HARD DISQUALIFIED"}</span>` +
+    (gmult ? soft.map(s=>`<span class="gate damp">${s}</span>`).join("") : `<span class="gate kill">${hard||"empty / disposable"}</span>`);
+
+  const llm = $("llmread");
+  llm.innerHTML =
+    llmRow("Intent", r.q.intent.replace(/_/g," "), r.q.intent_conf) +
+    llmRow("Operational fit", r.q.operational + "/100", r.q.operational/100) +
+    llmRow("Technical maturity", r.q.maturity + "/100", r.q.maturity/100) +
+    llmRow("Urgency signals", (r.q.urgency>0?"found":"none"), 0) ;
+}
+
+function row(k, pts, maxW, extra, r){
+  if (k === "Rule gate multiplier"){
+    const eff = r.effectiveGates;
+    return `<div class="brow"><span class="k">Rule gates</span><div class="bar"><span style="width:${eff*100}%"></span></div><span class="v">${eff===1?"1.0 ×":eff.toFixed(2)+" ×"}</span></div>`;
+  }
+  return `<div class="brow"><span class="k">${k}</span><div class="bar"><span style="width:${maxW>0?clamp((pts/maxW)*100,0,100):0}%"></span></div><span class="v">${pts.toFixed(1)} / ${maxW}</span></div>`;
+}
+
+function llmRow(k, v, bar){
+  return `<div class="llmline"><span class="key">${k}</span><div style="flex:1"><div class="bar"><span style="width:${bar*100}%"></span></div></div><span class="valg">${v}</span></div>`;
+}
+
+function readLeadInputs(){
+  const budget = $("budget").value;
+  const emp = Number($("emp").value.replace(/,/g,"")) || 0;
+  const rev = Number($("rev").value.replace(/,/g,"")) || 0;
+  const src = {
+    msg: $("msg").value,
+    email: $("email").value.trim(),
+    name: $("email").value.split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,c=>c.toUpperCase()) || "Prospect",
+    last: "",
+    source: $("channel").value,
+    territory: TERR_FROM_EMAIL($("email").value.trim()),
+    emp, rev, budget,
+    timeline: $("timeline").value,
+    icp: Number($("icp").value),
+    eng: Number($("eng").value),
+  };
+  return src;
+}
+
+function randomLead(){
+  const e = shuffleArr(NAME_PARTS[0])[0] + "@" + shuffleArr(DOMAINS)[0];
+  const msgs = [
+    "We need managed services support for a fleet rollout this quarter. Budget approved at $2M, legal reviewing the MSA now. Proposal this week?",
+    "Evaluating a few vendors for service desk. Planning a pilot next quarter — send an overview and pricing.",
+    "Early-stage thinking about infrastructure monitoring. No budget yet, but security/compliance are priorities.",
+    "RFP going out this month for a large managed services engagement across regions. Procurement needs a first response quickly.",
+    "Looking for HIPAA-compliant support. Assessing options, unsure of budget yet. Can you share SLAs?",
+    "Just browsing — add me to the newsletter. Maybe relevant next year.",
+    "Do you have something for a small team? What does your free tier look like?",
+    "Partner referral — fleet management with on-site SLAs, authorizing negotiation, timeline is aggressive.",
+  ];
+  return {
+    email: e,
+    msg: shuffleArr(msgs)[0],
+    source: shuffleArr(SOURCES)[0],
+    emp: shuffleArr([85,220,450,1200,3200,9000])[0],
+    rev: shuffleArr([18,64,150,310,610,2400])[0],
+    budget: shuffleArr(["lt_100k","100k_500k","500k_1m","1m_5m","gt_5m","unknown"])[0],
+    timeline: shuffleArr(["immediate","next_quarter","exploring","unknown"])[0],
+    icp: shuffleArr([35,48,61,70,82,91])[0],
+    eng: shuffleArr([0,2,5,9,14,22])[0],
+  };
+}
+
+function loadFrom(o){
+  $("email").value = o.email; $("msg").value = o.msg; $("channel").value = o.source;
+  $("emp").value = o.emp; $("rev").value = o.rev; $("budget").value = o.budget;
+  $("timeline").value = o.timeline; $("icp").value = o.icp; $("eng").value = o.eng;
+}
+
+["msg","email","channel","emp","rev","budget","timeline","icp","eng"].forEach(id => $(id).addEventListener("input", renderCurrent));
+["wConv","wVal","wLlm","wFirm"].forEach(id => $(id).addEventListener("input", () => { renderCurrent(); seedInbox(); }));
+
+$("randBtn").addEventListener("click", () => { loadFrom(randomLead()); renderCurrent(); });
+$("seedBtn").addEventListener("click", () => { loadFrom(SEEDS[0]); renderCurrent(); });
+
+document.querySelectorAll(".filtbtn").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".filtbtn").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); filt = b.dataset.f; renderInbox();
+}));
+
+document.querySelectorAll("th[data-sort]").forEach(th => th.addEventListener("click", () => {
+  const k = th.dataset.sort;
+  if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; }
+  renderInbox();
+}));
+
+seedInbox();
+$("msg").value = SEEDS[0].msg;
+renderCurrent();
+
+const btn = $("themeBtn");
+const saved = localStorage.getItem("pf-theme") || "light";
+const MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+function paintThemeIcon(theme){
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (theme === "dark" ? MOON : SUN) + '</svg>';
+}
+document.documentElement.setAttribute("data-theme", saved);
+paintThemeIcon(saved);
+btn.addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  paintThemeIcon(next);
+  localStorage.setItem("pf-theme", next);
+});
+</script>
+</body>
+</html>

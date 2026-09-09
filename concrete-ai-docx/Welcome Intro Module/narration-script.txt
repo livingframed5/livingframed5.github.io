@@ -1,0 +1,44 @@
+S1 - Title ("AI for Concrete Contractors")
+"Hi, and welcome. AI can make the office side of your concrete business feel as smooth as a fresh pour. That's what we're going to build today."
+
+S2 - "Who This Is For"
+"If you run flatwork, driveways, foundations, stamped or exposed aggregate — that's you. The office work is eating up your day. Every bid and email starts from a painful blank page, and a two-minute email takes you twenty. Sound familiar? This course was built for exactly that."
+
+S3 - "What This Is NOT"
+"First, a promise about what this is not. It's not a tech course. There's zero programming, no data science, no jargon to look up. If you can send a text message, you already know everything you need."
+
+S4 - "Your Daily Operations: Before and After AI"
+"Here's the honest trade. Right now, every bid starts with blank-page dread, emails and site notes pile up all day, and invoices just chase you. Now imagine this instead: draft a professional bid in minutes, summarize long emails in seconds, and send reminders that actually get answered."
+
+S5 - "What's Inside: The 5 Lessons"
+"There are five short lessons. Go in order, or jump straight to your biggest bottleneck — either works. Each takes about ten minutes, so the core lessons run about an hour to an hour and a half, or roughly three hours if you do every hands-on exercise."
+
+S6 - Lesson 1 - "Everyday AI Tools: The Basics"
+"Lesson one is the foundation: set up a free AI app, then start using it for your daily tasks — bids, emails, site notes, marketing, even voice notes while you're driving between jobs."
+
+S7 - Lesson 2 - "Estimation & Bidding with AI"
+"Lesson two is about bids. Rough in quantities from real job facts, turn a scope paragraph into a clean line-item bid, and draft proposals without starting from zero. AI builds the skeleton — you price it, check it, and own the number."
+
+S8 - Lesson 3 - "Job Site & Operations AI"
+"Lesson three handles the field. Clean daily logs, draft pour and crew plans, and turn job photos into QA and safety records. There's a sixty-second morning check too, so weather, orders, and inspectors never catch you off guard."
+
+S9 - Lesson 4 - "Business & Finance AI"
+"Lesson four is the money side. Get invoices paid faster, categorize a month of expenses in minutes, and run an honest cash-flow check so you actually know your numbers. Plus ready-to-use job ads and day-one onboarding sheets to attract top-tier finishers."
+
+S10 - Lesson 5 - "AI Guardrails, Privacy & Safety"
+"Lesson five keeps you safe: what you should never paste into an AI tool, how to double-check the output, and how to set simple, clear rules for your crew."
+
+S11 - "Do I Have to Go in Order?"
+"Do you have to go in order? No — every lesson stands on its own. Estimating is your pain point? Jump to lesson two. Getting paid is the issue? Start at lesson four."
+
+S12 - "How Each Lesson Works"
+"Every lesson follows the same rhythm: what you'll learn, stated right up front; short, plain-English segments built around real concrete jobs; copy-paste prompts in a shaded box, ready for any free AI app; a two-to-seven minute exercise using a real job from your week; and a checklist to wrap it up."
+
+S13 - "The Promise"
+"Here's the promise. Every skill in this module is usable the very same day. By the end of your first lesson, you'll send at least one real email, draft, or post written with AI's help."
+
+S14 - "A Few Honest Notes Before You Start"
+"A couple of honest notes before you start. AI drafts, you decide. These tools are unmatched for speed and first drafts, but they don't know your local pricing, your crew, or your job sites — and every lesson shows you exactly where to check the work. It's a method, not a magic button. AI won't run your pours; it just takes the busywork off your plate."
+
+S15 - "Let's Go"
+"Let's get going. You already know how to pour. Let's make the office side just as smooth as your best finish. Start with lesson one — Everyday AI Tools."

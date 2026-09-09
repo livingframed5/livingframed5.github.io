@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>ContractScope — AI Contract Scoping &amp; Risk Toolkit</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef2fa; --line:#d8deef;
+    --ink:#1a2440; --dim:#5f6a8a; --accent:#4a6cf7; --accent2:#1fa964;
+    --danger:#d6385e; --warn:#b8770f; --ok:#1fa964;
+    /* theme-aware slots */
+    --input:#f7f9fd; --soft:#f6f8ff; --code:#0d5a38;
+    --clause-bg:#e8faf0; --clause-bd:#bfe5d2;
+    --side-a:#fdfeff; --side-b:#e9eefb;
+    --score-a:#e9eefe; --score-b:#fbfcff;
+  }
+  body[data-theme="dark"]{
+    --bg:#0f1220; --panel:#171b2e; --panel2:#1d2340; --line:#2c3357;
+    --ink:#e7eaf6; --dim:#8b93bd; --accent:#6c8cff; --accent2:#35d07f;
+    --danger:#ff5d7f; --warn:#ffb454; --ok:#35d07f;
+    --input:#0b0e1b; --soft:#0b0e1b; --code:#bfe3d2;
+    --clause-bg:#10231a; --clause-bd:#1d5338;
+    --side-a:#13172b; --side-b:#0e1120;
+    --score-a:#1c2440; --score-b:#151a30;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  .app{display:grid;grid-template-columns:268px 1fr;gap:18px;padding:36px 16px 16px;min-height:100vh;max-width:1500px;margin:0 auto}
+
+  .side-col{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  /* ---------- sidebar ---------- */
+  .side{background:linear-gradient(180deg,var(--side-a),var(--side-b));border:1px solid var(--line);border-radius:14px;padding:26px 20px 24px;display:flex;flex-direction:column;gap:4px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6c8cff,#8b5cff);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+  .brand b{font-size:15px;letter-spacing:.3px}
+  .brand small{display:block;color:var(--dim);font-size:10px;letter-spacing:.6px}
+  .nav{display:flex;flex-direction:column;gap:3px}
+  .nav a{padding:10px 14px;border-radius:8px;color:var(--dim);display:flex;gap:10px;align-items:center;font-size:13px;border:1px solid transparent;white-space:nowrap}
+  .nav a:hover{background:var(--panel);color:var(--ink)}
+  .nav a.active{background:var(--panel);color:var(--ink);border-color:var(--line)}
+  .sidefoot{margin-top:auto;font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:12px}
+  .sidefoot .row{display:flex;gap:8px;align-items:center;padding:2px 0}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .theme-btn{padding:7px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .theme-btn:hover{background:var(--panel2)}
+  /* guide */
+  .guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+  .guide-step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .guide-step .g-n{display:inline-block;background:var(--accent);color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;margin-bottom:8px}
+  .guide-step h4{margin:0 0 6px;font-size:14px}
+  .guide-step p{margin:0;font-size:12.5px;color:var(--dim);line-height:1.55}
+  .guide-callout{background:var(--clause-bg);border:1px solid var(--clause-bd);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--code);margin-top:14px}
+  .mono-k{font-family:ui-monospace,Consolas,monospace;background:var(--soft);padding:1px 6px;border-radius:5px}
+  /* ---------- main ---------- */
+  main{padding:0 8px 60px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .topbar h1{font-size:20px;margin:0}
+  .topbar .sub{color:var(--dim);font-size:12px}
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px;font-weight:600;text-decoration:none}
+  .back-link:hover{color:var(--accent)}
+  .topbar-right{display:flex;align-items:center;gap:10px}
+  .chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--line)}
+  .chip-ok{color:var(--ok);border-color:rgba(53,208,127,.4)}
+  .chip-warn{color:var(--warn);border-color:rgba(255,180,84,.4)}
+  .chip-bad{color:var(--danger);border-color:rgba(255,93,127,.4)}
+  /* ---------- panels / cards ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+  .h3{font-weight:700;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  textarea{width:100%;min-height:280px;background:var(--input);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:12.5px/1.6 ui-monospace,Consolas,monospace;resize:vertical}
+  input,select{background:var(--input);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:13px}
+  .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+  .meta-grid label{font-size:11px;color:var(--dim);display:block;margin-bottom:4px}
+  .btn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer}
+  .btn-go{background:var(--accent);color:#fff}
+  .btn-go:hover{filter:brightness(1.1)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{background:var(--panel2)}
+  .btn-line{background:var(--accent2);color:#063}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spacer{flex:1}
+  .cb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:11px;color:var(--dim)}
+  .stat b{display:block;color:var(--ink);font-size:13px;margin-top:2px}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{color:var(--dim);text-transform:uppercase;font-size:10.5px;letter-spacing:.5px;text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.sub{color:var(--dim);font-size:11px}
+  .mono{font-family:ui-monospace,Consolas,monospace}
+  .mono-sm{font-size:11px;line-height:1.5}
+  .conf{display:inline-block;background:#d9f6e6;color:#0d5a38;font-weight:700;border-radius:6px;padding:1px 8px;font-size:11px}
+  .empty{color:var(--dim);text-align:center;padding:24px}
+  /* assess */
+  .assess-top{display:grid;grid-template-columns:210px 1fr;gap:18px;margin-bottom:18px}
+  .scorebox{border-radius:14px;padding:18px;text-align:center;background:linear-gradient(160deg,var(--score-a),var(--score-b));border:1px solid var(--line)}
+  .scorebox .num{font-size:44px;font-weight:800}
+  .scorebox .grade{font-size:14px;font-weight:700;color:var(--dim);margin:.2rem 0 0.4rem}
+  .score-A .num{color:var(--ok)} .score-B .num{color:var(--warn)} .score-C .num{color:#ff8f5c} .score-D .num{color:var(--danger)}
+  .pill{display:inline-block;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
+  .pill-high{background:rgba(255,93,127,.15);color:var(--danger);border:1px solid rgba(255,93,127,.4)}
+  .pill-moderate{background:rgba(255,180,84,.12);color:var(--warn);border:1px solid rgba(255,180,84,.4)}
+  .pill-low{background:rgba(53,208,127,.12);color:var(--ok);border:1px solid rgba(53,208,127,.4)}
+  .legend{color:var(--dim);font-size:12px;margin-top:12px}
+  .find-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:1000px){.find-grid{grid-template-columns:1fr}}
+  .finding{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel2)}
+  .finding.sev-high{border-left-color:var(--danger)}
+  .finding.sev-moderate{border-left-color:var(--warn)}
+  .finding.sev-low{border-left-color:var(--ok)}
+  .f-head{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--dim);margin-bottom:6px}
+  .f-sev{font-weight:800}
+  .sev-high .f-sev{color:var(--danger)} .sev-moderate .f-sev{color:var(--warn)} .sev-low .f-sev{color:var(--ok)}
+  .f-id{font-family:ui-monospace,monospace}
+  .f-title{font-weight:700;margin:4px 0 8px}
+  .f-ev{font-size:12px;color:var(--dim);margin-top:8px}
+  .f-clause{margin-top:10px;background:var(--clause-bg);border:1px solid var(--clause-bd);border-radius:8px;padding:8px;font-size:12px;color:var(--code)}
+  /* prompts */
+  .prompt-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .pf{background:var(--panel2);border:1px solid var(--line);color:var(--dim);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer}
+  .prompt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(max-width:1000px){.prompt-grid{grid-template-columns:1fr}}
+  .prompt-card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .p-head{display:flex;gap:8px}
+  .p-code{background:var(--accent);color:#fff;border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700;font-family:ui-monospace,monospace}
+  .p-cat{font-size:11px;color:var(--dim);padding-top:2px}
+  .p-name{font-size:14px;font-weight:700}
+  .p-sum{font-size:12px;color:var(--dim)}
+  .tags{font-size:10.5px;color:var(--accent)}
+  .p-reveal summary{cursor:pointer;font-size:11px;color:var(--dim)}
+  .p-actions{display:flex;gap:8px;margin-top:4px}
+  .p-result{margin-top:8px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .p-result pre{max-height:260px;overflow:auto;margin:0;font-size:11px;line-height:1.5;color:var(--code)}
+  .out-label{font-size:10.5px;color:var(--dim);margin-bottom:4px}
+  details.p-comm pre{max-height:180px;overflow:auto;background:var(--soft);padding:8px;border-radius:8px}
+  /* export */
+  .export-tabs{display:flex;gap:8px;margin-bottom:12px}
+  iframe{width:100%;height:560px;background:#fff;border:1px solid var(--line);border-radius:10px}
+  pre.md{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;max-height:560px;overflow:auto;font:12px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap}
+  .hide{display:none}
+  @media print{aside{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="side-col">
+    <a class="back-link" href="../index.html">← Back to portfolio</a>
+    <aside class="side">
+    <div class="brand"><div class="logo">CS</div><div><b>ContractScope</b><small>RISK ASSESSMENT TOOLKIT</small></div></div>
+    <nav class="nav">
+      <a data-p="guide" href="javascript:ContractScope.ui.nav('guide')">Guide</a>
+      <a data-p="ingest" href="javascript:ContractScope.ui.nav('ingest')">Ingest</a>
+      <a data-p="extract" href="javascript:ContractScope.ui.nav('extract')">Scoping Parser</a>
+      <a data-p="assess" href="javascript:ContractScope.ui.nav('assess')">Risk Assessment</a>
+      <a data-p="prompts" href="javascript:ContractScope.ui.nav('prompts')">Prompt Library</a>
+      <a data-p="compliance" href="javascript:ContractScope.ui.nav('compliance')">Compliance X-Ref</a>
+      <a data-p="export" href="javascript:ContractScope.ui.nav('export')">Audit &amp; Export</a>
+    </nav>
+    <div class="sidefoot">
+      <div class="row"><span class="dot" style="background:#35d07f"></span>Rule engine loaded</div>
+      <div class="row"><span class="dot" style="background:#6c8cff"></span>Prompt library</div>
+      <div class="row"><span class="dot" style="background:#ffb454"></span>Sandboxed · runs fully local</div>
+      <div style="margin-top:8px">v0.1-prototype · dMPS / gov lens built<br>Layers 1–6 · see docs/ARCHITECTURE.md</div>
+    </div>
+  </aside>
+  </div>
+
+  <main>
+    <div class="topbar">
+      <div><h1>AI-Assisted Contract Scoping &amp; Risk Assessment</h1>
+      <div class="sub">Ingest → Extract → Assess → Recommend → Export</div></div>
+      <div class="topbar-right">
+        <span id="status-chip" class="chip">No analysis yet</span>
+        <button class="theme-btn" id="theme-toggle" onclick="ContractScope.ui.toggleTheme()">Switch to dark theme</button>
+      </div>
+    </div>
+
+    <!-- =============== 00 GUIDE =============== -->
+    <div id="panel-guide">
+      <div class="card">
+        <div class="h3">How to use ContractScope</div>
+        <p style="color:var(--dim);margin:0 0 4px">ContractScope turns an MSA / SOW / RFP excerpt into a scoping brief for pursuit &amp; account teams: extracted variables, risk flags with suggested clauses, compliance checks, AI-style recommendation runs, and an audit-ready export.</p>
+        <p style="color:var(--dim);margin:0">Everything runs in your browser — no data leaves your machine.</p>
+      </div>
+      <div class="guide-grid">
+        <div class="guide-step"><span class="g-n">STEP 1</span><h4>Paste (or load a sample)</h4><p>Go to <b>Ingest</b> and paste your MSA, SOW, or RFP text into the box. Not sure what to try? Click <b>Sample: dMPS MSA</b> or <b>Sample: State Gov SOW</b> for a ready-made demo. Add the pursuit name / region / ACV and any custom <i>watchwords</i> you want flagged.</p></div>
+        <div class="guide-step"><span class="g-n">STEP 2</span><h4>Run the pipeline</h4><p>Click <b>“Run Scoping Pipeline”</b> — everything pastes into the tabs. The chip in the top-right changes from “No analysis yet” to your scope ID, instrument, and score.</p></div>
+        <div class="guide-step"><span class="g-n">STEP 3</span><h4>Read what was parsed</h4><p><b>Scoping Parser</b> lists every contract variable the engine found (term, auto-renew, SLA credits, liability cap, labor/CPI, billing basis, FAR/DFARS/CLIN, GDPR⋯) with a confidence % and the clause it came from.</p></div>
+        <div class="guide-step"><span class="g-n">STEP 4</span><h4>Review risks</h4><p><b>Risk Assessment</b> shows the compliance score and every High / Moderate / Low finding. Each card has the evidence, a recommendation, and a ready-to-paste <b>suggested clause</b> your team can take into the negotiation.</p></div>
+        <div class="guide-step"><span class="g-n">STEP 5</span><h4>Ask the prompt library</h4><p><b>Prompt Library</b> holds 9 pre-built workflows (gov cross-check, SLA quantifier, revenue-recognition, labor-rate, term/exit, data-security, custom red-flags, audit report). Press <b>Run sandbox</b> on any card to see an evidence-grounded answer; <b>Copy spec</b> grabs the filled system+user prompt.</p></div>
+        <div class="guide-step"><span class="g-n">STEP 6</span><h4>Check compliance &amp; export</h4><p><b>Compliance X-Ref</b> flags governance controls to validate (FAR, DFARS, CLIN, booking, revenue, labor, data, cyber). <b>Audit &amp; Export</b> previews the report and downloads it as Markdown, HTML, CSV, or JSON — or prints it.</p></div>
+      </div>
+      <div class="guide-callout"><b>My text pasted — but “No analysis yet” is still showing?</b> You haven’t clicked <b>Run Scoping Pipeline</b> yet — pasting alone doesn’t trigger the analysis. Click the button (or a sample) and the chip will update.</div>
+      <div class="guide-callout"><b>Something flagged incorrectly?</b> Extractions are heuristic. Open <span class="mono-k">data/patterns.js</span> to tune patterns, <span class="mono-k">data/rules.js</span> to add/edit risk rules, and <span class="mono-k">data/prompts.js</span> for prompts. Full architecture: <span class="mono-k">docs/ARCHITECTURE.md</span>.</div>
+      <div class="guide-callout"><b>Want real LLM answers?</b> The “Run sandbox” button uses the deterministic engine. The single seam to plug in your own model is <span class="mono-k">ContractScope.query.runPrompt</span> in <span class="mono-k">js/report.js</span>.</div>
+    </div>
+
+    <!-- =============== INGEST =============== -->
+    <div id="panel-ingest">
+      <div class="card">
+        <div class="h3">Contract Ingestion — MSA / SOW / RFP</div>
+        <p style="color:var(--dim);margin:0 0 12px">Paste raw scope text below, or load a bundled sample to see the pipeline end-to-end.</p>
+        <textarea id="raw-input" spellcheck="false" placeholder="Paste Master Services Agreement, Statement of Work, or RFP text here..."></textarea>
+        <div class="meta-grid">
+          <div><label>Pursuit name</label><input id="in-pursuit" style="width:100%" placeholder="Q3 Industrial Transformation"></div>
+          <div><label>Region</label><input id="in-region" style="width:100%" value="US-East"></div>
+          <div><label>ACV envelope</label><input id="in-acv" style="width:100%" value="$1.2M"></div>
+          <div><label>Custom watchwords (comma)</label><input id="in-rules" style="width:100%" placeholder="debt ratio, CIO sign-off"></div>
+        </div>
+        <div class="row">
+          <label class="cb"><input type="checkbox" id="in-gov"> Gov / public-sector pursuit (routes FAR·DFARS·CLIN rules)</label>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.loadSample('dmps')">Sample: dMPS MSA</button>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.loadSample('gov')">Sample: State Gov SOW</button>
+          <button class="btn btn-go" onclick="ContractScope.ui.analyzeNow()">Run Scoping Pipeline →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="h3">What the pipeline does</div>
+        <table>
+          <tr><th>Step</th><th>Engine</th><th>Output</th></tr>
+          <tr><td>1 · Segment</td><td class="mono">engine.segment()</td><td>Clause/block boundaries with headings</td></tr>
+          <tr><td>2 · Extract</td><td class="mono">engine.runEntities() + data/patterns.js</td><td>25+ contract variables with confidence</td></tr>
+          <tr><td>3 · Assess</td><td class="mono">RULES (data/rules.js)</td><td>High / Moderate / Low findings + guardrail clauses</td></tr>
+          <tr><td>4 · Cross-ref</td><td class="mono">COMPLIANCE_MATRIX (data/rules.js)</td><td>Gov &amp; governance control verification </td></tr>
+          <tr><td>5 · Prompt engine</td><td class="mono">query.simulate / query.runPrompt</td><td>Sandbox (heuristic) answers per prompt; API-ready</td></tr>
+          <tr><td>6 · Report</td><td class="mono">query.buildMarkdown / buildHtml</td><td>Audit-ready export (md / html / csv / json)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== EXTRACTION =============== -->
+    <div id="panel-extract" style="display:none">
+      <div class="stats" id="extract-meta"></div>
+      <div class="card">
+        <div class="h3">Extracted contract variables <span style="text-transform:none" id="extract-count"></span></div>
+        <table id="extract-table">
+          <thead><tr><th>Variable</th><th>Domain</th><th>Value</th><th>Confidence</th><th>Clause</th></tr></thead>
+          <tbody id="extract-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== ASSESS =============== -->
+    <div id="panel-assess" style="display:none"><div id="assess-root"></div></div>
+
+    <!-- =============== PROMPT LIBRARY =============== -->
+    <div id="panel-prompts" style="display:none">
+      <div class="card">
+        <div class="h3">AI Prompt Library &amp; Query Engine</div>
+        <p style="color:var(--dim)">Every prompt is a tested workflow (system prompt · reasoning steps · JSON schema). <b>Run sandbox</b> fills the {{slots}} from the current parsed scope and shows a deterministic answer. Swap in a real LLM key to replace the sandbox.</p>
+      </div>
+      <div id="prompt-root"></div>
+    </div>
+
+    <!-- =============== COMPLIANCE =============== -->
+    <div id="panel-compliance" style="display:none">
+      <div class="card">
+        <div class="h3">Regulatory &amp; Governance Cross-Reference</div>
+        <p style="color:var(--dim)">Heuristic presence checks against government procurement and corporate governance controls (order booking · labor · revenue recognition · data). 'watch' = term absent / needs human validation.</p>
+        <table>
+          <thead><tr><th>Control</th><th>Domain</th><th>Check basis</th><th>Status</th><th>Governance impact</th></tr></thead>
+          <tbody id="compliance-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============== EXPORT =============== -->
+    <div id="panel-export" style="display:none">
+      <div class="card">
+        <div class="h3">Audit-ready scoping report</div>
+        <div class="export-tabs">
+          <button class="btn btn-ghost" onclick="document.getElementById('export-html').style.display='block';document.getElementById('export-md').style.display='none'">HTML preview</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('export-html').style.display='none';document.getElementById('export-md').style.display='block'">Markdown</button>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.printReport()">Print</button>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.exportFile('md')">.md</button>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.exportFile('html')">.html</button>
+          <button class="btn btn-ghost" onclick="ContractScope.ui.exportFile('csv')">.csv</button>
+          <button class="btn btn-go" onclick="ContractScope.ui.exportFile('json')">.json</button>
+        </div>
+        <iframe id="export-html" srcdoc=""></iframe>
+        <pre class="md hide" id="export-md"></pre>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="data/patterns.js"></script>
+<script src="data/rules.js"></script>
+<script src="data/prompts.js"></script>
+<script src="data/samples.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/report.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  window.changeTab = window.ContractScope.ui.nav;
+  (function(){ ContractScope.ui.nav('guide'); })();
+</script>
+</body>
+</html>

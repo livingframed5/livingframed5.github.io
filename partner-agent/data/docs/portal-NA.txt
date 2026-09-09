@@ -1,0 +1,9 @@
+Partners in the North America region use the Americas partner portal experience. All list prices on the price list are in US dollars (USD) and are effective from the price version date printed at the top of the list.
+
+To create an order, open Orders, select the SKU and quantity, and review the calculated net price, which already reflects your contractual discount band applied to the region list price.
+
+Track order status from the same page using the statuses Submitted, In Review, Approved, Shipped, Delivered. Questions about a delayed shipment should reference the order number so support can investigate.
+
+Commission statements are generated on the 5th of each month under Reports and are issued in USD. The statement shows gross booked value, rebate rate for your tier, and the amount payable.
+
+Invoicing details are maintained under Billing. Make sure your W-9 (or equivalent) is on file, otherwise statement payment may be held in the finance queue until processing.

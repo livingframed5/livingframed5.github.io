@@ -44,11 +44,37 @@
   .bg {
     position: fixed;
     inset: 0;
-    background:
-      radial-gradient(38rem 30rem at 8% -8%, var(--halo), transparent 65%),
-      radial-gradient(34rem 26rem at 92% 4%, rgba(34,211,238,.10), transparent 60%);
     pointer-events: none;
     z-index: 0;
+    overflow: hidden;
+  }
+  .bg .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .7;
+    animation: orbFloat 14s ease-in-out infinite alternate;
+  }
+  .bg .orb-a {
+    width: 38rem; height: 30rem;
+    top: -12%; left: 25%;
+    background: var(--halo);
+    animation-delay: 0s;
+  }
+  .bg .orb-b {
+    width: 34rem; height: 26rem;
+    top: 2%; right: 18%;
+    background: rgba(34,211,238,.10);
+    animation-delay: -7s;
+  }
+  [data-theme="dark"] .bg .orb-b {
+    background: rgba(56,229,255,.13);
+  }
+  @keyframes orbFloat {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(30px, -20px) scale(1.04); }
+    66%  { transform: translate(-20px, 15px) scale(.97); }
+    100% { transform: translate(10px, -10px) scale(1.02); }
   }
   .wrap { position: relative; z-index: 1; max-width: 1020px; margin: 0 auto; padding: 88px 24px 96px; }
 
@@ -125,7 +151,9 @@
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
     font-size: 12px; font-weight: 600; color: var(--accent);
     padding: 6px 12px; border-radius: 999px; background: var(--halo);
+    text-decoration: none; transition: filter .15s ease;
   }
+  .card .tag:hover { filter: brightness(1.1); }
   .card .tag .arr {
     display: inline-block; transition: transform .25s cubic-bezier(.22,1,.36,1);
   }
@@ -133,6 +161,7 @@
   .cardshine {
     position: absolute; inset: 0; opacity: 0; transition: opacity .25s ease;
     background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
+    pointer-events: none;
   }
   .card:hover .cardshine { opacity: 1; }
 
@@ -168,12 +197,18 @@
       <span class="eyebrow"><span class="dot"></span> My portfolio — the space between</span>
       <h1><span class="stroke">Creative</span> by default.<br />Precise by <span class="stroke">design.</span></h1>
       <p class="sub">Clarity out of chaos — the space between <em>strategy</em> and <em>execution</em>.</p>
-      <div class="flags">
-        <span class="flag"><i>✦</i> Strategy to execution</span>
-        <span class="flag"><i>✦</i> Detail + big picture</span>
-        <span class="flag"><i>✦</i> Cross-functional</span>
-        <span class="flag"><i>✦</i> Creative problem solver</span>
-      </div>
+    </div>
+
+    <div class="flags">
+      <span class="flag"><i>✦</i> Creative Problem Solver</span>
+      <span class="flag"><i>✦</i> Maker Of Things</span>
+      <span class="flag"><i>✦</i> Learns By Building</span>
+      <span class="flag"><i>✦</i> Strategic Thinker</span>
+      <span class="flag"><i>✦</i> Strategy To Execution</span>
+      <span class="flag"><i>✦</i> Detail + Big Picture</span>
+      <span class="flag"><i>✦</i> Cross-Functional</span>
+      <span class="flag"><i>✦</i> Deal Strategy</span>
+      <span class="flag"><i>✦</i> Pricing Analysis</span>
     </div>
 
     <div class="grid">
@@ -193,12 +228,132 @@
         <span class="tag">Run the stress test <span class="arr">→</span></span>
       </a>
 
+      <a class="card" href="sop.html">
+        <div class="cardshine"></div>
+        <div class="ico">◈</div>
+        <h2>AI Agents with Human Oversight — Full SOP</h2>
+        <p>A production-grade standard for running an office on AI agents without losing the human in the loop: tiered automation, HITL triggers, anti-hallucination guardrails, and a rollout playbook — written from the Program Office perspective.</p>
+        <span class="tag">Read the SOP <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="winloss-dashboard.html">
+        <div class="cardshine"></div>
+        <div class="ico">◉</div>
+        <h2>Win/Loss Analytics &amp; Benchmarking Dashboard</h2>
+        <p>I turned deal data into decisions for pursuit strategy: win/loss KPIs, pricing-variance trends, competitor and market benchmarks, root-cause breakdowns, and a recommendation engine that sets discount ceilings and finds the missing service elements — an interactive prototype from strategy to execution.</p>
+        <span class="tag">Explore the dashboard <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="dMPS_Presales_DD_Playbook.html">
+        <div class="cardshine"></div>
+        <div class="ico">▣</div>
+        <h2>dMPS Presales Due Diligence Playbook</h2>
+        <p>A deal-assurance control plane for complex managed-services pursuits: phased workflow and gates, RACI accountability, a self-scoring risk &amp; escalation engine, 49 audit-ready business controls, and a signed artifact repository — the full compliance story from first qualification to final sign-off.</p>
+        <span class="tag">Run the playbook <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="SOAR-Governance-Framework.html">
+        <div class="cardshine"></div>
+        <div class="ico">❖</div>
+        <h2>SOAR Governance &amp; Financial Validation Framework</h2>
+        <p>A stage-gate governance system for complex managed-services pursuits: full SOAR lifecycle with gate criteria and escalation paths, RACI accountability, a financial margin &amp; cost-to-serve validation template with variance tracking, 12 compliance checkpoints, sign-off blocks, and an evidence-backed documentation repository — editable, auto-saving, and print-ready.</p>
+        <span class="tag">Open the framework <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="contract-risk-toolkit/index.html">
+        <div class="cardshine"></div>
+        <div class="ico">⚖</div>
+        <h2>AI-Assisted Contract Scoping &amp; Risk Toolkit</h2>
+        <p>I turned raw MSA/SOW/RFP text into a scoping brief for pursuit and account teams: a parser that lifts contract variables (SLA credits, liability caps, labor rates, terms), a rule engine that grades findings High / Moderate / Compliant with ready-to-negotiate clauses, a FAR/DFARS/CLIN + governance cross-check for government work, a pre-built AI prompt library, and audit-ready exports — running fully in the browser.</p>
+        <span class="tag">Run the risk engine <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="pipeline-forecasting-blueprint.html">
+        <div class="cardshine"></div>
+        <div class="ico">◬</div>
+        <h2>Predictive Pipeline Analytics &amp; Forecasting Blueprint</h2>
+        <p>A full commercial-operations architecture for managed-services sales: a 6-family KPI and event-sourced data model, a tiered forecasting stack (Monte Carlo + ML win models + LLM risk archetypes), a React command-center design, and an early-warning alert engine that converts stalled deals and coverage gaps into playbook-driven actions before quarter-end.</p>
+        <span class="tag">Read the blueprint <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="pipeline-dashboard.html">
+        <div class="cardshine"></div>
+        <div class="ico">◮</div>
+        <h2>Pipeline Forecast &amp; Early-Warning Dashboard</h2>
+        <p>A working prototype of the forecasting blueprint: seeded dMPS pipeline and history. Monte Carlo P50/P70/P90 quarterly fan chart, stage funnel, bottleneck heat-map, a risk-scored deal register with playbook actions, and live A1–A10 alerts — filter by complexity band, shift close-rate and slippage, and watch the forecast and alerts recompute instantly.</p>
+        <span class="tag">Run the forecast <span class="arr">→</span></span>
+      </a>
+
+      <div class="card">
+        <div class="cardshine"></div>
+        <a href="funnel-dashboard.html" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div class="ico">◭</div>
+          <h2>Funnel Builder &amp; Leak Analysis</h2>
+          <p>I turn a stage model into a picture: an editable, tapered funnel where deal counts, conversion, pipeline value and drop-off recompute on every keystroke. The leak panel shortlists the single transition that costs the most deals, so a fix starts where the money actually disappears — with presets for MPS pipeline, inbound demo, and event funnels.</p>
+        </a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <a class="tag" href="funnel-dashboard.html">Build your funnel <span class="arr">→</span></a>
+          <a class="tag" href="funnel-guide.html">User Guide <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <a class="card" href="intake-command-center.html">
+        <div class="cardshine"></div>
+        <div class="ico">◍</div>
+        <h2>Cross-Functional Intake &amp; Strategic Alignment Dashboard</h2>
+        <p>The operating layer under an exec calendar: one intake form where Sales, Product, Marketing, Ops and Customer Success file cross-team dependencies, and a triage board that turns them into decisions — pillar alignment, urgency flags, a drag-and-drop Kanban flow, filters, and resolution-time tracking. The Chief of Staff's single source of truth, decisions made in the open.</p>
+        <span class="tag">Run the intake &amp; triage desk <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="lead-scoring-blueprint.html">
+        <div class="cardshine"></div>
+        <div class="ico">◬</div>
+        <h2>AI-Powered Lead Scoring System</h2>
+        <p>An end-to-end revenue-operations blueprint for inbound lead evaluation: a rules + LightGBM + LLM hybrid engine that blends historical engagement patterns with prospect-message analysis into a dynamic 1–100 score, auto-routes leads to the right tier and rep, and closes the loop on closed-won / closed-lost outcomes to keep recalibrating itself — with deal-size logic designed up to the $20M line. Includes a working interactive simulator.</p>
+        <span class="tag">Read the blueprint <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="pmo-nova-command-center.html">
+        <div class="cardshine"></div>
+        <div class="ico">◩</div>
+        <h2>Project Nova — PMO Command Center</h2>
+        <p>A production-ready PMO operating suite for a legacy-to-cloud migration: program KPIs and milestone roadmap, a live risk register with RAG early-warning dashboard, an editable RAID log, a single-threaded RACI accountability map, the weekly SteerCo deck template, and a wave-readiness change simulator — all reading from one shared dataset.</p>
+        <span class="tag">Run the PMO suite <span class="arr">→</span></span>
+      </a>
+
+      <a class="card" href="pmo-nova-user-guide.html">
+        <div class="cardshine"></div>
+        <div class="ico">◨</div>
+        <h2>Project Nova PMO — User Guide</h2>
+        <p>How to run the migration program on the Command Center: the RAG early-warning logic and trigger metrics, RAID discipline, single-threaded RACI rules, the weekly SteerCo rhythm, and a Monday-to-Friday workflow for keeping every artifact breathing.</p>
+        <span class="tag">Read the guide <span class="arr">→</span></span>
+      </a>
+
+      <div class="card">
+        <div class="cardshine"></div>
+        <a href="margin-leak-report.html" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div class="ico">◮</div>
+          <h2>Margin Leak Report — Construction &amp; Service Ops</h2>
+          <p>I turned job-costing data into a friendly early-warning system for small construction trades: revenue targets, estimated-vs-actual labor dollars, unbilled change orders, and per-project gross margin — ranked by the biggest leak so the owner shifts a phone call, not a spreadsheet.</p>
+        </a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <a class="tag" href="margin-leak-report.html">Open the dashboard <span class="arr">→</span></a>
+        </div>
+      </div>
+
       <div class="newcard">
         <div class="plus">＋</div>
         <h3>Next project goes here</h3>
         <p>Whatever's coming next — a pricing war-game, a buyer-intel bot, a Go-to-market tool. This slot's already reserved for it.</p>
       </div>
-    </div>
+
+      <a class="card" href="meal-coupon-dashboard.html">
+        <div class="cardshine"></div>
+        <div class="ico">▤</div>
+        <h2>Meal Planner &amp; Coupon Saver</h2>
+        <p>From the family-dinner deck to a working tool: a weekly planner that auto-builds the shopping list from a recipe library, a coupon tracker with savings math and expiring-soon alerts, store-to-store price comparison that flags the best deal, and a grocery budget that offsets spent with coupon savings — all saved locally in the browser.</p>
+        <span class="tag">Plan the week <span class="arr">→</span></span>
+      </a>
 
     <div class="foot"><span class="hash">✦</span> Built by Whitney Smith · hosted with GitHub Pages <span class="hash">✦</span></div>
   </div>

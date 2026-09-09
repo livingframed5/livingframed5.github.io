@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funnel Builder &amp; Leak Analysis</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee); --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 16px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease;min-height:100vh}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:92px 26px 80px}
+nav.top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:.15s;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:10px 2px 18px;margin-bottom:14px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-0.025em;margin:12px 0 4px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.ctl{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 18px;margin:18px 0 6px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.ctl .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip{border:1px solid var(--edge);background:var(--panel2);color:var(--muted);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+button.act{background:var(--grad);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:filter .15s}
+button.act:hover{filter:brightness(1.1)}
+.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--edge);padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;line-height:normal;font-family:inherit}
+.ghost:hover{border-color:var(--accent)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin:18px 0 6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-top:4px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi .v.good{color:var(--green)} .kpi .v.bad{color:var(--rose)} .kpi .v.warn{color:var(--amber)}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.card.funnel{grid-column:span 8}
+.card.leaks{grid-column:span 4}
+.card.tbl{grid-column:span 12}
+.card h3 .mini{font-weight:600;font-size:11px}
+
+#funnelBox{width:100%}
+#funnelBox svg{width:100%;height:auto;display:block}
+.svg-name{fill:var(--txt);font-size:14.5px;font-weight:700}
+.svg-count{fill:var(--muted);font-size:13px;font-weight:600}
+.svg-conv{fill:var(--accent);font-size:12px;font-weight:800}
+
+.leak{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.leak .lb{flex:1;min-width:0}
+.leak .t{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leak .d{font-size:11.5px;color:var(--muted)}
+.leak .p{font-size:13px;font-weight:800;white-space:nowrap}
+.leak .p.warn{color:var(--amber)} .leak .p.bad{color:var(--rose)} .leak .p.good{color:var(--green)}
+.leakbar{height:6px;border-radius:99px;background:var(--panel2);margin-top:4px;overflow:hidden}
+.leakbar i{display:block;height:100%;border-radius:99px;background:var(--grad)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px 8px;border-bottom:1px solid var(--edge);white-space:nowrap}
+tbody td{padding:7px 8px;border-bottom:1px solid var(--edge);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.nm{font-weight:700}
+.edt{border:1px solid transparent;background:transparent;color:var(--txt);font-size:13px;padding:5px 8px;border-radius:8px;font-weight:600;transition:.15s;width:100%}
+.edt:hover{border-color:var(--edge);background:var(--panel2)}
+.edt:focus{outline:none;border-color:var(--accent);background:var(--panel);box-shadow:0 0 0 3px var(--halo)}
+td.num{width:120px} td.size{width:130px}
+.conv{font-weight:800}
+.c-good{color:var(--green)} .c-warn{color:var(--amber)} .c-bad{color:var(--rose)}
+.rowbtn{width:110px;white-space:nowrap;text-align:right}
+.miniBtn{width:28px;height:26px;border:1px solid var(--edge);background:var(--panel2);color:var(--muted);border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;transition:.15s}
+.miniBtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.miniBtn.del:hover:not(:disabled){border-color:var(--rose);color:var(--rose)}
+.miniBtn:disabled{opacity:.35;cursor:not-allowed}
+
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--edge);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer a{color:var(--accent);font-weight:600}
+@media (max-width:1000px){.card.funnel,.card.leaks,.card.tbl{grid-column:span 12}}
+@media (max-width:640px){.wrap{padding:84px 14px 60px}nav.top{padding:12px 14px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<nav class="top">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</nav>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Interactive Prototype · dMPS Managed Services</span>
+  <h1>Funnel Builder &amp; <b>Leak Analysis</b></h1>
+  <div class="tag">Edit stages · counts · deal size — watch conversion reflow live</div>
+</header>
+
+<div class="ctl">
+  <div class="grp"><label>Preset</label>
+    <span class="chip on" data-preset="pipeline">MPS pipeline</span>
+    <span class="chip" data-preset="demo">Inbound demo</span>
+    <span class="chip" data-preset="event">Event leads</span>
+    <span class="chip" data-preset="blank">Blank</span>
+  </div>
+  <div class="grp"><label><input type="checkbox" id="amtChk" checked style="accent-color:var(--accent)"> Show $ value</label></div>
+  <div class="grp" style="margin-left:auto">
+    <a class="ghost" href="funnel-guide.html">Guide</a>
+    <button class="ghost" id="resetBtn">Reset</button>
+    <button class="ghost" id="printBtn">Print</button>
+    <button class="act" id="exportBtn">Export JSON</button>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div class="card funnel">
+    <h3>Funnel view <span class="mini">width ∝ deal count · % between stages = conversion</span></h3>
+    <div class="sub">Edits auto-save to this browser. <span id="saveNote"></span></div>
+    <div id="funnelBox"></div>
+  </div>
+
+  <div class="card leaks">
+    <h3>Leak analysis <span class="mini">drop-off by stage transition</span></h3>
+    <div class="sub">Where the biggest deal loss happens · focus the fix there</div>
+    <div id="leakList"></div>
+  </div>
+
+  <div class="card tbl">
+    <h3>Editable stage model <span class="mini">click a cell to change it</span></h3>
+    <div class="sub">Conversion is derived from the counts · reorder or remove stages freely</div>
+    <div style="overflow-x:auto">
+      <table id="stageTable"></table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="act" id="addBtn">+ Add stage</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span><span style="color:var(--accent);font-weight:600">✦</span> Built by Whitney Smith · Commercial Operations</span>
+  <span>New here? See the <a href="funnel-guide.html">User Guide</a> · companion to <a href="pipeline-dashboard.html">Pipeline Forecast Dashboard</a></span>
+</footer>
+</div>
+
+<script>
+/* ---------- presets ---------- */
+const PRESETS = {
+  pipeline:[
+    {name:'MQL / Inbound', count:420, size:0.02},
+    {name:'SQL · Qualified', count:210, size:0.05},
+    {name:'Discovery', count:118, size:0.12},
+    {name:'Proposal', count:62,  size:0.35},
+    {name:'Negotiation', count:34,  size:0.60},
+    {name:'Won', count:21, size:0.80}
+  ],
+  demo:[
+    {name:'Website visits', count:10000, size:0.0006},
+    {name:'Demo booked',    count:480,   size:0.05},
+    {name:'Demo attended',  count:390,   size:0.09},
+    {name:'Qualified',      count:170,   size:0.20},
+    {name:'Trial started',  count:96,    size:0.40},
+    {name:'Paid',           count:58,    size:0.75}
+  ],
+  event:[
+    {name:'Event attendees', count:800, size:0.005},
+    {name:'Booth scan',      count:310, size:0.03},
+    {name:'Meeting booked',  count:145, size:0.10},
+    {name:'Qualified',       count:88,  size:0.25},
+    {name:'Proposal',        count:41,  size:0.45},
+    {name:'Won',             count:17,  size:0.80}
+  ],
+  blank:[
+    {name:'Stage 1', count:100, size:0.10},
+    {name:'Stage 2', count:50,  size:0.20},
+    {name:'Stage 3', count:20,  size:0.40},
+    {name:'Stage 4', count:8,   size:0.80}
+  ]
+};
+const SAVE_KEY='funnel-dash-v1';
+
+let STATE = load();
+function load(){
+  try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const d=JSON.parse(raw);if(Array.isArray(d.stages)&&d.stages.length)return d;}}
+  catch(e){}
+  return {stages:PRESETS.pipeline.map(s=>({...s}))};
+}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(STATE));}catch(e){}}
+
+/* ---------- formatting ---------- */
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmtC=n=>Math.round(n).toLocaleString();
+const fmtM=v=>v>=100?Math.round(v).toLocaleString():v>=10?v.toFixed(1):v.toFixed(2);
+const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark';
+
+function stageColor(i,n){
+  const t=n>1?i/(n-1):0;
+  const hue=250+(187-250)*t;
+  const dark=isDark();
+  return {fill:`hsl(${hue.toFixed(0)} ${dark?62:72}% ${dark?58:72}%)`, stroke:dark?'#2a3350':'#e6e9f2'};
+}
+
+/* ---------- KPI tiles ---------- */
+function kpi(k,v,cls,s){return `<div class="kpi"><div class="k">${k}</div><div class="v ${cls||''}">${v}</div><div class="s">${s||''}</div></div>`;}
+function renderKpis(){
+  const st=STATE.stages;
+  if(!st.length)return;
+  const first=st[0].count, last=st[st.length-1];
+  const conv=first?last.count/first*100:0;
+  const pipe=st.reduce((a,s)=>a+s.count*s.size,0);
+  const wonVal=last.count*last.size;
+  let leak=null,maxDrop=-1;
+  for(let i=0;i<st.length-1;i++){
+    const d=st[i].count-st[i+1].count;
+    if(d>maxDrop){maxDrop=d;leak={from:st[i].name,to:st[i+1].name,pct:d/st[i].count*100};}
+  }
+  document.getElementById('kpis').innerHTML=
+    kpi('Leads in',fmtC(first),null,st[0].name)+
+    kpi('Won',fmtC(last.count),null,last.name)+
+    kpi('Overall conversion',conv.toFixed(1)+'%',conv>=15?'good':conv>=8?'warn':'bad',first+' leads → '+last.count+' won')+
+    kpi('Pipeline value','$'+fmtM(pipe)+'M',null,st.length+' stages · $ value on')+
+    kpi('Est. won value','$'+fmtM(wonVal)+'M',null,'from '+last.name+' × avg deal')+
+    kpi('Primary leak',leak?leak.pct.toFixed(0)+'%':'—',leak&&leak.pct>40?'bad':leak&&leak.pct>25?'warn':'good',leak?leak.from+' → '+leak.to:'no transitions');
+}
+
+/* ---------- funnel SVG ---------- */
+function renderFunnel(){
+  const st=STATE.stages;
+  const box=document.getElementById('funnelBox');
+  if(!st.length){box.innerHTML='';return;}
+  const maxC=Math.max(1,...st.map(s=>s.count));
+  const W=900,cx=450,minHW=64,maxHW=372,segH=58,gap=22;
+  const H=st.length*(segH+gap)-gap+10;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Funnel by stage">`;
+  st.forEach((s,i)=>{
+    const hwTop=minHW+(maxHW-minHW)*(s.count/maxC);
+    const cBot=st[i+1]?st[i+1].count:s.count*0.5;
+    const hwBot=minHW+(maxHW-minHW)*(cBot/maxC);
+    const y=i*(segH+gap);
+    const col=stageColor(i,st.length);
+    svg+=`<polygon points="${cx-hwTop},${y} ${cx+hwTop},${y} ${cx+hwBot},${y+segH} ${cx-hwBot},${y+segH}" fill="${col.fill}" stroke="${col.stroke}" stroke-width="1"><title>${esc(s.name)}: ${fmtC(s.count)} deals · $${s.size.toFixed(2)}M avg</title></polygon>`;
+    svg+=`<text class="svg-name" x="${cx-hwTop+18}" y="${y+segH/2+5}">${esc(s.name)}</text>`;
+    svg+=`<text class="svg-count" x="${cx+hwTop-18}" y="${y+segH/2+4}" text-anchor="end">${fmtC(s.count)}${document.getElementById('amtChk').checked?' · $'+fmtM(s.count*s.size)+'M':''}</text>`;
+    if(st[i+1]){
+      const conv=st[i+1].count/s.count*100;
+      svg+=`<text class="svg-conv" x="${cx}" y="${y+segH+gap-5}" text-anchor="middle">${conv.toFixed(0)}% &#8594;</text>`;
+    }
+  });
+  svg+='</svg>';
+  box.innerHTML=svg;
+}
+
+/* ---------- leak analysis ---------- */
+function renderLeaks(){
+  const st=STATE.stages;
+  const el=document.getElementById('leakList');
+  if(st.length<2){el.innerHTML='<div class="leak"><div class="lb"><div class="d">Add a second stage to see drop-off.</div></div></div>';return;}
+  const rows=[];
+  for(let i=0;i<st.length-1;i++){
+    const a=st[i],b=st[i+1];
+    if(!a.count){continue;}
+    const drop=(a.count-b.count)/a.count*100;
+    rows.push({i,drop,abs:a.count-b.count});
+  }
+  const maxDrop=Math.max(1,...rows.map(r=>r.drop));
+  el.innerHTML=rows.map(r=>{
+    const cls=r.drop>40?'bad':r.drop>25?'warn':'good';
+    return `<div class="leak">
+      <div class="lb">
+        <div class="t">${esc(st[r.i].name)} → ${esc(st[r.i+1].name)}</div>
+        <div class="d">${fmtC(r.abs)} deals lost</div>
+        <div class="leakbar"><i style="width:${(r.drop/maxDrop*100).toFixed(0)}%"></i></div>
+      </div>
+      <div class="p ${cls}">−${r.drop.toFixed(0)}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- editable stage table ---------- */
+function dropCls(i){
+  const a=STATE.stages[i],b=STATE.stages[i+1];
+  if(!a.count)return 'c-bad';
+  const drop=(a.count-b.count)/a.count*100;
+  return drop>40?'c-bad':drop>25?'c-warn':'c-good';
+}
+function renderTable(){
+  const st=STATE.stages,n=st.length;
+  const head='<thead><tr><th>Stage</th><th class="num">Deals in</th><th class="size">Avg deal $M</th><th>Pipeline $M</th><th>Conv → next</th><th></th></tr></thead>';
+  const rows=st.map((s,i)=>{
+    const next=st[i+1];
+    const conv=next&&s.count?(next.count/s.count*100).toFixed(0)+'%':'—';
+    return `<tr data-i="${i}">
+      <td class="nm"><input class="edt" data-f="name" value="${esc(s.name)}"></td>
+      <td class="num"><input class="edt" data-f="count" type="number" min="0" step="1" value="${s.count}"></td>
+      <td class="size"><input class="edt" data-f="size" type="number" min="0" step="0.05" value="${s.size.toFixed(2)}"></td>
+      <td class="nm">$${fmtM(s.count*s.size)}M</td>
+      <td class="${next&&s.count?dropCls(i):''} conv">${conv}</td>
+      <td class="rowbtn">
+        <button class="miniBtn" data-a="up" data-i="${i}" ${i===0?'disabled':''} title="Move up">↑</button>
+        <button class="miniBtn" data-a="down" data-i="${i}" ${i===n-1?'disabled':''} title="Move down">↓</button>
+        <button class="miniBtn del" data-a="del" data-i="${i}" ${n===1?'disabled':''} title="Remove">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('stageTable').innerHTML=head+'<tbody>'+rows+'</tbody>';
+}
+function refreshDerived(i){
+  const tr=document.querySelector(`#stageTable tbody tr[data-i="${i}"]`);
+  if(!tr)return;
+  const s=STATE.stages[i],next=STATE.stages[i+1];
+  tr.cells[3].textContent='$'+fmtM(s.count*s.size)+'M';
+  if(next&&s.count){tr.cells[4].textContent=(next.count/s.count*100).toFixed(0)+'%';tr.cells[4].className='conv '+dropCls(i);}
+  else tr.cells[4].textContent='—';
+  if(i>0){const pr=document.querySelector(`#stageTable tbody tr[data-i="${i-1}"]`);if(pr){pr.cells[4].textContent=(s.count/STATE.stages[i-1].count*100).toFixed(0)+'%';pr.cells[4].className='conv '+dropCls(i-1);}}
+}
+
+/* ---------- master render ---------- */
+function renderAll(){
+  renderKpis();
+  renderFunnel();
+  renderLeaks();
+  renderTable();
+  document.getElementById('saveNote').innerHTML=`<span style="color:var(--green);font-weight:600">● auto-saved</span>`;
+}
+
+/* ---------- UI wiring ---------- */
+const themeBtn=document.getElementById('themeBtn');
+const saved=localStorage.getItem('fun-theme')||'light';
+const MOON='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const SUN='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+function paint(theme){themeBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(theme==='dark'?MOON:SUN)+'</svg>';}
+document.documentElement.setAttribute('data-theme',saved);paint(saved);
+themeBtn.onclick=()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);paint(n);localStorage.setItem('fun-theme',n);renderKpis();renderFunnel();};
+
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+  STATE={stages:PRESETS[c.dataset.preset].map(s=>({...s}))};
+  save();renderAll();
+});
+
+document.getElementById('addBtn').onclick=()=>{
+  STATE.stages.push({name:'New stage',count:Math.max(1,Math.round((STATE.stages[STATE.stages.length-1]?.count||0)/2)),size:0.25});
+  save();renderAll();
+};
+
+document.getElementById('stageTable').addEventListener('input',e=>{
+  const inp=e.target;
+  if(inp.tagName!=='INPUT')return;
+  const i=+inp.closest('tr').dataset.i, f=inp.dataset.f;
+  if(f==='name'){STATE.stages[i].name=inp.value;}
+  else{STATE.stages[i][f]=Math.max(0,parseFloat(inp.value)||0);}
+  save();
+  renderKpis();renderFunnel();renderLeaks();
+  if(f!=='name')refreshDerived(i);
+});
+document.getElementById('stageTable').addEventListener('click',e=>{
+  const btn=e.target.closest('.miniBtn');
+  if(!btn)return;
+  const i=+btn.dataset.i, a=btn.dataset.a;
+  if(a==='del'){STATE.stages.splice(i,1);}
+  if(a==='up'&&i>0){const t=STATE.stages[i];STATE.stages[i]=STATE.stages[i-1];STATE.stages[i-1]=t;}
+  if(a==='down'&&i<STATE.stages.length-1){const t=STATE.stages[i];STATE.stages[i]=STATE.stages[i+1];STATE.stages[i+1]=t;}
+  save();renderAll();
+});
+document.getElementById('amtChk').addEventListener('change',renderFunnel);
+
+document.getElementById('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY);location.reload();};
+document.getElementById('printBtn').onclick=()=>window.print();
+document.getElementById('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({stages:STATE.stages,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='funnel-snapshot.json';a.click();URL.revokeObjectURL(a.href);
+};
+
+renderAll();
+</script>
+</body>
+</html>

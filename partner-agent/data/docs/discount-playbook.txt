@@ -1,0 +1,11 @@
+This playbook governs how account managers handle discount, waiver, and deal-exception requests from partners. It is an internal document and is not shared with partners. The AI agent uses it to draft proposals but never to commit.
+
+Every exception request must name the deal, the SKU, the region, and the monetary amount involved before it can be evaluated. Deals above the standard threshold require an AM review and a documented approval.
+
+The standard negotiation corridor is as follows. For deals up to 250,000 euro-units annual contracted value, the AM may offer up to a 12% effective discount cap on the affected SKUs while holding a minimum 4-month margin floor. For larger deals, the AM escalates to the regional commercial director with a margins memo.
+
+Prefer non-price levers before price: co-marketing fund top-up, extended payment terms up to 45 days, volume milestone rebate, or early renewal lock-in at current rates. Price reductions should be the last lever.
+
+If the partner asks for a waiver of a late payment fee or an SLA service credit, require the documented evidence, validate the amount, and route through the finance ops checklist before any approval.
+
+Every approved exception must be logged with the deal id, amount, approval owner, and expiry. Exceptions are time-boxed and never auto-renew. Renewal of an exception is itself a new request.

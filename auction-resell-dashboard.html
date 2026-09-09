@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6d5ef2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Musick">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Musick Auction: Resell Opportunity Scanner</title>
+<style>
+:root{
+  --bg:#f6f8fc; --panel:#ffffff; --panel2:#eef2fb; --edge:#e6e9f2;
+  --txt:#111827; --muted:#6b7280; --accent:#6d5ef2; --accent2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d5ef2,#22d3ee); --halo:rgba(109,94,242,.14);
+  --green:#059669; --amber:#d97706; --rose:#e11d48; --blue:#2563eb;
+  --mono:Consolas,'Courier New',monospace;
+  --shadow:0 1px 2px rgba(17,24,39,.04),0 12px 32px rgba(60,60,140,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0f1c; --panel:#141827; --panel2:#1b2236; --edge:#232a40;
+  --txt:#eef1f9; --muted:#9aa3bd; --accent:#8b7dff; --accent2:#38e5ff;
+  --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 16px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.55;transition:background .3s ease,color .3s ease;min-height:100vh}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(34rem 26rem at 6% -6%,var(--halo),transparent 62%),
+  radial-gradient(30rem 22rem at 96% 2%,rgba(34,211,238,.08),transparent 58%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:92px 26px 80px}
+nav.top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:linear-gradient(180deg,var(--bg) 55%,transparent)}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 13px;border:1px solid var(--edge);border-radius:10px;background:var(--panel);transition:.15s;box-shadow:var(--shadow)}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.theme{width:40px;height:40px;border-radius:12px;border:1px solid var(--edge);background:var(--panel);color:var(--txt);cursor:pointer;font-size:15px;box-shadow:var(--shadow);transition:transform .15s}
+.theme:hover{transform:translateY(-1px) rotate(8deg)}
+header{padding:10px 2px 18px;margin-bottom:14px;position:relative}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:7px 14px;border:1px solid var(--edge);border-radius:999px;background:var(--panel);box-shadow:var(--shadow)}
+header h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-0.025em;margin:12px 0 4px}
+header h1 b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tag{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:normal;overflow-wrap:break-word;max-width:100%}
+
+.ctl{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 18px;margin:18px 0 6px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.ctl .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip{border:1px solid var(--edge);background:var(--panel2);color:var(--muted);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(109,94,242,.3)}
+.inp{width:120px;padding:6px 10px;border:1px solid var(--edge);border-radius:9px;background:var(--panel2);color:var(--txt);font-size:13px;font-weight:600}
+.inp.rng{width:100px;accent-color:var(--accent);cursor:pointer}
+.mini{display:inline-block;font-size:11.5px;color:var(--muted);white-space:nowrap}
+button.act{background:var(--grad);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:filter .15s}
+button.act:hover{filter:brightness(1.1)}
+button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--edge);padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer}
+button.ghost:hover{border-color:var(--accent)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0 6px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-top:4px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi .v.good{color:var(--green)} .kpi .v.bad{color:var(--rose)} .kpi .v.warn{color:var(--amber)} .kpi .v.acc{color:var(--accent)}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.card.cats{grid-column:span 5}
+.card.layout{grid-column:span 7}
+.card.tbl{grid-column:span 12}
+.card.port{grid-column:span 12}
+.bars{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.bar{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;font-size:12.5px}
+.bar .l{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{height:12px;background:var(--panel2);border-radius:999px;overflow:hidden}
+.bar .fill{height:100%;border-radius:999px;background:var(--grad);min-width:2px}
+.bar .v{font-weight:700;text-align:right;color:var(--muted);font-size:11.5px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px 8px;border-bottom:1px solid var(--edge);cursor:pointer;white-space:nowrap;user-select:none}
+.tbl-scroll{overflow:auto;max-height:72vh;border:1px solid var(--edge);border-radius:12px}
+.tbl-scroll thead th{background:var(--panel);position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--edge)}
+.tbl-scroll table{border-collapse:separate;border-spacing:0}
+thead th:hover{color:var(--accent)}
+tbody td{padding:8px;border-bottom:1px solid var(--edge);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+tbody tr.topbuy{background:rgba(5,150,105,.07)}
+tbody tr.superbuy{background:linear-gradient(90deg,rgba(168,85,247,.18),rgba(5,150,105,.08));box-shadow:inset 3px 0 0 var(--px)}
+.nm{font-weight:700}
+.mu{color:var(--muted);font-size:11.5px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.tag.g{background:rgba(5,150,105,.13);color:var(--green)}
+.tag.s{background:rgba(168,85,247,.18);color:var(--px);box-shadow:0 0 0 1px var(--px)}
+.tag.a{background:rgba(217,119,6,.15);color:var(--amber)}
+.tag.r{background:rgba(225,29,72,.13);color:var(--rose)}
+.tag.v{background:var(--halo);color:var(--accent)}
+.trkbtn{cursor:pointer;background:none;border:none;color:var(--muted);font-size:16px;line-height:1;padding:2px 6px;border-radius:8px}
+.trkbtn:hover{color:var(--accent);background:var(--halo)}
+.trkbtn.on{color:var(--px)}
+.score{font-weight:800;font-size:12.5px}
+.score.good{color:var(--green)} .score.warn{color:var(--amber)} .score.bad{color:var(--rose)}
+.detail{display:none;background:var(--panel2);border-radius:12px;padding:14px 16px;margin-top:6px;font-size:12.5px;line-height:1.7}
+.detail.open{display:block}
+.detail .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+.dco{display:inline-block;font-size:11px;font-weight:700;cursor:pointer}
+#selBox b.good{color:var(--green)} #selBox b.bad{color:var(--rose)}
+.move{font-size:10.5px;font-weight:800;margin-left:6px;white-space:nowrap}
+.move.up{color:var(--rose)} .move.down{color:var(--green)}
+.status{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.status.live{background:rgba(37,99,235,.13);color:var(--blue)}
+.status.comp{background:var(--halo);color:var(--accent)}
+
+.tracker{grid-column:span 12}
+.import{grid-column:span 12}
+.import textarea{width:100%;min-height:96px;background:var(--panel2);border:1px solid var(--edge);border-radius:12px;color:var(--txt);padding:12px;font-family:var(--mono);font-size:12px;resize:vertical}
+.import .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.import .hint{font-size:11.5px;color:var(--muted)}
+.schema b{color:var(--accent)}
+.schema{background:var(--panel2);border:1px solid var(--edge);border-radius:12px;padding:12px 14px;font-size:12px;font-family:var(--mono);overflow-x:auto;margin-top:6px}
+
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--edge);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media (max-width:1000px){.card.cats,.card.layout,.card.tbl,.card.port,.import{grid-column:span 12}}
+@media (max-width:640px){
+  .wrap{max-width:100vw;padding:70px 12px 48px}
+  nav.top{padding:10px 12px}
+  header .tag{font-size:11px;line-height:1.5}
+  .ctl{padding:12px;gap:12px}
+  .ctl label{font-size:10.5px}
+  .inp{width:96px}
+  .inp.rng{width:86px}
+  .chip{padding:5px 11px;font-size:11.5px}
+  .bar{grid-template-columns:104px 1fr 50px;gap:6px}
+  .bar .track{height:10px}
+  .kpi{padding:12px}
+  .kpi .v{font-size:19px}
+  .grid{gap:12px}
+  .card{padding:14px}
+  .detail{padding:12px 12px}
+  .dco{white-space:normal}
+}
+@media (max-width:420px){
+  .ctl .grp{width:100%;justify-content:space-between}
+  .inp.rng{flex:1;width:auto}
+}
+@media (max-width:640px){
+  .mobrow{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .mobrow.head{display:flex;align-items:center;gap:10px;background:var(--panel2);padding:10px 12px}
+  .mobrow1{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .mobrow1 label{display:flex;align-items:center}
+  .mobrow2{cursor:pointer}
+  .mobgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:12.5px}
+  .mobgrid .mu{display:block;font-size:10.5px}
+  .mobrow .detail{margin-top:10px}
+}
+html,body{overflow-x:hidden;max-width:100vw;overscroll-behavior-x:none}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div id="lockScreen" style="position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:var(--bg)">
+  <div style="max-width:340px;width:90%;text-align:center;padding:30px;border:1px solid var(--edge);border-radius:16px;background:var(--panel);box-shadow:var(--shadow)">
+    <div style="font-size:34px;margin-bottom:8px">&#128271;</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px">Musick Scanner</div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:16px">Enter your PIN to unlock this dashboard</div>
+    <input class="inp" id="pinIn" type="password" inputmode="numeric" maxlength="10" placeholder="PIN" style="width:120px;text-align:center;margin-bottom:10px" onkeydown="if(event.key==='Enter')tryUnlock()">
+    <div><button class="act" id="unlockBtn" style="width:100%" onclick="tryUnlock()">Unlock</button></div>
+    <div class="mini" id="lockMsg" style="margin-top:10px"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--edge)">
+      <button class="ghost" style="width:100%" onclick="openPinModal()">Change PIN</button>
+      <div class="mini" style="margin-top:8px" id="pinNote"></div>
+    </div>
+  </div>
+</div>
+
+<div id="pinModal" style="position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;background:rgba(12,15,28,.72)">
+  <div style="max-width:340px;width:90%;padding:28px;border:1px solid var(--edge);border-radius:16px;background:var(--panel);box-shadow:var(--shadow)">
+    <div style="font-size:17px;font-weight:800;margin-bottom:2px">Change PIN</div>
+    <div class="mini" style="color:var(--muted);margin-bottom:16px">Verify current PIN, then set a new one. Used on every device that opens this dashboard.</div>
+    <div class="grp" style="margin-bottom:12px"><label>Current PIN</label><input class="inp" id="curPinIn" type="password" inputmode="numeric" maxlength="10" placeholder="Current PIN" style="width:100%"></div>
+    <div class="grp" style="margin-bottom:12px"><label>New PIN</label><input class="inp" id="newPinIn" type="password" inputmode="numeric" maxlength="10" placeholder="New PIN" style="width:100%"></div>
+    <div class="grp" style="margin-bottom:16px"><label>Confirm new PIN</label><input class="inp" id="conPinIn" type="password" inputmode="numeric" maxlength="10" placeholder="Repeat new PIN" style="width:100%"></div>
+    <div style="display:flex;gap:10px">
+      <button class="ghost" style="flex:1" onclick="closePinModal()">Cancel</button>
+      <button class="act" style="flex:1" onclick="savePin()">Save</button>
+    </div>
+    <div class="mini" id="pinMsg" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<nav class="top">
+  <a class="back" href="index.html">&larr; Portfolio</a>
+  <button class="theme" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
+</nav>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Musick Auction &middot; Nampa / Meridian, ID</span>
+  <h1>Resell Opportunity <b>Scanner</b></h1>
+  <div class="tag">Pull live catalog lots &middot; estimate what they&rsquo;d resell for &middot; classify SUPER BUY / HOT / GOOD / WATCH / PASS</div>
+</header>
+
+<div class="ctl">
+  <div class="grp"><label>Verdict</label><span class="chip on" data-v="ALL">All</span><span class="chip" data-v="SUPER">Super</span><span class="chip" data-v="HOT">Hot</span><span class="chip" data-v="GOOD">Good</span><span class="chip" data-v="WATCH">Watch</span><span class="chip" data-v="PASS">Pass</span>
+    <label class="mini" style="margin-left:8px"><input type="checkbox" id="hidePass" checked> hide PASS</label></div>
+  <div class="grp"><label>Category</label><select class="inp" id="catSel" style="width:150px"><option value="ALL">All</option></select></div>
+  <div class="grp"><label>Closing</label><span class="chip timech on" data-h="ALL">All</span><span class="chip timech" data-h="24">&lt;24h</span><span class="chip timech" data-h="48">&lt;48h</span><span class="chip timech" data-h="72">&lt;72h</span></div>
+  <div class="grp"><label title="Buyer&rsquo;s premium Musick adds on top of your winning bid">Premium %</label><input class="inp rng" id="premRng" type="range" min="0" max="25" step="1" value="13"><span class="mini" id="premVal">13%</span></div>
+  <div class="grp"><label title="Fee charged by your resale platform when an item sells - 0% on Facebook Marketplace">Fee %</label><input class="inp rng" id="feeRng" type="range" min="0" max="30" step="1" value="0"><span class="mini" id="feeVal">0%</span></div>
+  <div class="grp"><label title="Flat handling/packaging cost added to every lot&rsquo;s all-in cost">Handling $</label><input class="inp rng" id="hdlRng" type="range" min="0" max="60" step="5" value="0"><span class="mini" id="hdlVal">$0</span></div>
+  <div class="grp" style="margin-left:auto">
+    <label class="mini" style="margin-left:8px"><input type="checkbox" id="autoRef"> auto-refresh <span id="autoRefLbl">5m</span></label>
+    <button class="ghost" id="reloadBtn" title="Re-pull the live Musick catalog from the server, then reload">Refresh now</button>
+    <button class="ghost" id="compsBtn">Get eBay comps</button>
+    <button class="ghost" id="pinBtn" title="Set or change the unlock PIN for this dashboard">PIN</button>
+    <button class="ghost" id="printBtn">Print</button>
+    <button class="ghost" id="csvBtn">CSV</button>
+    <button class="act" id="loadLocalBtn">Load live catalog</button>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div class="card layout">
+    <h3>Opportunity score algorithm</h3>
+    <div class="sub">Score 0&ndash;100 = weighted criteria. Higher = better flip. Weighted per your priorities.</div>
+    <div class="bars" id="critBars"></div>
+  </div>
+
+  <div class="card cats">
+    <h3>Lots by category</h3>
+    <div class="sub">Count classified by category &middot; click a row to filter the table</div>
+    <div class="bars" id="catBars"></div>
+  </div>
+
+  <div class="card port">
+    <h3>Shortlist &amp; bid budget <span class="mini" id="portCount"></span></h3>
+    <div class="sub">Tick lots in the register to add them here. Set a cash budget and get the auto-pick list you can actually afford.</div>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:12px">
+      <div class="grp"><label>Cash budget</label><input class="inp rng" id="budgetRng" type="range" min="0" max="30000" step="250" value="5000"><span class="mini" id="budgetVal">$5,000</span></div>
+      <button class="ghost" id="autoPickBtn">Auto-pick best w/ budget</button>
+      <span class="mini" id="portMsg"></span>
+    </div>
+    <div style="overflow-x:auto"><table id="portTable"></table></div>
+    <div id="portFit" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card tbl">
+    <h3>Lot register <span class="mini tall" id="lotCount"></span> <span class="mini">click a row to see the math &middot; click a column to sort</span></h3>
+    <div class="sub"><span class="status live">source: bid.musickauction.com live catalog</span>&nbsp; <span class="status comp">resale value = modeled comp estimate (or eBay sold median when comps fetched)</span></div>
+    <div class="sub" style="margin-top:6px"><b style="color:var(--txt)">Bid&rarr;Ask</b>: the <b>Bid</b> is the current highest live bid (what you&rsquo;d pay today if bidding stopped); the <b>Ask</b> is the next bid increment required to become the high bidder. Your &ldquo;all-in cost&rdquo; is based on the Bid + buyer&rsquo;s premium + handling.</div>
+    <div class="sub" style="margin:10px 0 12px;padding:10px 14px;border:1px solid var(--edge);border-radius:12px;background:var(--panel2)" id="selBox"><b>0 lots</b> &middot; tick the boxes next to every lot you want to bid on</div>
+    <div class="tbl-scroll"><table id="lotTable"></table></div>
+  </div>
+
+  <div class="card tracker">
+    <h3>Tracker &ndash; sold &amp; price movement <span class="mini" id="trkCount"></span></h3>
+    <div class="sub">Every catalog refresh snapshots the live bid for lots you &ldquo;track&rdquo; (&starf; in the register). Log the final hammer price when an auction closes and watch for these items on Facebook Marketplace / resale.</div>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 12px">
+      <button class="ghost" id="trkSnapshotBtn">Snapshot bids now</button>
+      <button class="ghost" id="trkLogSaleBtn">Log final sale price</button>
+      <select class="inp" id="trkSort" style="width:auto">
+        <option value="cur">Sort by current bid</option>
+        <option value="bids">Most bid activity</option>
+        <option value="move">Biggest move</option>
+        <option value="sold">Recently sold</option>
+      </select>
+      <span class="mini" id="trkMsg"></span>
+    </div>
+    <div style="overflow-x:auto"><table id="trkTable"></table></div>
+    <div id="trkLogForm" style="display:none;margin-top:10px;padding:12px;border:1px solid var(--edge);border-radius:12px;background:var(--panel2)">
+      <label class="mini">Select a tracked lot, then log its final hammer price</label>
+      <div class="row" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
+        <select class="inp" id="trkLotSel" style="flex:1;min-width:220px"></select>
+        <input class="inp" id="trkPriceIn" type="number" min="0" step="5" placeholder="hammer $ (e.g. 1250)" style="width:140px">
+        <input class="inp" id="trkDateIn" type="date" style="width:auto">
+        <button class="act" id="trkSaveBtn">Save sale</button>
+        <button class="ghost" id="trkCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card import">
+    <h3>Import / refresh</h3>
+    <div class="sub">Load the live catalog JSON (run <code>.\pull-musick.ps1</code> in this folder), paste catalog JSON, or drop a file. eBay comps use your free developer keys via the Browse API.</div>
+    <div class="row">
+      <button class="act" id="loadLocalBtn2">Load musick-catalog.json</button>
+      <label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">Import file<input type="file" id="fileInput" accept=".json,application/json" hidden></label>
+      <button class="ghost" id="sampleBtn">Restore sample</button>
+      <button class="ghost" id="loadBtn">Load pasted JSON</button>
+    </div>
+    <div class="row">
+      <div class="grp" style="flex:1;min-width:260px"><label>eBay Client ID</label><input class="inp" id="ebayCid" style="width:100%" placeholder="paste from developer.ebay.com"></div>
+      <div class="grp" style="flex:1;min-width:260px"><label>eBay Client Secret</label><input class="inp" id="ebaySecret" type="password" style="width:100%" placeholder="paste client secret"></div>
+    </div>
+    <textarea id="jsonArea" placeholder='[{"title":"Springfield XD(M) .40","currentBid":175,"askingBid":180,"bidCount":15,"category":"Firearms","condition":"Used","estComp":400}]'></textarea>
+    <div class="hint">
+      Shape: <b style="color:var(--accent)">{{title, category, condition, currentBid, askingBid, bidCount, qty?, estComp?, lot?, auctionId?}}</b>
+      &mdash; <code id="loadMsg"></code>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span><span style="color:var(--accent);font-weight:600">&diams;</span> Built by Whitney Smith &middot; Resell classification engine</span>
+  <span>Live catalogs via pull-musick.ps1 &ndash; SUPER BUY / HOT BUY / GOOD BUY / WATCH / PASS</span>
+</footer>
+</div>
+
+<script src="musick-catalog.js"></script>
+<script>
+/* ============================== MODEL ============================== */
+const WEIGHTS = {
+  margin:0.40,   /* sold-price margin vs cost (after premium+fees)   */
+  demand:0.25,   /* sell-through: category liquidity + bid activity  */
+  gap:0.20,      /* comp-to-ask spread = room before needing a buyer */
+  risk:0.15      /* condition & category risk (inverted)             */
+};
+const CATMETA = {
+  'Cars & Trucks':{liq:0.55, rich:false, risk:0.62, compMult:2.6},
+  'Firearms':     {liq:0.92, rich:false, risk:0.34, compMult:2.3},
+  'Ammunition':   {liq:0.80, rich:false, risk:0.38, compMult:1.9},
+  'Coins & Silver':{liq:0.78, rich:false, risk:0.30, compMult:2.6},
+  'Bullion & Gold':{liq:0.88, rich:false, risk:0.16, compMult:2.8},
+  'Antiques & Collectibles':{liq:0.60, rich:false, risk:0.40, compMult:2.6},
+  'Home & Appliances':{liq:0.62, rich:false, risk:0.32, compMult:2.6},
+  'Musical & Audio':{liq:0.60, rich:false, risk:0.30, compMult:2.6},
+  'Miscellaneous':{liq:0.50, rich:false, risk:0.45, compMult:2.4},
+  'TCG & Toys':   {liq:0.86, rich:false, risk:0.26, compMult:2.4},
+  'Electronics':  {liq:0.62, rich:false, risk:0.34, compMult:2.7},
+  'Tools & Hardware':{liq:0.66, rich:false, risk:0.34, compMult:2.8},
+  'Knives & Militaria':{liq:0.52, rich:false, risk:0.40, compMult:2.6},
+  'Jewelry':      {liq:0.70, rich:false, risk:0.30, compMult:3.0},
+  'Furniture & Decor':{liq:0.45, rich:false, risk:0.50, compMult:2.2},
+  'Sporting Goods':{liq:0.60, rich:false, risk:0.34, compMult:2.4}
+};
+const COND_PEN = {'New':0,'Like new':3,'Good':8,'Used':16,'Refurb':22,'Fair':26,'Parts/Broken':38,'As-is':30};
+
+/* default category when a pasted lot has an unknown label */
+function guessCat(str){
+  const s=(str||'').toLowerCase();
+  const makes=['ford','chevy','chevrolet','gmc','nissan','toyota','honda','bmw','audi','dodge','jeep','ram','kia','hyundai','subaru','lexus','chrysler','mercedes','buick','cadillac','volvo','volkswagen','vw','porsche','tesla','mazda','acura','infiniti','fiat','mini cooper','cooper','land rover','range rover','peterbilt','kenworth','freightliner','international','corvette','mustang','cayenne','pathfinder','rogue','sentra','maxima','santa fe','outback','wrangler','charger','challenger','f-150','f-250','f-350','escape','transit','express','sierra','silverado','camry','corolla','civic','accord','cr-v','rav4','pilote','tacoma','f150','trail','canyon','dart','soul','ranchero','bronco'];
+  if(/\bcar\b|truck|suv|4x4|4wd|\bawd\b|motorhome|camper|rv\b|trailer|travel lite|travel trailer|toy hauler|van\b/.test(s) || makes.some(m=>s.includes(m))) return 'Cars & Trucks';
+  if(/pistol|revolver|shotgun|rifle|ar-15|\.22|\.45|\.40|9mm|24 ga|12 ga|20 ga|springfield|smith|wesson|glock|mosin|mossberg|ruger|colt|semi-auto|firearm|handgun|s&w/.test(s)) return 'Firearms';
+  if(/ammo|cartridge|rounds|5.56|7.62|223 |308 |9mm/.test(s)) return 'Ammunition';
+  if(/coin|dime|dollar|quarter|penny|cent|silver / .test(s)) return 'Coins & Silver';
+  if(/antique|victorian|victoria|vintage |mid-century|mid century|art deco|art nouveau|retro|baroque|hutch cut glass|crystal|porcelain|china |depression glass|carnival glass|primitiv|curio|collectibl|memorabilia|coca-cola|vinyl record|records|stamp collection|advertising sign|cast iron skillet|cast iron|sleighbells|lace|sewing machine|estate|grandfather|atlas|encyclopedia|brass|bronze sculpture|oriental rug|kilim/.test(s)) return 'Antiques & Collectibles';
+  if(/ring|necklace|earring|bracelet|pendant|\.925|sterling|diamond|jewelry/.test(s)) return 'Jewelry';
+  if(/gold|silver bullion|goldback|gold note|troy/.test(s)) return 'Bullion & Gold';
+  if(/tcg|\bmagic:|yugioh|trading card|funko|lego|action figure|\btoy\b|pok.mon|mewtwo|melmetal|deck bundle/.test(s)) return 'TCG & Toys';
+  if(/iphone|apple|ipad|ipod|\bwatch\b|computer|laptop|tablet|\btv\b|monitor|console|drone|\bphone\b|kindle|kindle fire/.test(s)) return 'Electronics';
+  if(/drill|\bsaw\b|\bimpact\b|wrench|air compressor|miter|table saw|router|generator|pressure washer|jigsaw|circular saw/.test(s)) return 'Tools & Hardware';
+  if(/vacuum|washer|smoker|futon|mattress|heater|cookware|kitchen|appliance|bench|vanity|desk|convection|blender|mixer|fryer|grill|dyson|tineco|mop|refrigerator|freezer|dishwasher|range |stove|microwave|toaster|air fryer/.test(s)) return 'Home & Appliances';
+  if(/knife|blade|bayonet|sword|militaria|military|multitool|pocket knife|machete/.test(s)) return 'Knives & Militaria';
+  if(/desk|table|chair|dresser|sofa|couch|\bbed\b|lamp|decor|mirror|\brug\b|\bart .*|painting|shelf|ottoman|hutch|buffet|curio cabinet/.test(s)) return 'Furniture & Decor';
+  if(/bike|bicycle|kayak|canoe|golf|ski|snowboard|fishing|tackle|gym|\bweight\b|treadmill|boat|atv|utv|\brv\b|motorcycle|jet ski/.test(s)) return 'Sporting Goods';
+  if(/soundbar|speaker|headphone|amplifier|amp |vinyl record|turntable|keyboard|guitar|piano|drum/.test(s)) return 'Musical & Audio';
+  return 'Miscellaneous';
+}
+
+/* ========================= CODE ========================= */
+const SAMPLE = [
+ {title:'2018 Nissan Rogue AWD 130k', cat:'Cars & Trucks', cond:'Used', cur:4300, ask:4400, bids:48, comp:14500, lot:499942},
+ {title:'2018 Chrysler 300 108k miles', cat:'Cars & Trucks', cond:'Used', cur:4100, ask:4200, bids:22, comp:13500, lot:499944},
+ {title:'2014 Chevrolet Traverse 62k', cat:'Cars & Trucks', cond:'Used', cur:5300, ask:5400, bids:37, comp:16500, lot:499945},
+ {title:'2012 Dodge Charger 105k miles', cat:'Cars & Trucks', cond:'Used', cur:1100, ask:1150, bids:13, comp:6200, lot:499954},
+ {title:'2004 Ford F-150 leather seats', cat:'Cars & Trucks', cond:'Used', cur:600, ask:650, bids:3, comp:3400, lot:499941},
+ {title:'2016 Chevrolet Sonic', cat:'Cars & Trucks', cond:'Used', cur:600, ask:650, bids:3, comp:4200, lot:499947},
+ {title:'2012 Ford Fiesta w/ buyer assurance', cat:'Cars & Trucks', cond:'Used', cur:500, ask:550, bids:1, comp:3900, lot:499955},
+ {title:'2014 Murano AWD (missing odometer photo)', cat:'Cars & Trucks', cond:'As-is', cur:500, ask:550, bids:1, comp:5200, lot:499949},
+ {title:'Springfield Armory XD(M) .40 pistol', cat:'Firearms', cond:'Used', cur:175, ask:180, bids:15, comp:420, lot:499966},
+ {title:'Mossberg 500 20ga pump shotgun', cat:'Firearms', cond:'Good', cur:110, ask:115, bids:14, comp:300, lot:499967},
+ {title:'Smith & Wesson SW9VE 9mm', cat:'Firearms', cond:'Used', cur:150, ask:155, bids:5, comp:310, lot:499968},
+ {title:'Anderson AM-15 AR-15 pistol 5.56', cat:'Firearms', cond:'Used', cur:155, ask:160, bids:7, comp:450, lot:499969},
+ {title:'Raven MP-25 .25 ACP pistol', cat:'Firearms', cond:'Fair', cur:65, ask:70, bids:4, comp:150, lot:499970},
+ {title:'(3) 60rds 5.56 M193 ball ammo', cat:'Ammunition', cond:'New', cur:17, ask:18, bids:4, comp:52, lot:499973},
+ {title:'1950-S Washington Quarter MS68+ silver', cat:'Coins & Silver', cond:'New', cur:60, ask:65, bids:35, comp:260, lot:499974},
+ {title:'1881-O Morgan Silver Dollar', cat:'Coins & Silver', cond:'Used', cur:39, ask:41, bids:17, comp:95, lot:499980},
+ {title:'Mercury dimes 1942 & 1945-S 90% silver', cat:'Coins & Silver', cond:'Used', cur:10, ask:11, bids:3, comp:20, lot:499971},
+ {title:'(4) Idaho Goldbacks 1/4 24k gold notes', cat:'Bullion & Gold', cond:'New', cur:8, ask:9, bids:5, comp:24, lot:499984},
+ {title:'Pokemon GO V Battle Deck Mewtwo/Melmetal', cat:'TCG & Toys', cond:'New', cur:35, ask:37, bids:13, comp:92, lot:499977},
+ {title:'Pokemon Mega Evolution Elite Trainer Box', cat:'TCG & Toys', cond:'New', cur:65, ask:70, bids:9, comp:175, lot:499985},
+ {title:'Amazon Fire HD 10 (no charger)', cat:'Electronics', cond:'Used', cur:6, ask:7, bids:2, comp:55, lot:499987},
+ {title:'Gerber StrongArm fixed-blade knife', cat:'Knives & Militaria', cond:'New', cur:17, ask:18, bids:12, comp:48, lot:499976},
+ {title:'Swiss M1957 bayonet w/ scabbard', cat:'Knives & Militaria', cond:'Good', cur:29, ask:31, bids:8, comp:78, lot:499972},
+ {title:'Mosin-Nagant M1891/30 spike bayonet', cat:'Knives & Militaria', cond:'Good', cur:18, ask:19, bids:13, comp:52, lot:499986},
+ {title:'AKM Type-I bayonet w/ scabbard', cat:'Knives & Militaria', cond:'Good', cur:8, ask:9, bids:4, comp:35, lot:499979},
+ {title:'(5) Gold-plated Trump $1000 novelty bills', cat:'Bullion & Gold', cond:'New', cur:5, ask:6, bids:1, comp:12, lot:499981}
+];
+
+let lots = SAMPLE.map(s=>({...s}));
+let settings = {prem:13, fee:0, hdl:0};
+let catFilter='ALL', verdictFilter='ALL', sortKey='score', sortDir=-1;
+let hoursFilter='ALL';
+let hidePass = true;
+let compsLoaded = false;
+let selected = new Set();         /* indices of lots ticked for bidding */
+let selectAllShown = false;       /* select-all reflects current filter */
+let ebayCfg = {cid:'', secret:''};
+let ebayToken = null, ebayTokenAt = 0;
+let budget = 5000;
+let currentList = [];             /* last rendered (filtered) list */
+let trkSel = new Set();           /* indices of lots being tracked */
+let trkHistory = [];              /* [{lot,title,ts,cur,ask,bids,auctionId}] snapshots */
+let trkSold = [];                 /* [{lot,title,date,price,auctionId}] final hammer prices */
+let trkSort = 'cur';
+
+/* ---------- localStorage persistence (watchlist + settings) ---------- */
+const store = {
+  get(k,d){ try{ const v = JSON.parse(localStorage.getItem('musick_'+k)); return v==null?d:v; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('musick_'+k, JSON.stringify(v)); }catch(e){} }
+};
+function persistSelection(){
+  store.set('watch', [...selected].map(i=>lots[i]).filter(Boolean).map(l=>({lot:l.lot||null, title:l.title, cur:l.cur, ask:l.ask})));
+}
+function restoreSelection(){
+  selected.clear();
+  const w = store.get('watch', []);
+  w.forEach(entry=>{
+    const match = lots.findIndex(l=>(l.lot&&l.lot===entry.lot) || l.title===entry.title);
+    if(match>-1){
+      selected.add(match);
+      lots[match]._prevCur = entry.cur;   /* for bid-move alert vs last shortlist */
+    }
+  });
+}
+
+/* ---------- tracker: bid snapshots + final sale log ---------- */
+const LOTKEY = l=>(l.lot!=null?'L'+l.lot:'T'+(l.title||'').slice(0,40));
+function persistTracker(){
+  store.set('trkSel', [...trkSel].map(i=>lots[i]).filter(Boolean).map(l=>({key:LOTKEY(l), lot:l.lot||null, title:l.title})));
+  store.set('trkHist', trkHistory);
+  store.set('trkSold', trkSold);
+}
+function snapshotBids(msg){
+  const snap = [...trkSel].map(i=>lots[i]).filter(Boolean).map(l=>({
+    key:LOTKEY(l), lot:l.lot||null, title:l.title, auctionId:l.auctionId||null,
+    ts:new Date().toISOString(), cur:l.cur, ask:l.ask, bids:l.bids||0
+  }));
+  if(!snap.length){ $('#trkMsg').textContent = 'Nothing to snapshot - tick the &starf; next to lots first.'; return; }
+  trkHistory = trkHistory.filter(h=>!snap.some(s=>s.key===h.key)).concat(snap);
+  trkHistory.sort((a,b)=>a.lot-b.lot || a.title.localeCompare(b.title));
+  persistTracker(); renderTracker();
+  $('#trkMsg').textContent = `Snapshotted ${snap.length} tracked lots at ${new Date().toLocaleTimeString()}.`;
+}
+function toggleTrk(i){
+  trkSel.has(i) ? trkSel.delete(i) : trkSel.add(i);
+  persistTracker(); renderTable(); renderTracker();
+}
+function renderTracker(){
+  const tracked = [...trkSel].map(i=>lots[i]).filter(Boolean);
+  $('#trkCount').textContent = tracked.length? `(${tracked.length} lots)` : '';
+  const last = l=>trkHistory.filter(h=>h.key===LOTKEY(l)).sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+  const sold = l=>trkSold.find(s=>s.key===LOTKEY(l));
+  let list = tracked;
+  if(trkSort==='cur')     list = [...tracked].sort((a,b)=>b.cur-a.cur);
+  if(trkSort==='bids')    list = [...tracked].sort((a,b)=>(b.bids||0)-(a.bids||0));
+  if(trkSort==='move'){
+    list = [...tracked].map(l=>({l, h:last(l)})).sort((A,B)=>{
+      const a=(A.h&&(A.l.cur-A.h.cur))||0, b=(B.h&&(B.l.cur-B.h.cur))||0; return b-a;
+    }).map(x=>x.l);
+  }
+  if(trkSort==='sold'){
+    list = tracked.filter(l=>sold(l)).sort((a,b)=>new Date(sold(b).date)-new Date(sold(a).date))
+           .concat(tracked.filter(l=>!sold(l)));
+  }
+  const noTrk = '<div style="padding:18px;color:var(--muted)">No lots tracked yet &mdash; click the &starf; in any register row to keep an eye on it here.</div>';
+  $('#trkTable').innerHTML = `<thead><tr>
+      <th>Tracked lot</th><th>Category</th><th>Bid</th><th>Bids</th><th>vs snapshot</th><th>Score</th><th>Sold at</th><th></th></tr></thead>
+    <tbody>${list.map(l=>{
+      const h=last(l), s=sold(l);
+      const move = h?(l.cur-h.cur):0;
+      const moveStr = h? `<span class="${move>0?'score warn':'score good'}">${move>0?'+':''}${money(move)}</span>` : '<span class="mu">nothing yet</span>';
+      return `<tr>
+        <td class="nm">${esc(l.title)}${l.auctionId?` <span class="mu">auction #${l.auctionId}</span>`:''}</td>
+        <td>${esc(l.cat)}</td>
+        <td>${money(l.cur)}</td><td>${l.bids||0}</td>
+        <td>${moveStr}</td>
+        <td class="score ${l.score>=72?'good':l.score>=58?'warn':'bad'}">${l.score.toFixed(0)}</td>
+        <td>${s?`<b class="${s.price>=l.cur?'good':'bad'}">${money(s.price)}</b> <span class="mu">${s.date}</span>`:'<span class="mu">open</span>'}</td>
+        <td><button class="ghost" style="padding:3px 9px;font-size:11px" onclick="untrackTrk(${l.idx})">remove</button></td></tr>`;
+    }).join('')}
+    </tbody>`;
+  /* populate log-sale select */
+  const sel=$('#trkLotSel');
+  if(sel){ sel.innerHTML = tracked.map(l=>`<option value="${l.idx}">${esc(l.title.slice(0,44))} &mdash; bid ${money(l.cur)}</option>`).join(''); }
+  if(!tracked.length && $('#trkLogForm').style.display!=='none') $('#trkLogForm').style.display='none';
+}
+function untrackTrk(i){ toggleTrk(i); }
+function showTrkLog(){
+  if(trkSel.size===0){ $('#trkMsg').textContent='Track a lot first (&starf; button) to log its sale.'; return; }
+  $('#trkLogForm').style.display='block'; $('#trkLogForm').scrollIntoView&&$('#trkLogForm').scrollIntoView({block:'nearest'});
+  $('#trkDateIn').value = new Date().toISOString().slice(0,10);
+}
+function saveTrkLog(){
+  const idx=+$('#trkLotSel').value, price=+$('#trkPriceIn').value, date=$('#trkDateIn').value;
+  const l=lots[idx];
+  if(!l||!price||!date){ $('#trkMsg').textContent='Enter a hammer price and date.'; return; }
+  trkSold = trkSold.filter(s=>s.key!==LOTKEY(l));
+  trkSold.push({key:LOTKEY(l), lot:l.lot||null, title:l.title, auctionId:l.auctionId||null, date, price});
+  persistTracker(); renderTracker();
+  $('#trkLogForm').style.display='none'; $('#trkPriceIn').value='';
+  $('#trkMsg').textContent=`Logged ${esc(l.title.slice(0,40))} sold for ${money(price)} on ${date}.`;
+}
+
+/* ========================= SCORING ========================= */
+function scoreLot(l){
+  const cat = l.cat || guessCat(l.title); l.cat = cat;
+  const meta = CATMETA[cat] || {liq:0.5, risk:0.5, compMult:2.4};
+  const qty = l.qty || 1;
+
+  /* resale value: eBay median override > manual comp > modeled comp */
+  if(l.ebay && l.ebay.n>0 && l.comp==null) l.estComp = l.ebay.median;
+  else l.estComp = (l.comp != null) ? l.comp : (l.ask*meta.compMult)*qty;
+
+  const allInCost = l.cur*(1+settings.prem/100) + settings.hdl;      /* bid + BP + handling */
+  const netSold   = l.estComp*(1-settings.fee/100);                  /* after platform fee  */
+  l.cost = allInCost; l.net = netSold;
+  l.margin$  = netSold - allInCost;
+  l.marginPct = allInCost>0 ? (l.margin$/allInCost)*100 : 0;
+
+  /* bid-move alert vs last time this lot was shortlisted */
+  l.bidMove = null;
+  if(l._prevCur != null && l._prevCur !== l.cur) l.bidMove = l.cur - l._prevCur;
+
+  /* 1) margin score */
+  const m = Math.max(0, l.marginPct);
+  const marginScore = Math.min(100, m/1.2);           /* 100%+ net margin => 100 */
+
+  /* 2) demand / sell-through */
+  const bidAct = Math.min(1, (l.bids||0)/12);          /* 12+ bids => hot */
+  const demandScore = (0.7*meta.liq + 0.3*bidAct)*100;
+
+  /* 3) listed-vs-resale gap (before fees): how far comp sits above ask */
+  const gapPct = l.ask>0 ? ((l.estComp-l.ask)/l.ask)*100 : 0;
+  const gapScore = Math.min(100, Math.max(0, gapPct)/1.6);
+
+  /* 4) condition & category risk -> inverted to a score */
+  const condPen = COND_PEN[l.cond] ?? 18;
+  l.riskPen = meta.risk*100*0.6 + condPen*0.9;
+  const riskScore = Math.max(0, 100 - l.riskPen);
+
+  l.score = WEIGHTS.margin*marginScore + WEIGHTS.demand*demandScore
+          + WEIGHTS.gap*gapScore   + WEIGHTS.risk*riskScore;
+
+  l.verdict = l.score>=82?'SUPER BUY':l.score>=72?'HOT BUY':l.score>=58?'GOOD BUY':l.score>=42?'WATCH':'PASS';
+  return l;
+}
+
+/* ========================= RENDER ========================= */
+const $ = s=>document.querySelector(s);
+const money = (n,suf)=>{const nn=Math.round(n);return '$'+(suf? nn.toLocaleString()+' ':nn.toLocaleString())};
+const pct = n=>(n>=0?'+':'')+n.toFixed(0)+'%';
+const esc = s=>(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const slug = s=>(s||'').toString().toUpperCase().replace(/[^A-Z0-9 -]+/g,'').replace(/ +/g,'-');
+const lotUrl=(l)=> l&&l.lot ?
+  'https://bid.musickauction.com/lot-details/index/catalog/'+(l.auctionId||898)+'/lot/'+l.lot+'/'+slug(l.title) :
+  'https://bid.musickauction.com/auctions/catalog/id/898';
+const srcQuery = l => encodeURIComponent((l.title||'').replace(/\s*\[.*?\]\s*|\|\s*\d+\s*[a-zA-Z]{2,}|\s*-\s*[A-Z][A-Z0-9 -]*!*$/g,'').trim().slice(0,60));
+const srcLinks = l=>{
+  const q = srcQuery(l);
+  const links = [
+    `<a class="dco" href="https://www.facebook.com/marketplace/search/?query=${q}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Facebook Mktplace &nearr;</a>`,
+    `<a class="dco" href="https://www.ebay.com/sch/i.html?_nkw=${q}" target="_blank" rel="noopener" onclick="event.stopPropagation()">eBay &nearr;</a>`
+  ];
+  if(l.cat==='Cars & Trucks')
+    links.push(`<a class="dco" href="https://www.kbb.com/car-values/" target="_blank" rel="noopener" onclick="event.stopPropagation()">KBB &nearr;</a>`);
+  if(l.cat==='Jewelry')
+    links.push(
+      `<a class="dco" href="https://www.worthy.com/sell-jewelry/" target="_blank" rel="noopener" onclick="event.stopPropagation()">Sell: Worthy &nearr;</a>`,
+      `<a class="dco" href="https://www.therealreal.com/sell" target="_blank" rel="noopener" onclick="event.stopPropagation()">Sell: RealReal &nearr;</a>`,
+      `<a class="dco" href="https://www.google.com/maps/search/estate+jewelry+near+me" target="_blank" rel="noopener" onclick="event.stopPropagation()">Local jeweler &nearr;</a>`
+    );
+  return links.join(' &middot; ');
+};
+const catName = c=>Object.keys(CATMETA).includes(c)?c:guessCat(c);
+const fmtLeft = endsAt=>{
+  if(endsAt==null) return '<span class="mu">&mdash;</span>';
+  const sec = Math.max(0, endsAt*1000 - Date.now())/1000;
+  let cls = sec>86400? '': sec>3600? 'mu': 'score bad';
+  const d=Math.floor(sec/86400), h=Math.floor((sec%86400)/3600), m=Math.floor((sec%3600)/60), s=Math.floor(sec%60);
+  const txt = sec<=0 ? 'ended' : d>0? `${d}d ${h}h`: h>0? `${h}h ${m}m`: m>0? `${m}m ${s}s`: `${s}s`;
+  return `<span class="tl ${sec<=0?'bad':sec<60?'score bad':''}" data-ends="${endsAt}">${txt}</span>`;
+};
+function tickCountdowns(){
+  document.querySelectorAll('span.tl[data-ends]').forEach(sp=>{
+    const ends=+sp.dataset.ends;
+    const sec=(ends*1000 - Date.now())/1000;
+    if(sec<=0){ sp.textContent='ended'; sp.className='tl score bad'; return; }
+    const d=Math.floor(sec/86400), h=Math.floor((sec%86400)/3600), m=Math.floor((sec%3600)/60), s=Math.floor(sec%60);
+    sp.textContent = d>0? `${d}d ${h}h`: h>0? `${h}h ${m}m`: m>0? `${m}m ${s}s`: `${s}s`;
+    sp.className = sec<3600? 'tl score bad': 'tl';
+  });
+}
+setInterval(tickCountdowns, 1000);
+const bindToggler = t=>t.onchange=()=>{toggleSel(+t.dataset.i);};
+function toggleSel(i){
+  selected.has(i) ? selected.delete(i) : selected.add(i);
+  persistSelection(); renderSel(); renderPort(); renderTable();
+}
+function removeFromShortlist(i){
+  selected.delete(i); persistSelection(); renderSel(); renderPort(); renderTable();
+}
+function renderSel(){
+  const items = [...selected].map(i=>lots[i]).filter(Boolean);
+  const qty  = items.reduce((a,l)=>a+(l.qty||1),0);
+  const cost = items.reduce((a,l)=>a+l.cost,0);
+  const res  = items.reduce((a,l)=>a+l.estComp,0);
+  const net  = items.reduce((a,l)=>a+l.margin$,0);
+  const avg  = items.length? items.reduce((a,l)=>a+l.score,0)/items.length : 0;
+  $('#selBox').innerHTML = items.length
+    ? `<b>${items.length} lots</b> (${qty} items) &middot; all-in cost <b>${money(cost)}</b> &middot; est. resale ${money(res)} &middot; net after fees <b class="${net>=0?'good':'bad'}">${money(net)}</b> &middot; avg score ${avg.toFixed(0)}`
+    : '<b>0 lots</b> &middot; tick the boxes next to every lot you want to bid on';
+}
+function selectAllToggled(){
+  const shown = document.getElementById('lotTable').rows ? [].slice.call(document.querySelectorAll('#lotTable tbody tr.seltag')).map(r=>+r.dataset.i) : [];
+  shown.forEach(i=>selectAllShown ? selected.add(i) : selected.delete(i));
+  persistSelection(); renderSel(); renderPort(); renderTable();
+}
+
+function recompute(){
+  lots.forEach(scoreLot);
+  renderAll();
+}
+function cfg(){return {prem:settings.prem,fee:settings.fee,hdl:settings.hdl}};
+
+function renderKpis(list){
+  const supern=list.filter(l=>l.verdict==='SUPER BUY');
+  const hot=list.filter(l=>l.verdict==='HOT BUY');
+  const good=list.filter(l=>l.verdict==='GOOD BUY');
+  const e = k=>list.reduce((a,l)=>{const r=l.estComp*l.qty||l.estComp;return a+(r?r:0)},0);
+  const c = list.reduce((a,l)=>a+l.cost,0);
+  const m = list.reduce((a,l)=>a+l.margin$,0);
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="k">Catalog lots</div><div class="v">${list.length}</div><div class="s">${lots.length} scraped from live catalogs</div></div>
+    <div class="kpi"><div class="k">SUPER BUY</div><div class="v" style="color:var(--px)">${supern.length}</div><div class="s">outstanding value &middot; bid now</div></div>
+    <div class="kpi"><div class="k">HOT BUY</div><div class="v good">${hot.length}</div><div class="s">GOOD BUY: ${good.length} &middot; net margin &ge; ~70%</div></div>
+    <div class="kpi"><div class="k">Est. resale value</div><div class="v acc">${money(e(list))}</div><div class="s">modeled comps before fees</div></div>
+    <div class="kpi"><div class="k">All-in cost</div><div class="v">${money(c)}</div><div class="s">bid + ${settings.prem}% premium${settings.hdl>0? ' + $'+settings.hdl+' handling':''}</div></div>
+    <div class="kpi"><div class="k">Est. net profit</div><div class="v ${m>=0?'good':'bad'}">${money(m)}</div><div class="s">${settings.fee>0? 'after '+settings.fee+'% platform fee':'no platform fee &middot; FB Marketplace'}</div></div>`;
+}
+
+function renderCrit(){
+  const w = WEIGHTS, n=Object.keys(w).length;
+  const ROWS={margin:['Sold-price margin','verdict score: how the modified costs subtract from est. resale'],
+            demand:['Demand / sell-through','category liquidity + bid activity'],
+            gap:['Comp-to-ask gap','spread between modeled resale and the listed ask'],
+            risk:['Condition / category risk','inverted: low-risk categories score high']};
+  $('#critBars').innerHTML = Object.keys(w).map(k=>`
+    <div class="bar"><span class="l">${ROWS[k][0]}</span>
+      <div class="track"><div class="fill" style="width:${w[k]*100}%"></div></div>
+      <span class="v">${(w[k]*100).toFixed(0)}%</span></div>`).join('');
+}
+
+function renderCats(list){
+  const counts={}; list.forEach(l=>{const k=l.cat; counts[k]=(counts[k]||0)+1});
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(1,...rows.map(r=>r[1]));
+  $('#catBars').innerHTML = rows.map(([k,c])=>`
+    <div class="bar" style="cursor:pointer" onclick="catFilter='${k}';catSel.value='${k}';recompute()"><span class="l">${k}</span>
+      <div class="track"><div class="fill" style="width:${(c/max)*100}%"></div></div>
+      <span class="v">${c}</span></div>`).join('');
+}
+
+function fmtDetail(l){
+  const meta=CATMETA[l.cat]||{};
+  const ebayInfo = l.ebay&&l.ebay.n>0
+    ? `<div class="dk"><div class="mu">eBay sold comps</div><div>${l.ebay.n} sold &middot; median ${money(l.ebay.median)} &middot; range ${money(l.ebay.min)}&ndash;${money(l.ebay.max)}</div></div>`
+    : `<div class="dk"><div class="mu">eBay sold comps</div><div><span class="mu">modeled estimate &mdash; run &ldquo;Get eBay comps&rdquo;</span></div></div>`;
+  const moveInfo = l.bidMove!=null
+    ? `<div class="dk"><div class="mu">Bid moved vs shortlist</div><div class="${l.bidMove>0?'score warn':'score good'}">${l.bidMove>0?'+':''}${money(l.bidMove)}</div></div>` : '';
+  return `<div style="opacity:.92">${esc(l.title)}</div>
+    <div class="dgrid">
+      <div class="dk"><div class="mu">Bid &rarr; Ask</div><div><b>${money(l.cur)}</b> &rarr; ${money(l.ask)}</div></div>
+      <div class="dk"><div class="mu">Bids</div><div>${l.bids||0}</div></div>
+      ${ebayInfo}
+      ${moveInfo}
+      <div class="dk"><div class="mu">All-in cost</div><div>${money(l.cost)}</div></div>
+      <div class="dk"><div class="mu">Net after fee</div><div>${money(l.net)}</div></div>
+      <div class="dk"><div class="mu">Net margin</div><div>${pct(l.marginPct)} &middot; ${money(l.margin$)}</div></div>
+      <div class="dk"><div class="mu">Demand (liq+bids)</div><div>${(CATMETA[l.cat]?.liq*100||50).toFixed(0)}% / ${l.bids||0} bids</div></div>
+      <div class="dk"><div class="mu">Risk penalty</div><div>${l.riskPen.toFixed(0)} pts</div></div>
+      <div class="dk"><div class="mu">Lot on Musick</div><div><a href="${lotUrl(l)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--accent);font-weight:700">open lot &nearr;</a></div></div>
+      <div class="dk"><div class="mu">Source / resell</div><div>${srcLinks(l)}</div></div>
+    </div>
+    <div class="row" style="margin-top:10px"><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Override est. resale:</label>
+    <input class="inp" style="width:110px" id="compIn_${l.idx}" value="${l.estComp}" onchange="lots[${l.idx}].comp=+this.value;recompute()"><span class="mini">$ &ndash; live now</span></div>
+    <div class="row" style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--edge)"><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">What-if sale price:</label>
+    <input type="range" id="wiRng_${l.idx}" min="0" max="${Math.max(1,Math.round(l.estComp*10))}" step="5" value="${l.estComp}" style="flex:1;min-width:140px" oninput="whatIf(${l.idx},+this.value)">
+    <input class="inp" style="width:90px" id="wiVal_${l.idx}" value="${l.estComp}" onchange="whatIf(${l.idx},+this.value)">
+    <span class="mini" id="wiOut_${l.idx}"></span></div>`;
+}
+
+function whatIf(i, sale){
+  const l = lots[i]; if(!l) return;
+  sale = Math.max(0, Math.round(+sale||0));
+  $('#wiVal_'+i).value = sale;
+  $('#wiRng_'+i).value = Math.min(sale, +$('#wiRng_'+i).max);
+  const net = sale*(1-settings.fee/100) - l.cost;
+  const mp  = l.cost>0 ? (net/l.cost)*100 : 0;
+  $('#wiOut_'+i).innerHTML = `sale <b>${money(sale)}</b> &rarr; net <b class="${net>=0?'good':'bad'}">${money(net)}</b> <span class="mini">(${pct(mp)} margin)</span> &nbsp;vs est. ${money(l.estComp)} ${sale>l.estComp?'<span class="mini">+'+money(sale-l.estComp)+' above</span>':sale<l.estComp?'<span class="mini">'+money(sale-l.estComp)+' below</span>':''}`;
+}
+
+function renderTable(list){
+  const sv = x=> (x[sortKey] == null || !isFinite(x[sortKey])) ? 0 : x[sortKey];
+  list.sort((a,b)=>(sv(a)-sv(b))*sortDir);
+  currentList = list;
+  $('#lotCount').textContent = list.length+' matched';
+  const mobile = window.matchMedia('(max-width:640px)').matches;
+  if(mobile){ renderMobile(list); return; }
+  const th = (k,lab,title)=>`<th title="${title}" onclick="sortKey='${k}';sortDir*=-1;renderTable();">${lab} ${sortKey===k?(sortDir<0?'&darr;':'&uarr;'):''}</th>`;
+  const shownIdx = list.map(l=>lots.indexOf(l));
+  const allSel = shownIdx.length>0 && shownIdx.every(i=>selected.has(i));
+  selectAllShown = allSel;
+  $('#lotTable').innerHTML = `<thead><tr>
+      <th style="width:34px" title="Select lots to bid on"><input type="checkbox" id="selAllBox" ${allSel?'checked':''} onchange="selectAllShown=this.checked;selectAllToggled()"></th>
+      <th style="width:40px" title="Track lot: snapshot its bid over time &amp; log the final sale">Track</th>
+      <th title="Auction lot name &amp; live link to the Musick catalog lot">Lot / title</th><th title="Assigned category used for resale-demand &amp; comp modelling">Category</th><th title="Stated condition; drives the risk penalty on resale value">Condition</th><th title="Current highest bid to the buy-now ask price">Bid &rarr; Ask</th>
+      ${th('endsAt','Time left','Countdown until the lot closes')}${th('bids','Bids','Number of bids on the lot')}${th('estComp','Est. resale','Modelled resale estimate - eBay sold median when loaded, else ask x category multiplier')}${th('cost','All-in','Bid + premium + handling')}
+      ${th('marginPct','Margin','Estimated net profit as a % of all-in cost')}${th('margin$','Net $','Estimated net profit after platform fee')}${th('score','Score','Blended opportunity score 0-100')}<th title="SUPER BUY / HOT BUY / GOOD BUY / WATCH / PASS">Verdict</th></tr></thead>
+    <tbody>${list.map((l,i)=>{
+      l.idx = lots.indexOf(l);
+      const isSel = selected.has(l.idx);
+      const isTrk = trkSel.has(l.idx);
+      const vcls = l.verdict==='SUPER BUY'?'s':l.verdict==='HOT BUY'?'g':l.verdict==='GOOD BUY'?'a':l.verdict==='WATCH'?'v':'r';
+      const scls = l.score>=72?'good':l.score>=58?'warn':'bad';
+      const move = l.bidMove!=null ? `<span class="move ${l.bidMove>0?'up':'down'}">${l.bidMove>0?'&uarr;':'&darr;'}${money(Math.abs(l.bidMove))}</span>` : '';
+      return `<tr class="seltag ${l.verdict==='SUPER BUY'?'superbuy':l.verdict==='HOT BUY'?'topbuy':''}" data-i="${l.idx}" onclick="this.nextElementSibling.querySelector('.detail').classList.toggle('open')">
+        <td onclick="event.stopPropagation()"><input type="checkbox" class="selchk" data-i="${l.idx}" ${isSel?'checked':''} onchange="toggleSel(+this.dataset.i)"></td>
+        <td onclick="event.stopPropagation()"><button class="trkbtn ${isTrk?'on':''}" data-i="${l.idx}" title="${isTrk?'Stop tracking':'Track this lot (snapshot bids + log sale)'}" onclick="toggleTrk(+this.dataset.i)">${isTrk?'&starf;':'&star;'}</button></td>
+        <td><div class="nm">${esc(l.title)}${move}</div><a class="dco" href="${lotUrl(l)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">view this lot &nearr;</a> <span class="dco">&middot; ${srcLinks(l)}</span></td>
+        <td>${esc(l.cat)}</td><td>${esc(l.cond)}</td>
+        <td>${money(l.cur)} &rarr; <span class="mu">${money(l.ask)}</span></td>
+        <td>${fmtLeft(l.endsAt)}</td>
+        <td>${l.bids||0}</td><td><b>${money(l.estComp)}</b>${l.ebay&&l.ebay.n>0?'<span class="status comp" title="eBay sold median; see expanded row for range">eBay</span>':''}</td><td>${money(l.cost)}</td>
+        <td class="score ${l.marginPct>=50?'good':l.marginPct>=20?'warn':'bad'}">${pct(l.marginPct)}</td>
+        <td class="score ${l.margin$>=100?'good':l.margin$>=0?'warn':'bad'}">${money(l.margin$)}</td>
+        <td class="score ${scls}">${l.score.toFixed(0)}</td>
+        <td><span class="tag ${vcls}">${l.verdict}</span></td></tr>
+      <tr><td colspan="14"><div class="detail">${fmtDetail(l)}</div></td></tr>`;
+    }).join('')}</tbody>`;
+  if(!list.length) $('#lotTable').innerHTML='<div style="padding:24px;color:var(--muted)">No lots match the current filters.</div>';
+}
+
+function renderMobile(list){
+  const allSel = list.every(l=>selected.has(lots.indexOf(l)));
+  $('#lotTable').innerHTML = `
+    <div class="mobrow head"><label><input type="checkbox" ${allSel?'checked':''} onchange="selectAllShown=this.checked;listAllShown()"></label>
+      <span>${list.length} lots</span><span class="mini">tap a card for details &middot; set sort above</span></div>
+    ${list.map(l=>{
+      l.idx = lots.indexOf(l);
+      const isSel = selected.has(l.idx);
+      const vcls = l.verdict==='SUPER BUY'?'s':l.verdict==='HOT BUY'?'g':l.verdict==='GOOD BUY'?'a':l.verdict==='WATCH'?'v':'r';
+      const scls = l.score>=72?'good':l.score>=58?'warn':'bad';
+      const ebayTag = l.ebay&&l.ebay.n>0?' <span class="status comp">eBay</span>':'';
+      return `<div class="mobrow seltag ${l.verdict==='SUPER BUY'?'superbuy':l.verdict==='HOT BUY'?'topbuy':''}">
+        <div class="mobrow1">
+          <label onclick="event.stopPropagation()"><input type="checkbox" class="selchk" data-i="${l.idx}" ${isSel?'checked':''} onchange="toggleSel(+this.dataset.i)"></label>
+          <span class="tag ${vcls}">${l.verdict}</span>
+          <span class="score ${scls}" style="margin-left:auto">${l.score.toFixed(0)}</span>
+        </div>
+        <div class="mobrow2" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="nm">${esc(l.title)}</div>
+          <a class="dco" href="${lotUrl(l)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">open lot &nearr;</a> <span class="dco">&middot; ${srcLinks(l)}</span>
+          <div class="mobgrid">
+            <div><div class="mu">Bid&rarr;Ask</div><b>${money(l.cur)}</b> &rarr; <span class="mu">${money(l.ask)}</span></div>
+            <div><div class="mu">Est. resale</div><b>${money(l.estComp)}</b>${ebayTag}</div>
+            <div><div class="mu">All-in</div>${money(l.cost)}</div>
+            <div><div class="mu">Margin</div><b class="${l.margin$>=100?'good':l.margin$>=0?'warn':'bad'}">${pct(l.marginPct)}</b> <span class="mu">${money(l.margin$)}</span></div>
+            <div><div class="mu">Time left</div>${fmtLeft(l.endsAt)}</div>
+            <div><div class="mu">Cat / cond</div>${esc(l.cat)} &middot; ${esc(l.cond)}</div>
+          </div>
+        </div>
+        <div class="detail">${fmtDetail(l)}</div>
+      </div>`;
+    }).join('')}`;
+}
+
+function listAllShown(){
+  const boxes = document.querySelectorAll('#lotTable .selchk');
+  const input = document.querySelector('#lotTable input[onchange*="listAllShown"]');
+  const on = input && input.checked;
+  boxes.forEach(b=>{ if(on && !b.checked){ b.checked=true; toggleSel(+b.dataset.i); } });
+}
+
+function renderAll(){
+  let list = lots.filter(l=>catFilter==='ALL'||l.cat===catFilter)
+                 .filter(l=>verdictFilter==='ALL'||l.verdict===verdictFilter)
+                 .filter(l=> !(hidePass && l.verdict==='PASS'));
+  if(hoursFilter!=='ALL'){
+    const cutoff = hoursFilter*3600*1000;
+    list = list.filter(l=>{
+      if(l.endsAt==null) return false;
+      const remain = l.endsAt*1000 - Date.now();
+      return remain > 0 && remain <= cutoff;
+    });
+  }
+  renderKpis(list); renderCrit(); renderCats(lots); renderTable(list); renderSel(); renderPort();
+}
+
+/* ---------- shortlist / portfolio card ---------- */
+function renderPort(){
+  const items = [...selected].map(i=>lots[i]).filter(Boolean);
+  $('#portCount').textContent = items.length? `(${items.length} lots)` : '';
+  $('#portMsg').textContent = '';
+  $('#portFit').innerHTML = '';
+  if(!items.length){
+    $('#portTable').innerHTML = '<div style="padding:18px;color:var(--muted)">Nothing shortlisted yet &mdash; tick lots in the register above.</div>';
+    return;
+  }
+  const cost = items.reduce((a,l)=>a+l.cost,0);
+  const res  = items.reduce((a,l)=>a+l.estComp,0);
+  const net  = items.reduce((a,l)=>a+l.margin$,0);
+  const qty  = items.reduce((a,l)=>a+(l.qty||1),0);
+  $('#portTable').innerHTML = `<thead><tr>
+      <th title="Auction lot name &amp; live link to the Musick catalog lot">Lot</th><th title="Previous-close resale verdict assigned by the scanner">Verdict</th><th title="Countdown until the lot closes">Time left</th><th title="Highest bid you should place (the buy-now ask)">Max bid (ask)</th><th title="Bid + premium + handling">All-in cost</th><th title="Modelled resale value - eBay sold median when loaded, else ask x category multiplier">Est. resale</th><th title="Estimated profit after platform fee">Net</th><th title="Blended opportunity score 0-100">Score</th><th></th></tr></thead>
+    <tbody>${items.map((l,i)=>{
+      const vcls = l.verdict==='SUPER BUY'?'s':l.verdict==='HOT BUY'?'g':l.verdict==='GOOD BUY'?'a':l.verdict==='WATCH'?'v':'r';
+      return `<tr>
+        <td class="nm">${esc(l.title)}</td>
+        <td><span class="tag ${vcls}">${l.verdict}</span></td>
+        <td>${fmtLeft(l.endsAt)}</td>
+        <td>${money(l.ask)}</td><td>${money(l.cost)}</td><td>${money(l.estComp)}</td>
+        <td class="score ${l.margin$>=0?'good':'bad'}">${money(l.margin$)}</td>
+        <td class="score ${l.score>=72?'good':l.score>=58?'warn':'bad'}">${l.score.toFixed(0)}</td>
+        <td><button class="ghost" style="padding:3px 9px;font-size:11px" onclick="removeFromShortlist(${l.idx})">remove</button></td></tr>`;
+    }).join('')}
+    <tr style="font-weight:800;background:var(--panel2)">
+      <td>${items.length} lots (${qty} items)</td><td></td><td></td><td>${money(items.reduce((a,l)=>a+l.ask,0))}</td>
+      <td>${money(cost)}</td><td>${money(res)}</td><td class="score ${net>=0?'good':'bad'}">${money(net)}</td><td></td><td></td></tr>
+    </tbody>`;
+  fitWithinBudget(items, cost);
+}
+
+function fitWithinBudget(items, cost){
+  const bud = budget;
+  const over = cost - bud;
+  if(items.length && over>0){
+    const sorted = [...items].sort((a,b)=>b.score-a.score);
+    const pick = []; let used = 0;
+    for(const l of sorted){ if(used+l.cost<=bud){ pick.push(l); used+=l.cost; } }
+    $('#portMsg').innerHTML = `<span class="score warn">over budget by ${money(over)} &mdash; auto-pick keeps ${pick.length} lots</span>`;
+    $('#portFit').innerHTML = `<b>Auto-pick within $${bud.toLocaleString()}:</b> ${pick.map(l=>esc(l.title)).join(' &middot; ') || 'none fit'} &middot; total ${money(used)}`;
+  } else {
+    $('#portFit').innerHTML = `<span class="score good">within budget &middot; ${money(cost)} needed of ${money(bud)}</span>`;
+  }
+}
+
+function autoPick(){
+  if(!currentList.length) return;
+  const candidates = currentList.filter(l=>!selected.has(lots.indexOf(l))).sort((a,b)=>b.score-a.score);
+  let used = [...selected].map(i=>lots[i]).reduce((a,l)=>a+l.cost,0);
+  for(const l of candidates){ if(used+l.cost<=budget){ selected.add(lots.indexOf(l)); used+=l.cost; } }
+  persistSelection(); renderSel(); renderPort(); renderTable();
+}
+
+/* ---------- eBay sold comps (Browse API) ---------- */
+function ebayKeysFromInputs(){
+  const cid = $('#ebayCid').value.trim(), secret = $('#ebaySecret').value.trim();
+  if(cid && secret){ ebayCfg = {cid, secret}; store.set('ebay', ebayCfg); }
+}
+async function ebayGetToken(){
+  if(ebayToken && Date.now()-ebayTokenAt < 110*60*1000) return ebayToken;
+  const cred = btoa(ebayCfg.cid+':'+ebayCfg.secret);
+  const body = 'grant_type=client_credentials&scope='+encodeURIComponent('https://api.ebay.com/oauth/api_scope');
+  const r = await fetch('https://api.ebay.com/identity/v1/oauth2/token',{
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':'Basic '+cred},
+    body
+  });
+  const j = await r.json();
+  if(!j.access_token) throw new Error('eBay token error: '+(j.error_description||j.error||'check Client ID/Secret'));
+  ebayToken = j.access_token; ebayTokenAt = Date.now();
+  return ebayToken;
+}
+async function ebaySoldSearch(q){
+  const token = await ebayGetToken();
+  const url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?'
+    + 'q='+encodeURIComponent(q)
+    + '&filter=soldItems:true&sort=endTimeRecent&limit=15';
+  const r = await fetch(url,{headers:{Authorization:'Bearer '+token,'X-EBAY-C-MARKETPLACE-ID':'EBAY_US','Content-Type':'application/json'}});
+  const j = await r.json();
+  if(!j.itemSummaries || !j.itemSummaries.length) return null;
+  const prices = j.itemSummaries.map(s=>+s.price.value).filter(n=>isFinite(n)&&n>0).sort((a,b)=>a-b);
+  if(!prices.length) return null;
+  const mid = Math.floor(prices.length/2);
+  const median = prices.length%2 ? prices[mid] : (prices[mid-1]+prices[mid])/2;
+  return {n:prices.length, median:Math.round(median), min:prices[0], max:prices[prices.length-1]};
+}
+async function getCompsAll(){
+  ebayKeysFromInputs();
+  if(!ebayCfg.cid || !ebayCfg.secret){ $('#loadMsg').textContent='Set your eBay Client ID + Secret first (free at developer.ebay.com).'; return; }
+  const target = currentList.length? currentList : lots;
+  let ok=0, fail=0;
+  $('#loadMsg').textContent='Fetching eBay sold comps ...';
+  for(let i=0;i<target.length;i++){
+    const l = target[i];
+    try{
+      const q = l.title.replace(/[!\u2013-]/g,' ').replace(/\s+/g,' ').trim().slice(0,80);
+      const res = await ebaySoldSearch(q);
+      if(res){ l.ebay = res; ok++; } else fail++;
+    }catch(e){ fail++; if(i===0) $('#loadMsg').textContent='eBay: '+e.message; }
+    if(i%5===0){ $('#loadMsg').textContent=`Fetching eBay comps ... ${i+1}/${target.length}`; }
+    await new Promise(res=>setTimeout(res,150));
+  }
+  recompute();
+  $('#loadMsg').textContent=`eBay comps done: ${ok} lots matched sold data, ${fail} no matches.`;
+}
+
+/* populate category select */
+function fillCatSelect(){
+  const cats=Object.keys(lots.reduce((all,l)=>(all[catName(l.cat)]=1,all),{}));
+  $('#catSel').innerHTML = '<option value="ALL">All</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+}
+$('#catSel').onchange = e=>{catFilter=e.target.value;recompute()};
+
+/* chips */
+document.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{
+  document.querySelectorAll('.chip[data-v]').forEach(c=>c.classList.toggle('on',c===ch));
+  verdictFilter=ch.dataset.v; recompute();
+});
+$('#hidePass').onchange=e=>{hidePass=e.target.checked;recompute()};
+document.querySelectorAll('.chip.timech').forEach(ch=>ch.onclick=()=>{
+  document.querySelectorAll('.chip.timech').forEach(c=>c.classList.toggle('on',c===ch));
+  hoursFilter=ch.dataset.h; recompute();
+});
+
+/* sliders */
+[['premRng','premVal','prem','%'],['feeRng','feeVal','fee','%'],['hdlRng','hdlVal','hdl','$']]
+.forEach(([r,v,k,suf])=>{
+  const el=$('#'+r), out=$('#'+v);
+  el.oninput=()=>{settings[k]=+el.value;out.textContent=(suf==='$'?'$':'')+el.value+(suf==='%'?'%':'');recompute()};
+  out.textContent=(suf==='$'?'$':'')+settings[k]+(suf==='%'?'%':'');
+});
+
+$('#printBtn').onclick=()=>window.print();
+$('#csvBtn').onclick=()=>{
+  const head='title,category,condition,currentBid,askingBid,bids,estComp,ebayMedian,cost,netMarginPct,netProfit,score,verdict';
+  const rows=lots.map(l=>[l.title,l.cat,l.cond,l.cur,l.ask,l.bids||0,l.estComp,l.ebay?l.ebay.median:'',l.cost.toFixed(2),l.marginPct.toFixed(1),l.margin$.toFixed(2),l.score.toFixed(1),l.verdict].map(f=>'"'+String(f).replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob([head+'\\n'+rows.join('\\n')],{type:'text/csv'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='musick-resell-scan.csv';a.click();
+};
+
+/* theme */
+const themeBtn=$('#themeBtn'), saved=localStorage.getItem('theme');
+if(saved) document.documentElement.dataset.theme=saved;
+themeBtn.onclick=()=>{const d=document.documentElement.dataset.theme==='dark'?'':'dark';
+  document.documentElement.dataset.theme=d;localStorage.setItem('theme',d)};
+
+/* shared data loader */
+function loadLots(arr, note){
+  lots=arr.map((l,i)=>({
+    title:l.title||'Lot #'+(i+1),
+    cat:catName(l.category||l.cat||guessCat(l.title)), cond:l.condition||'Good',
+    cur:+l.currentBid||0, ask:+l.askingBid||0, bids:+l.bidCount||0, qty:+l.qty||1,
+    comp:(l.estComp!=null&&l.estComp!=='')?+l.estComp:null,
+    lot:l.lot!=null?+l.lot:l.lotId!=null?+l.lotId:null,
+    auctionId:l.auctionId!=null?+l.auctionId:null,
+    endsAt:l.endsAt!=null?+l.endsAt:null,
+    ebay:l.ebay||null
+  }));
+  fillCatSelect(); restoreSelection(); recompute(); renderTracker();
+  if(trkSel.size) snapshotBids(true);
+  $('#loadMsg').textContent = note || `Loaded ${lots.length} lots.`;
+  return lots.length;
+}
+
+function loadLocal(){
+  /* 1) embedded via <script src="musick-catalog.js"> - works on file:// too */
+  if(window.MUSICK_LIVE && Array.isArray(window.MUSICK_LIVE) && window.MUSICK_LIVE.length){
+    loadLots(window.MUSICK_LIVE, `Loaded ${window.MUSICK_LIVE.length} lots from live catalog.`);
+    return Promise.resolve();
+  }
+  /* 2) fetch the .json (needs a local http server) */
+  return fetch('musick-catalog.json').then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(arr=>{
+    if(!Array.isArray(arr)) throw new Error('expected array');
+    loadLots(arr, `Loaded ${arr.length} lots from live catalog (pull-musick.ps1).`);
+  }).catch(e=>{
+    $('#loadMsg').textContent = 'Could not load live catalog - run .\\pull-musick.ps1 to create musick-catalog.js ('+e.message+').';
+    throw e;
+  });
+}
+
+/* sample / load / file / local */
+$('#sampleBtn').onclick=()=>loadLots(SAMPLE.map(s=>({...s})),'Restored sample catalog.');
+$('#loadLocalBtn').onclick=loadLocal;
+$('#loadLocalBtn2').onclick=loadLocal;
+$('#loadBtn').onclick=()=>{
+  try{
+    const arr=JSON.parse($('#jsonArea').value);
+    if(!Array.isArray(arr)) throw new Error('expected a JSON array');
+    loadLots(arr, `Loaded ${arr.length} lots.`);
+  }catch(e){$('#loadMsg').textContent='JSON error: '+e.message;}
+};
+const fileInput=$('#fileInput');
+fileInput.onchange=()=>{
+  const f=fileInput.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const arr=JSON.parse(rd.result);
+      if(!Array.isArray(arr)) throw new Error('expected a JSON array');
+      loadLots(arr, `Loaded ${arr.length} lots from ${f.name}.`);
+    }catch(e){ $('#loadMsg').textContent='File error: '+e.message; }
+  };
+  rd.readAsText(f);
+  fileInput.value='';
+};
+
+/* eBay keys + comps */
+const ebaySaved = store.get('ebay', null);
+if(ebaySaved){ ebayCfg = ebaySaved; $('#ebayCid').value = ebaySaved.cid||''; $('#ebaySecret').value = ebaySaved.secret||''; }
+$('#compsBtn').onclick=getCompsAll;
+
+/* budget / auto-pick */
+const budgetRng=$('#budgetRng'), budgetVal=$('#budgetVal');
+budgetRng.oninput=()=>{ budget=+budgetRng.value; budgetVal.textContent='$'+budget.toLocaleString(); renderPort(); };
+budgetVal.textContent='$'+budget.toLocaleString();
+$('#autoPickBtn').onclick=autoPick;
+
+fillCatSelect();
+restoreSelection();
+{ const ts=store.get('trkSel',[]); trkSel.clear(); ts.forEach(e=>{const m=lots.findIndex(l=>(l.lot&&l.lot===e.lot)||l.title===e.title); if(m>-1) trkSel.add(m);}); }
+trkHistory = store.get('trkHist', []);
+trkSold   = store.get('trkSold', []);
+function bootLocal(){
+  loadLocal().then(()=>{}).catch(()=>{
+    lots = SAMPLE.map(s=>({...s}));
+    fillCatSelect(); restoreSelection(); recompute();
+    $('#loadMsg').textContent='No live catalog - showing sample.';
+  });
+}
+bootLocal();
+
+/* tracker controls */
+$('#trkSnapshotBtn').onclick=snapshotBids;
+$('#trkLogSaleBtn').onclick=showTrkLog;
+$('#trkSort').onchange=e=>{trkSort=e.target.value;renderTracker()};
+$('#trkSaveBtn').onclick=saveTrkLog;
+$('#trkCancelBtn').onclick=()=>{ $('#trkLogForm').style.display='none'; };
+
+/* ============ live refresh ============ */
+const REFRESH_MS = 5*60*1000;
+let refreshTimer=null;
+async function refreshNow(silent){
+  if(refreshBusy) return;
+  refreshBusy = true;
+  try{
+    const r = await fetch('refresh',{cache:'no-store'});
+    const j = await r.json();
+    const msg = Math.floor(REFRESH_MS/60000)+'m auto-refresh';
+    if(j.ok){
+      if(!silent) $('body').insertBefore(noteEl(j.lots+' lots re-pulled'), document.body.firstChild);
+      setTimeout(()=>location.reload(), silent?800:1500);
+    } else {
+      if(!silent) $('body').insertBefore(noteEl('Refresh failed: '+j.error), document.body.firstChild);
+    }
+  }catch(e){
+    if(!silent) $('body').insertBefore(noteEl('Refresh unavailable - open via the server (http://'+location.host+')'), document.body.firstChild);
+  }finally{
+    refreshBusy = false;
+  }
+}
+let noteTimer=null;
+function noteEl(txt){
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:200;background:var(--panel);border:1px solid var(--accent);color:var(--txt);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:var(--shadow)';
+  d.textContent=txt;
+  setTimeout(()=>{ d.remove(); }, 6000);
+  return d;
+}
+let refreshBusy=false;
+const autoRef=$('#autoRef');
+if(store.get('autoRef', true)){ autoRef.checked=true; }
+const syncAuto=()=>{
+  store.set('autoRef', autoRef.checked);
+  clearTimeout(refreshTimer);
+  if(autoRef.checked) refreshTimer=setTimeout(()=>{ refreshNow(false).then(()=>{ if(autoRef.checked) syncAuto(); }); }, REFRESH_MS);
+};
+autoRef.onchange=syncAuto;
+$('#reloadBtn').onclick=()=>refreshNow(false);
+syncAuto();
+
+/* ============ PIN gate ============ */
+const DEFAULT_PIN = '2580';
+const PIN_KEY = 'musick_pin';
+const UNLOCK_KEY = 'musick_unlocked';
+let _storedPin = '';
+function currentPin(){ return localStorage.getItem(PIN_KEY) || DEFAULT_PIN; }
+function setPin(p){ localStorage.setItem(PIN_KEY, p); _storedPin = p; }
+function isUnlocked(){ return sessionStorage.getItem(UNLOCK_KEY)==='1'; }
+function lockScreen(){
+  $('#lockMsg').textContent = '';
+  $('#pinIn').value = '';
+  $('#pinNote').textContent = '';
+  $('#lockScreen').style.display = 'flex';
+  setTimeout(()=>{ const i=$('#pinIn'); if(i) i.focus(); }, 50);
+}
+function tryUnlock(){
+  const guess = ($('#pinIn').value||'').trim();
+  if(guess === currentPin()){
+    sessionStorage.setItem(UNLOCK_KEY,'1');
+    $('#lockScreen').style.display = 'none';
+  } else {
+    $('#lockMsg').textContent = 'Wrong PIN.';
+    $('#pinIn').value=''; $('#pinIn').focus();
+  }
+}
+function openPinModal(){
+  if(!isUnlocked()){
+    $('#lockMsg').textContent = 'Unlock first, then you can change the PIN.';
+    return;
+  }
+  ['curPinIn','newPinIn','conPinIn'].forEach(id=>$('#'+id).value='');
+  $('#pinMsg').textContent = '';
+  $('#pinModal').style.display = 'flex';
+  const i=$('#curPinIn'); if(i) setTimeout(()=>i.focus(),50);
+}
+function closePinModal(){ $('#pinModal').style.display='none'; }
+function savePin(){
+  const cur=$('#curPinIn').value.trim();
+  const neu=$('#newPinIn').value.trim();
+  const con=$('#conPinIn').value.trim();
+  const out=$('#pinMsg');
+  if(cur !== currentPin()){ out.textContent='Current PIN is wrong.'; $('#curPinIn').focus(); return; }
+  if(neu.length<4){ out.textContent='New PIN must be at least 4 characters.'; $('#newPinIn').focus(); return; }
+  if(neu !== con){ out.textContent='New PIN and confirmation don\'t match.'; $('#newPinIn').select(); return; }
+  if(neu === cur){ out.textContent='That\'s the same as your current PIN.'; $('#newPinIn').select(); return; }
+  setPin(neu);
+  out.textContent='PIN updated to '+neu+'.';
+  $('#pinNote').textContent='PIN changed.';
+  setTimeout(closePinModal, 900);
+}
+$('#pinBtn').onclick = openPinModal;
+$('#pinModal').addEventListener('click', e=>{ if(e.target.id==='pinModal') closePinModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#pinModal').style.display==='flex') closePinModal(); });
+$('#unlockBtn').onclick = tryUnlock;
+/* enforce the lock on every page load (fresh review) */
+if(!isUnlocked()){ setTimeout(lockScreen, 150); }
+
+/* installable app (PWA) - only where service workers are supported */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

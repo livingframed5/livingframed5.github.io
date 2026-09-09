@@ -1,0 +1,45 @@
+{
+  "company": {
+    "name": "Nexus Cloud Partner Program",
+    "currency": "EUR"
+  },
+  "llm": {
+    "routerModel": "gemini-2.5-flash",
+    "answerModel": "gemini-2.5-flash",
+    "embedModel": "gemini-embedding-001",
+    "temperature": 0.2,
+    "maxToolTurns": 4,
+    "topK": 3
+  },
+  "thresholds": {
+    "clarify": 0.7,
+    "escalate": 0.5,
+    "money": 5000
+  },
+  "hardClosedTopics": [
+    "legal",
+    "security",
+    "contract amendment",
+    "data privacy",
+    "invoice dispute"
+  ],
+  "riskTopicKeywords": [
+    { "pattern": "discount", "weight": 0.3 },
+    { "pattern": "renewal", "weight": 0.3 },
+    { "pattern": "sla", "weight": 0.3 },
+    { "pattern": "waiver", "weight": 0.3 },
+    { "pattern": "exception", "weight": 0.3 },
+    { "pattern": "override", "weight": 0.3 },
+    { "pattern": "commission", "weight": 0.1 }
+  ],
+  "tierBoost": {
+    "Enterprise": 0.2,
+    "Growth": 0.1,
+    "Startup": 0
+  },
+  "amRouting": {
+    "acme-eu": "maria.schmidt@nexus.io",
+    "globex-na": "jake.reyes@nexus.io",
+    "nova-apac": "aiko.tanaka@nexus.io"
+  }
+}

@@ -1,0 +1,335 @@
+{
+  "name": "Weekly Pricing Intelligence Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e01",
+      "name": "Weekly Schedule (Mon 6am)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1560, -160]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/sample_competitive_prices.csv",
+        "options": {}
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e02",
+      "name": "Read Competitive Prices",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [-1160, -320]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e03",
+      "name": "Parse Prices to JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [-760, -320]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/sample_transactions.csv",
+        "options": {}
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e04",
+      "name": "Read Transactions",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [-1160, 0]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e05",
+      "name": "Parse Transactions to JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [-760, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst priceRows = [];\nconst txRows = [];\n\nfor (const it of items) {\n  const j = it.json || {};\n  if (j.brand) priceRows.push(j);\n  else if (j.invoice_id) txRows.push(j);\n}\n\nconst today = $now.toFormat('yyyy-MM-dd');\n\nconst priceLines = priceRows.map(function (p) {\n  const promoActive = String(p.promo_active || '').toUpperCase() === 'TRUE';\n  const promo = p.promo_price && p.promo_price !== '' ? '$' + p.promo_price : 'none';\n  return '  - ' + p.brand +\n    ' | ' + (p.product || '-') +\n    ' | list $' + p.list_price +\n    ' | promo ' + promo + (promoActive ? ' [PROMO ACTIVE]' : '') +\n    ' | est. weekly vol ' + p.est_weekly_volume +\n    ' | unit cost $' + p.unit_cost +\n    ' | segment ' + (p.segment || '-') +\n    ' | channel ' + (p.channel || '-');\n}).join('\\n');\n\nconst txLines = txRows.map(function (t) {\n  return '  - ' + t.invoice_id +\n    ' | ' + (t.product || '-') +\n    ' | qty ' + t.qty +\n    ' | net $' + t.net_price +\n    ' | cost $' + t.unit_cost +\n    ' | margin contrib $' + t.margin_contrib;\n}).join('\\n');\n\nconst prompt = [\n  'You are a senior Pricing & Revenue Growth Management consultant supporting a strategy engagement at a large consumer company.',\n  '',\n  'CONTEXT',\n  '- Market: home coffee pods (illustrative sample data - replace with your own files)',\n  '- Report date: ' + today,\n  '- Our brand: AuroraRoast',\n  '- This is the weekly pricing intelligence and steering brief.',\n  '',\n  '1) COMPETITIVE PRICING SNAPSHOT (from sample_competitive_prices.csv)',\n  priceLines || '  (no rows)',\n  '',\n  '2) TRANSACTION-LEVEL MARGIN ANALYSIS (from sample_transactions.csv)',\n  txLines || '  (no rows)',\n  '',\n  'PRODUCE A STEERING-READY MEMO (Markdown, no code fences) with these sections:',\n  '1. Executive summary (4-6 bullets)',\n  '2. Competitive pricing snapshot: positioning vs AuroraRoast, promo activity, price gaps, threats',\n  '3. Margin & transaction analysis: margin contribution by product, outliers, discount-leakage signals',\n  '4. Value-based pricing opportunities: economic value drivers and willingness-to-pay signals visible in the data; where value-based pricing (incl. EVE logic) could lift margin',\n  '5. Customer segmentation implications: premium vs value segments, where to hold price vs defend share',\n  '6. Recommended actions: exactly 3, each with owner (pricing/commercial/finance), effort (low/med/high), expected impact',\n  '7. Risks & what to monitor next week',\n  'Keep it under 500 words, concrete, reference the numbers given, and never invent figures not in the data.'\n].join('\\n');\n\nreturn [{ json: { prompt: prompt, today: today } }];"
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e06",
+      "name": "Build Pricing Analysis Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-380, -160]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a senior Pricing & Revenue Growth Management consultant at a Big Four strategy practice. You write crisp, client-ready steering memos that are always grounded in the data provided. You never invent figures that are not present in the input data.",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.prompt }}",
+              "role": "user"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "temperature": 0.2,
+          "maxTokens": 2500
+        }
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e07",
+      "name": "Draft Pricing Memo (LLM)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.2,
+      "position": [20, -160],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a rigorous internal reviewer at a top consulting firm. Given a draft pricing memo, fact-check it against the data the analyst provided, tighten the logic, remove any invented figures, sharpen the three recommendations, and return only the improved final Markdown memo (no code fences, under 500 words).",
+              "role": "system"
+            },
+            {
+              "content": "DRAFT MEMO:\n\n={{ $json.message.content }}",
+              "role": "user"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "temperature": 0.2,
+          "maxTokens": 2500
+        }
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e08",
+      "name": "Review & Improve Memo (Critic LLM)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.2,
+      "position": [420, -160],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst item = input.length ? (input[0].json || {}) : {};\nconst memoText = (item.message && item.message.content)\n  ? item.message.content\n  : JSON.stringify(item);\nconst today = $now.toFormat('yyyy-MM-dd');\nconst filename = 'pricing-memo-' + today + '.md';\nreturn [{ json: { data: memoText, filename: filename, memo: memoText } }];"
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e09",
+      "name": "Extract Final Memo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, -160]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "data",
+        "binaryPropertyName": "data",
+        "options": {
+          "fileName": "={{ $json.filename }}",
+          "encoding": "utf8"
+        }
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e10",
+      "name": "Convert Memo to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1220, -160]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/output/{{ $json.filename }}",
+        "options": {
+          "append": false
+        }
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e11",
+      "name": "Save Memo to Disk",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [1620, -160]
+    },
+    {
+      "parameters": {
+        "fromEmail": "you@example.com",
+        "toEmail": "you@example.com",
+        "subject": "=Weekly Pricing Intelligence Brief {{ $json.filename }}",
+        "text": "=Your automated pricing memo:\n\n{{ $json.memo }}"
+      },
+      "id": "3f1e2b6a-0001-4c1e-8f00-1a2b3c4d5e12",
+      "name": "Email Memo (Optional - connect me to 'Save Memo to Disk')",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1620, 200],
+      "credentials": {
+        "smtp": {
+          "name": "Your SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekly Schedule (Mon 6am)": {
+      "main": [
+        [
+          {
+            "node": "Read Competitive Prices",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Competitive Prices": {
+      "main": [
+        [
+          {
+            "node": "Parse Prices to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Prices to JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Pricing Analysis Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Transactions": {
+      "main": [
+        [
+          {
+            "node": "Parse Transactions to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Transactions to JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Pricing Analysis Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Pricing Analysis Prompt": {
+      "main": [
+        [
+          {
+            "node": "Draft Pricing Memo (LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Pricing Memo (LLM)": {
+      "main": [
+        [
+          {
+            "node": "Review & Improve Memo (Critic LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review & Improve Memo (Critic LLM)": {
+      "main": [
+        [
+          {
+            "node": "Extract Final Memo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Final Memo": {
+      "main": [
+        [
+          {
+            "node": "Convert Memo to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Memo to File": {
+      "main": [
+        [
+          {
+            "node": "Save Memo to Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/New_York"
+  },
+  "active": false,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

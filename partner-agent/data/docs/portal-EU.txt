@@ -1,0 +1,9 @@
+Partners in the EU region use the EMEA ordering experience in the partner portal. Orders are confirmed in euros (EUR) and all list prices on this page are effective from the price version date shown on the price list.
+
+To place an order, open Orders from the left menu, select the product SKU, choose the quantity, and review the computed reseller price. The reseller (net) price shown already applies your contractual discount band to the region list price.
+
+Order status is visible on the same page: Submitted, In Review, Approved, Shipped, Delivered. EU orders are typically confirmed within one business day once compliance review passes.
+
+Your monthly commission statement is generated on the 5th of the following month and appears under Reports. It lists gross booked value, applicable tier rebate rate, and the payable amount.
+
+Keep your tax registration and invoicing details current under Company Settings, because EU statements are issued against the legal entity on file. Invoice requests can be submitted from the Billing tab and route to the finance queue.

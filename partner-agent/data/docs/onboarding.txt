@@ -1,0 +1,11 @@
+Welcome to the Nexus Cloud Partner Program. This guide walks new partners through getting productive in the partner portal for the first time.
+
+To log in, go to portal.nexus.cloud and click "Sign in". Use the work email registered in your partner agreement. The first sign-in creates your account from the invitation email you received from your onboarding manager.
+
+After sign-in, complete your company profile: legal entity name, billing address, and primary contact. This profile is required before you can place orders or draw down co-marketing funds.
+
+Your portal home page shows your assigned tier, your account manager contact, active agreements, and a snapshot of your current annual contracted value (ACV) versus committed minimums.
+
+Bookmark the Help Center, which is linked from the top navigation bar. It contains the full policy library, a searchable knowledge base, and the support ticket form.
+
+If you cannot sign in after three attempts, open a ticket from the portal login page so the support team can check your invitation status. Do not create a second account while a ticket is open.

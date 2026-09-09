@@ -1,0 +1,7 @@
+invoice_id,date,product,segment,channel,qty,net_price,unit_cost,margin_contrib
+INV-2301,2026-07-28,Signature 10-pack,Premium,Online,420,9.99,2.60,3103.80
+INV-2302,2026-07-29,Signature 10-pack,Premium,Online,315,11.49,2.60,2800.35
+INV-2303,2026-07-29,Decaf 10-pack,Value,Grocery,510,8.49,2.20,3207.90
+INV-2304,2026-07-30,Everyday 10-pack,Value,Grocery,880,6.99,1.75,4611.20
+INV-2305,2026-07-30,Signature 10-pack,Premium,Online,260,10.49,2.60,2051.40
+INV-2306,2026-07-31,Decaf 10-pack,Value,Grocery,470,7.99,2.20,2721.30

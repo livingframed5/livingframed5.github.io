@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dMPS Deal Simulator — Pricing, Margin &amp; Compliance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+  :root {
+    --bg:#020617; --panel:rgba(30,41,59,.5); --panel2:rgba(30,41,59,.35); --card:rgba(30,41,59,.6);
+    --border:rgba(51,65,85,.4); --ink:#f1f5f9; --muted:#94a3b8; --dim:#64748b;
+    --sky:#38bdf8; --emerald:#34d399; --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa; --orange:#f97316; --red:#f87171;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink); font-family:'DM Sans',system-ui,sans-serif; line-height:1.6; min-height:100vh; }
+  .back-link {
+    position:fixed; top:16px; left:16px; z-index:40; display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:600; color:var(--muted); text-decoration:none; padding:7px 12px;
+    border:1px solid var(--border); border-radius:10px; background:rgba(2,6,23,.85); backdrop-filter:blur(8px);
+  }
+  .back-link:hover { color:var(--sky); border-color:var(--sky); }
+  header { border-bottom:1px solid var(--border); padding:14px 20px; position:sticky; top:0; z-index:20; background:rgba(2,6,23,.92); backdrop-filter:blur(12px); }
+  .hwrap { max-width:1500px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .hwrap h1 { font-size:15px; font-weight:600; letter-spacing:-0.01em; }
+  .hwrap .hsub { font-size:11px; color:var(--dim); margin-top:2px; }
+  .hbadges { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .hbadge { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--dim); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
+  .hbadge .pulse { width:6px; height:6px; border-radius:50%; background:var(--emerald); animation:pulse 1.6s infinite; }
+  #comBadge.ok { color:var(--emerald); border-color:rgba(52,211,153,.4); }
+  #comBadge.warn { color:var(--amber); border-color:rgba(251,191,36,.4); }
+  #comBadge.fail { color:var(--red); border-color:rgba(248,113,113,.4); }
+  @keyframes pulse { 0%{opacity:1} 50%{opacity:.35} 100%{opacity:1} }
+  .btn-sm { background:transparent; border:1px solid var(--border); color:var(--muted); font-family:inherit; font-size:11px; font-weight:600; padding:6px 10px; border-radius:8px; cursor:pointer; }
+  .btn-sm:hover { border-color:var(--sky); color:var(--ink); }
+  main { max-width:1500px; margin:0 auto; padding:20px 14px 40px; }
+  .layout { display:flex; flex-direction:column; gap:20px; }
+  @media (min-width:1180px) { .layout { flex-direction:row; } }
+  aside { width:100%; flex-shrink:0; display:flex; flex-direction:column; gap:12px; }
+  @media (min-width:1180px) { aside { width:340px; } }
+  .scenario-switch { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:8px; }
+  .scen-btn { border:1px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:11px; font-weight:600; padding:8px 4px; border-radius:8px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:all .15s ease; }
+  .scen-btn small { font-size:9px; opacity:.7; font-weight:500; }
+  .scen-btn.active { background:rgba(56,189,248,.12); border-color:rgba(56,189,248,.5); color:#7dd3fc; }
+  .scen-btn.aggressive.active { border-color:rgba(251,113,133,.5); color:var(--rose); background:rgba(251,113,133,.08); }
+  .scen-btn.value-add.active { border-color:rgba(52,211,153,.5); color:var(--emerald); background:rgba(52,211,153,.08); }
+  .explain-toggle { display:inline-flex; align-items:center; gap:8px; align-self:flex-start; border:1px solid var(--border); background:var(--panel); color:var(--dim); font-family:inherit; font-size:12px; font-weight:600; padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .explain-toggle .arr { font-size:9px; transition:transform .2s ease; }
+  .side-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .sc-head { display:flex; align-items:center; gap:6px; margin-bottom:12px; color:var(--dim); cursor:pointer; user-select:none; }
+  .sc-head p { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
+  .sc-chev { margin-left:auto; flex-shrink:0; transition:transform .2s ease; }
+  .side-card.collapsed .sc-chev { transform:rotate(-90deg); }
+  .side-card.collapsed .sc-body { display:none; }
+  .sl-row { margin-bottom:14px; }
+  .sc-body .sl-row:last-child { margin-bottom:0; }
+  .sl-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:5px; }
+  .sl-top label { font-size:12px; color:var(--muted); line-height:1.3; }
+  .sl-top .sl-val { font-size:12px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:999px; background:#334155; cursor:pointer; outline:none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%; background:var(--th,#38bdf8); border:2px solid #0f172a; cursor:pointer; }
+  input[type=range]::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:var(--th,#38bdf8); border:2px solid #0f172a; cursor:pointer; }
+  input[type=number], select.ctl { width:100%; height:30px; background:#1e293b; border:1px solid var(--border); color:var(--ink); border-radius:7px; padding:0 8px; font-size:12px; font-weight:600; font-family:inherit; font-variant-numeric:tabular-nums; }
+  select.ctl { cursor:pointer; }
+  .tier-row { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; margin-bottom:10px; }
+  .tier-row label { font-size:10px; color:var(--dim); }
+  .tier-row input[type=number] { height:28px; font-size:11px; }
+  .tier-row .tD { width:56px; text-align:center; font-size:11px; font-weight:700; color:var(--violet); font-variant-numeric:tabular-nums; }
+  .tier-row input[type=range] { grid-column:1/-1; }
+  .dash { flex:1; min-width:0; display:flex; flex-direction:column; gap:16px; }
+  .explainer { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px 16px; font-size:13px; color:var(--muted); line-height:1.6; }
+  .explainer strong { color:var(--ink); }
+  .kpi-row-label { font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:#475569; margin-bottom:8px; padding:0 2px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  @media (min-width:1024px) { .kpi-grid { grid-template-columns:repeat(4,1fr); } }
+  .kpi { background:var(--card); border:1px solid var(--border); border-left:2px solid #334155; border-radius:12px; padding:14px; }
+  .k-head { display:flex; align-items:center; gap:6px; color:var(--dim); margin-bottom:6px; font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+  .k-val { font-size:20px; font-weight:600; line-height:1.2; color:var(--ink); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .k-sub { font-size:11px; color:var(--dim); margin-top:4px; line-height:1.4; }
+  .ac-green { border-left-color:var(--emerald); } .ac-red { border-left-color:var(--red); } .ac-sky { border-left-color:var(--sky); } .ac-amber { border-left-color:var(--amber); } .ac-violet { border-left-color:var(--violet); }
+  .chart-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .chart-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .chart-head h2 { font-size:14px; font-weight:600; }
+  .ch-sub { font-size:11px; color:var(--dim); margin-top:2px; }
+  .tabs { display:flex; gap:4px; background:rgba(2,6,23,.6); border-radius:8px; padding:4px; flex-wrap:wrap; margin-top:10px; }
+  .tab { border:0; background:transparent; color:var(--dim); font-size:12px; font-weight:600; font-family:inherit; padding:6px 12px; border-radius:6px; cursor:pointer; transition:all .15s ease; }
+  .tab.active { background:#334155; color:var(--ink); }
+  .tab:hover:not(.active) { color:#cbd5e1; background:#1e293b; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--dim); margin:8px 0; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .legend .sw { width:14px; height:3px; border-radius:2px; display:inline-block; }
+  .table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px; }
+  .table th,.table td { text-align:right; padding:8px 10px; border-bottom:1px solid var(--border); }
+  .table th { color:var(--muted); font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+  .table td:first-child,.table th:first-child { text-align:left; color:var(--ink); }
+  .table tr.sub td { color:var(--dim); font-size:11px; }
+  .table tr.total td { font-weight:700; color:var(--ink); border-top:2px solid #334155; }
+  .compare { display:grid; grid-template-columns:1fr; gap:12px; }
+  @media (min-width:760px) { .compare { grid-template-columns:repeat(3,1fr); } }
+  .scen-card { background:var(--card); border:1px solid var(--border); border-top:3px solid var(--sky); border-radius:14px; overflow:hidden; }
+  .scen-card.ca-agg { border-top-color:var(--rose); }
+  .scen-card.ca-base { border-top-color:var(--sky); }
+  .scen-card.ca-high { border-top-color:var(--emerald); }
+  .scen-head { padding:12px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+  .scen-head .nm { font-size:13px; font-weight:700; }
+  .scen-head .tag { font-size:10px; color:var(--dim); margin-top:1px; }
+  .scen-head .chip { font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .chip-ok { background:rgba(52,211,153,.12); color:var(--emerald); border:1px solid rgba(52,211,153,.3); }
+  .chip-fail { background:rgba(248,113,113,.12); color:var(--red); border:1px solid rgba(248,113,113,.3); }
+  .scen-body { padding:8px 14px 12px; }
+  .kb-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 0; border-bottom:1px dashed rgba(100,116,139,.25); font-size:12px; }
+  .kb-row:last-child { border-bottom:0; }
+  .kb-row .kb-l { color:var(--muted); }
+  .kb-row .kb-v { font-weight:700; font-variant-numeric:tabular-nums; }
+  .bar-track { height:6px; background:rgba(51,65,85,.6); border-radius:999px; overflow:hidden; margin:4px 0 6px; }
+  .bar-fill { height:100%; border-radius:999px; transition:width .3s ease; }
+  .mini-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:12px; }
+  @media (min-width:640px) { .mini-grid { grid-template-columns:repeat(4,1fr); } }
+  .mini { background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+  .mini .m-lbl { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--dim); margin-bottom:4px; }
+  .mini .m-val { font-size:17px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .overlay-sliders { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:10px 0 4px; }
+  @media (max-width:640px) { .overlay-sliders { grid-template-columns:1fr; } }
+  .ov-row { background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  .ov-row p { font-size:11px; color:var(--dim); margin-top:6px; line-height:1.5; }
+  .sens-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .sens-row .s-lbl { flex:0 0 170px; font-size:12px; color:var(--muted); }
+  .sens-row .s-track { flex:1; height:18px; background:rgba(51,65,85,.3); border-radius:6px; overflow:hidden; position:relative; }
+  .sens-row .s-tick { position:absolute; top:0; bottom:0; width:2px; background:var(--ink); opacity:.55; z-index:2; }
+  .sens-row .s-fill { position:absolute; top:0; bottom:0; border-radius:6px; transition:width .2s ease, left .2s ease; }
+  .sens-row .s-note { flex:0 0 190px; text-align:right; font-size:10px; font-variant-numeric:tabular-nums; color:var(--dim); }
+  .sens-row .s-note b { color:var(--ink); }
+  .com-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; background:var(--panel2); font-size:12px; }
+  .com-row .com-name { flex:0 0 190px; color:var(--muted); }
+  .com-row .com-st { flex:0 0 62px; text-align:center; font-size:10px; font-weight:700; padding:3px 6px; border-radius:999px; letter-spacing:.04em; }
+  .com-row .com-val { margin-left:auto; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .com-row .com-th { color:var(--dim); font-weight:500; white-space:nowrap; margin-left:10px; }
+  .st-pass { background:rgba(52,211,153,.14); color:var(--emerald); }
+  .st-fail { background:rgba(248,113,113,.14); color:var(--red); }
+  .st-warn { background:rgba(251,191,36,.14); color:var(--amber); }
+  .fail-row { border-color:rgba(248,113,113,.5); }
+  .warn-row { border-color:rgba(251,191,36,.5); }
+  .th-edit { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-bottom:16px; }
+  .th-field { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .th-field label { display:block; font-size:11px; color:var(--muted); margin-bottom:6px; }
+  .th-field .wrap { display:flex; align-items:center; gap:6px; }
+  .th-field .wrap span { color:var(--dim); font-size:11px; }
+  .green { color:var(--emerald) !important; } .red { color:var(--red) !important; } .amber { color:var(--amber) !important; }
+  .note { background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--muted); line-height:1.6; }
+  .note strong { color:var(--ink); }
+  .method { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .method > button { width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--panel2); border:0; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; color:#cbd5e1; text-align:left; }
+  .method > button:hover { background:rgba(30,41,59,.7); }
+  .chev { color:var(--dim); transition:transform .2s ease; flex-shrink:0; }
+  .method.open .chev { transform:rotate(180deg); }
+  .method-body { display:none; grid-template-columns:1fr; gap:16px 32px; padding:16px 20px; background:rgba(2,6,23,.5); border-top:1px solid var(--border); }
+  @media (min-width:640px) { .method-body { grid-template-columns:1fr 1fr; } }
+  .method.open .method-body { display:grid; }
+  .method-body h3 { font-size:12px; font-weight:700; color:#cbd5e1; margin-bottom:4px; }
+  .method-body p { font-size:12px; color:var(--dim); line-height:1.6; }
+
+  /* ───── light theme ───── */
+  html.light {
+    --bg:#f1f5f9; --panel:rgba(255,255,255,.92); --panel2:rgba(241,245,249,.92); --card:rgba(255,255,255,.96);
+    --border:rgba(15,23,42,.14); --ink:#0f172a; --muted:#475569; --dim:#94a3b8;
+  }
+  html.light .back-link { background:rgba(255,255,255,.9); }
+  html.light header { background:rgba(255,255,255,.92); }
+  html.light .tabs { background:rgba(15,23,42,.06); }
+  html.light .tab.active { background:#e2e8f0; color:var(--ink); }
+  html.light input[type=range] { background:#cbd5e1; }
+  html.light input[type=range]::-webkit-slider-thumb { border-color:#fff; }
+  html.light input[type=range]::-moz-range-thumb { border-color:#fff; }
+  html.light input[type=number], html.light select.ctl { background:#fff; }
+  html.light .method-body { background:rgba(255,255,255,.7); }
+  html.light .method > button { color:var(--ink); }
+  html.light .method > button:hover { background:rgba(226,232,240,.8); }
+  html.light .method-body h3, html.light .method-body p { color:var(--muted); }
+  html.light .kpi-row-label { color:var(--dim); }
+  html.light .bar-track { background:#e2e8f0; }
+  html.light .sens-row .s-track { background:#e2e8f0; }
+  html.light .scen-btn.active { color:#0369a1; }
+  html.light .scen-btn.aggressive.active { color:#e11d48; }
+  html.light .scen-btn.value-add.active { color:#059669; }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← Back to portfolio</a>
+
+<header>
+  <div class="hwrap">
+    <div>
+      <h1>Managed Print (dMPS) Deal Simulator</h1>
+      <p class="hsub">Price it · Model it · Validate it against corporate controls — live.</p>
+    </div>
+    <div class="hbadges">
+      <div class="hbadge"><span class="pulse"></span>Live model</div>
+      <div class="hbadge" id="comBadge"> <span id="comText">controls: —</span></div>
+      <button class="btn-sm" id="resetBtn" title="Reset the active scenario">↺ Reset scenario</button>
+      <button class="btn-sm" id="themeBtn" title="Toggle light / dark">◐ Light</button>
+      <button class="btn-sm" id="csvBtn" title="Export disabled on this preview" aria-disabled="true">⭳ Export CSV</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+
+    <aside>
+      <div class="scenario-switch">
+        <button class="scen-btn aggressive active" data-scen="agg"><span>⚡ Aggressive</span><small>Low-margin · to win</small></button>
+        <button class="scen-btn" data-scen="base"><span>◎ Base case</span><small>Standard</small></button>
+        <button class="scen-btn value-add" data-scen="high"><span>✦ Value-Add</span><small>High margin</small></button>
+      </div>
+      <button type="button" class="explain-toggle" id="explainToggle"><span>Explain these levers</span><span class="arr">▼</span></button>
+      <div id="fieldsRoot"></div>
+    </aside>
+
+    <div class="dash">
+      <div class="explainer">
+        <strong>What this does:</strong> Simulates a managed print &amp; enterprise-services deal. Three scenarios run side by side
+        (Aggressive / Base / Value-Add). Edit the active scenario's levers — contract term, mono/colour volumes, list pricing and
+        tiered volume discounts, hardware lease &amp; discounting, fully-burdened labour and utilisation, cost allocation and SLA
+        risk — and watch <strong>TCV, ACV, gross &amp; net margin</strong> and the <strong>business-control verdict</strong>
+        recalculate instantly.
+      </div>
+
+      <div>
+        <p class="kpi-row-label" id="kpiHeadLabel">Aggressive · low-margin to win</p>
+        <div class="kpi-grid">
+          <div class="kpi ac-sky"><div class="k-head"><span>TCV</span></div><div class="k-val" id="k-tcv">—</div><p class="k-sub">Total Contract Value (term)</p></div>
+          <div class="kpi ac-violet"><div class="k-head"><span>ACV</span></div><div class="k-val" id="k-acv">—</div><p class="k-sub" id="k-acvSub"></p></div>
+          <div class="kpi ac-amber"><div class="k-head"><span>Gross margin</span></div><div class="k-val" id="k-gm">—</div><p class="k-sub">Revenue − delivery cost</p></div>
+          <div class="kpi"><div class="k-head"><span>Net profit</span></div><div class="k-val" id="k-nm">—</div><p class="k-sub" id="k-nmSub">Net profit over term</p></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head">
+          <div><h2>Deal model &amp; analysis</h2><p class="ch-sub">Financial engine · cost allocation · guardrail-aware</p></div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-view="pnl">P&amp;L &amp; Allocation</button>
+          <button class="tab" data-view="scen">Scenario Sim</button>
+          <button class="tab" data-view="sens">Sensitivity</button>
+          <button class="tab" data-view="comp">Compliance</button>
+        </div>
+        <div id="view-pnl"></div>
+        <div id="view-scen" style="display:none"></div>
+        <div id="view-sens" style="display:none"></div>
+        <div id="view-comp" style="display:none"></div>
+      </div>
+
+      <div class="method" id="method">
+        <button id="methodBtn" aria-expanded="false">
+          <span>Calculation logic &amp; methodology</span>
+          <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="method-body">
+          <div><h3>Revenue build-up (monthly · yr 1)</h3><p>Click revenue = mono pages × (list × (1−tier disc.)) + colour pages × (list × (1−tier disc.)). Hardware = lease cost × (1+markup) × (1−discount), billed onward. Labour = billable hours × fully-burdened hourly rate × (1+markup). Add per-device hardware/software service fees and the one-time setup fee.</p></div>
+          <div><h3>Fully-burdened labour</h3><p>Rate includes salary, payroll taxes, benefits, tooling and overhead loading. Utilization turns scheduled hours into billable hours; hours not billed stay a cost — this is the mechanism behind the Sensitivity pane.</p></div>
+          <div><h3>TCV / ACV / margin</h3><p>TCV = Σ over term of (monthly revenue × 12 × volume growth) + setup fee. ACV = TCV ÷ term. Gross margin = (revenue − direct cost) ÷ revenue. Net profit = gross − corporate overhead allocation − one-time deployment + setup fee, all over the contract term.</p></div>
+          <div><h3>Business Controls</h3><p>Five gates: gross margin, net margin, labour markup, blended-discount ceiling (volume + hardware concessions) and SLA exposure. Each scores PASS / WARN / FAIL against corporate floors you can edit on the Compliance tab — FAILs flag the deal for review before booking.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+'use strict';
+const BYID = id => document.getElementById(id);
+const SCEN_IDS = ['agg', 'base', 'high'];
+const SCEN_LABELS = {
+  agg:  ['Aggressive', 'Low-margin · price to win'],
+  base: ['Base Case', 'Standard commercial thresholds'],
+  high: ['Value-Add', 'High-margin value add']
+};
+
+/* ───────── helpers ───────── */
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function money(n) {
+  const abs = Math.abs(n), s = n < 0 ? '-' : '';
+  if (abs >= 1e6) return s + '$' + (abs / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (abs >= 1e4) return s + '$' + (abs / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return s + '$' + abs.toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+function full(n) { return n.toLocaleString(undefined, { maximumFractionDigits: 0 }); }
+function pct(n, d) { const dd = d === undefined ? 1 : d; return dd ? n.toFixed(dd) + '%' : Math.round(n) + '%'; }
+function svcFee(level) { return { Basic: 14, Std: 22, Premium: 36 }[level] || 22; }
+
+/* ───────── scenario definitions ───────── */
+function defaultTiers() { return [{ th: 0, d: 0 }, { th: 400000, d: 2 }, { th: 800000, d: 6 }, { th: 1500000, d: 12 }]; }
+function baseScenario(id) {
+  const agg = id === 'agg', high = id === 'high';
+  return {
+    id,
+    termYears: 3,
+    volumeMono: agg ? 1000000 : high ? 850000 : 900000,
+    volumeColor: 300000,
+    volGrowth: 3,
+    priceMono: agg ? 0.009 : high ? 0.017 : 0.0125,
+    priceColor: agg ? 0.024 : high ? 0.038 : 0.03,
+    tiers: defaultTiers(),
+    devices: 120,
+    hwLease: 120, hwMarkup: agg ? 10 : high ? 45 : 25, hwDiscount: agg ? 12 : 0,
+    hwSvc: 'Std', swSvc: 'Std', swCost: 16,
+    laborRate: 55, laborHours: 1200, laborUtilization: agg ? 70 : high ? 96 : 85, laborMargin: agg ? 20 : high ? 75 : 45,
+    consMono: 0.006, consColor: 0.028, deliveryCost: 4200, overheadPct: 10, deployment: 45000, setupFee: 25000,
+    slaTarget: agg ? 97 : high ? 99.5 : 98.5, slaRisk: agg ? 8 : high ? 1.5 : 3
+  };
+}
+
+const COMP_DEF = { minGross: 15, minNet: 5, minLaborMargin: 30, maxBlendedDisc: 22, maxSlaExposure: 0.5 };
+const STATE = {
+  active: 'agg', scen: {}, comp: Object.assign({}, COMP_DEF),
+  overlay: { enabled: false, util: 60, disc: 8 }, view: 'pnl'
+};
+SCEN_IDS.forEach(i => STATE.scen[i] = baseScenario(i));
+function cur() { return STATE.scen[STATE.active]; }
+function eff(s) {
+  if (!STATE.overlay.enabled) return s;
+  return Object.assign({}, s, { laborUtilization: STATE.overlay.util, hwDiscount: STATE.overlay.disc });
+}
+
+/* ───────── financial engine ───────── */
+function evaluate(raw) {
+  const s = eff(raw);
+  const months = s.termYears * 12;
+  const totalPages = s.volumeMono + s.volumeColor;
+  let tier = 0;
+  s.tiers.forEach(t => { if (totalPages >= t.th) tier = t.d; });
+  const blended = (1 - (1 - tier / 100) * (1 - s.hwDiscount / 100)) * 100;
+
+  const monoNet = s.priceMono * (1 - tier / 100);
+  const colourNet = s.priceColor * (1 - tier / 100);
+  const clickMono = s.volumeMono * monoNet;
+  const clickColour = s.volumeColor * colourNet;
+
+  const hwCost = s.devices * s.hwLease;
+  const hwRev = hwCost * (1 + s.hwMarkup / 100) * (1 - s.hwDiscount / 100);
+  const hwSvc = s.devices * svcFee(s.hwSvc);
+  const swRel = Math.round(s.devices * 1.1);
+  const swRev = swRel * (s.swSvc === 'Premium' ? 40 : s.swSvc === 'Basic' ? 18 : 28);
+  const swCost = swRel * 14;
+
+  const laborCost = s.laborHours * s.laborRate;
+  const billable = s.laborHours * (s.laborUtilization / 100);
+  const laborRev = billable * s.laborRate * (1 + s.laborMargin / 100);
+
+  const consum = s.volumeMono * s.consMono + s.volumeColor * s.consColor;
+  const rev = clickMono + clickColour + hwRev + hwSvc + swRev + laborRev;
+  const cost = hwCost + swCost + laborCost + consum + s.deliveryCost;
+
+  const slaPct = (s.slaRisk / 100) * 0.10; /* penalty capped at 10% of monthly revenue */
+  const slaExp = rev * slaPct;
+
+  let tRev = 0, tCost = 0, pages = 0;
+  for (let y = 0; y < s.termYears; y++) {
+    const g = Math.pow(1 + s.volGrowth / 100, y);
+    tRev += (rev - slaExp) * 12 * g;
+    tCost += cost * 12 * g;
+    pages += totalPages * 12 * g;
+  }
+  const gross = tRev - tCost;
+  const oh = tRev * s.overheadPct / 100;
+  const net = gross - oh - s.deployment + s.setupFee;
+  const tcv = tRev + s.setupFee;
+  const acv = tcv / Math.max(1, s.termYears);
+  const gm = tRev > 0 ? gross / tRev * 100 : -100;
+  const nm = tRev > 0 ? net / tRev * 100 : -100;
+
+  return {
+    s, months, tier, blended,
+    monthly: { rev, cost, gross: rev - cost, clickMono, clickColour, hwRev, hwCost, hwSvc, swRev, swCost, laborRev, laborCost, billable, consum, deliveryCost: s.deliveryCost, slaExp },
+    tRev, tCost, gross, oh, net, tcv, acv, gm: gm, nm: nm,
+    revPerPage: pages ? tRev / pages : 0, costPerPage: pages ? tCost / pages : 0,
+    pages, slaExp, slaExposurePct: slaPct * 100, laborMarkupPct: s.laborMargin,
+    amortDeploy: s.deployment / months
+  };
+}
+
+/* ───────── compliance gates ───────── */
+function compOf(val, th, lowIsGood) {
+  if (lowIsGood) return val <= th ? 'PASS' : (val <= th * 2 ? 'WARN' : 'FAIL');
+  return val >= th ? 'PASS' : (val >= th * 0.7 ? 'WARN' : 'FAIL');
+}
+function buildChecks(r) {
+  const c = STATE.comp;
+  return [
+    { name: 'Gross margin',      val: r.gm,                    th: c.minGross,        unit: '%', lowIsGood: false },
+    { name: 'Net margin',        val: r.nm,                    th: c.minNet,          unit: '%', lowIsGood: false },
+    { name: 'Labour markup',     val: r.s.laborMargin,         th: c.minLaborMargin,  unit: '%', lowIsGood: false },
+    { name: 'Blended discount',  val: r.blended,               th: c.maxBlendedDisc,  unit: '%', lowIsGood: true },
+    { name: 'SLA exposure',      val: r.slaExposurePct,        th: c.maxSlaExposure,  unit: '%', lowIsGood: true }
+  ].map(x => {
+    const status = compOf(x.val, x.th, x.lowIsGood);
+    return { name: x.name, val: x.val, th: x.th, unit: x.unit, status };
+  });
+}
+function verdict(r) { const k = buildChecks(r); return { pass: k.filter(x => x.status === 'PASS').length, checks: k }; }
+
+/* ───────── field schema ───────── */
+const FIELD_DEFS = [
+  { group: 'Volumes & Pricing', color: '#38bdf8', fields: [
+    { k: 'termYears',       label: 'Contract term',       min: 1,    max: 7,      step: 1,   fmt: v => v + ' yr' },
+    { k: 'volumeMono',      label: 'Mono pages/month',    min: 0,    max: 2000000, step: 50000, fmt: v => full(v) },
+    { k: 'volumeColor',     label: 'Colour pages/month',  min: 0,    max: 800000,  step: 20000, fmt: v => full(v) },
+    { k: 'volGrowth',       label: 'Volume growth/yr',    min: -5,   max: 15,     step: 1,   fmt: v => v + '%' },
+    { k: 'priceMono',       label: 'Mono list price $/pg', min: 0.004, max: 0.035, step: 0.0005, fmt: v => v.toFixed(4) },
+    { k: 'priceColor',      label: 'Colour list price $/pg', min: 0.01, max: 0.06, step: 0.001, fmt: v => v.toFixed(3) }
+  ]},
+  { group: 'Hardware & Leasing', color: '#34d399', fields: [
+    { k: 'devices',    label: 'Devices in scope',             min: 0,  max: 300, step: 10,  fmt: v => full(v) },
+    { k: 'hwLease',    label: 'Lease cost / device / mo',     min: 0,  max: 300, step: 5,   fmt: v => '$' + v },
+    { k: 'hwMarkup',   label: 'Hardware markup',              min: 0,  max: 80,  step: 5,   fmt: v => v + '%' },
+    { k: 'hwDiscount', label: 'Hardware discount (concession)', min: 0, max: 25, step: 1,  fmt: v => v + '%' },
+    { k: 'hwSvc',      label: 'Hardware service tier',        select: ['Basic', 'Std', 'Premium'], fmt: v => v }
+  ]},
+  { group: 'Software & Labour', color: '#a78bfa', fields: [
+    { k: 'swSvc',       label: 'Software tier',       select: ['Std', 'Basic', 'Premium'], fmt: v => v },
+    { k: 'laborRate',   label: 'Burdened labour $/hr', min: 20, max: 120, step: 1,  fmt: v => '$' + v },
+    { k: 'laborHours',  label: 'Labour hours / mo',   min: 0,  max: 4000, step: 50, fmt: v => full(v) },
+    { k: 'laborUtilization', label: 'Utilization %',  min: 20, max: 100, step: 1,  fmt: v => v + '%' },
+    { k: 'laborMargin', label: 'Labour markup %',     min: 0,  max: 150, step: 5,  fmt: v => v + '%' }
+  ]},
+  { group: 'Cost Allocation & Delivery', color: '#fbbf24', fields: [
+    { k: 'deliveryCost', label: 'PM / delivery · $/mo', min: 0, max: 20000, step: 250, fmt: v => '$' + full(v) },
+    { k: 'deployment',   label: 'One-time deployment', min: 0, max: 500000, step: 10000, fmt: v => '$' + full(v) },
+    { k: 'overheadPct',  label: 'Corporate overhead %', min: 0, max: 30, step: 1, fmt: v => v + '%' },
+    { k: 'setupFee',     label: 'One-time setup fee', min: 0, max: 200000, step: 5000, fmt: v => '$' + full(v) }
+  ]},
+  { group: 'SLA & Service Levels', color: '#f97316', fields: [
+    { k: 'slaTarget', label: 'Uptime SLA target %',   min: 95, max: 99.9, step: 0.1, fmt: v => v.toFixed(1) + '%' },
+    { k: 'slaRisk',   label: 'Breach likelihood %/yr', min: 0, max: 30,  step: 0.5, fmt: v => v + '%' }
+  ]}
+];
+const SLA_PEN = 0.10; // penalty cap constant
+
+/* ───────── sidebar rendering ───────── */
+function renderFields() {
+  const s = cur();
+  const chev = '<svg class="sc-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+  let html = '';
+  FIELD_DEFS.forEach(g => {
+    html += '<div class="side-card"><div class="sc-head"><p>' + g.group + '</p>' + chev + '</div><div class="sc-body">';
+    g.fields.forEach(f => {
+      html += '<div class="sl-row"><div class="sl-top"><label>' + f.label + '</label><span class="sl-val" data-q="' + f.k + '"></span></div>' + controlHTML(f, s[f.k], g.color) + '</div>';
+    });
+    html += '</div></div>';
+  });
+  // tier card
+  html += '<div class="side-card"><div class="sc-head"><p>Volume discount tiers</p>' + chev + '</div><div class="sc-body">';
+  s.tiers.forEach((t, i) => {
+    html += '<div class="tier-row"><label>' + (i === 0 ? 'From volume' : 'Tier ' + i) + '</label><label>discount</label><span class="tD" data-tv="' + i + '">' + t.d + '%</span>'
+      + '<input type="number" data-ti="' + i + '" data-key="th" value="' + t.th.toFixed(0) + '" min="0" step="10000" title="Monthly volume threshold" />'
+      + '<input type="range" data-ti="' + i + '" data-key="d" min="0" max="25" step="0.5" value="' + t.d + '" style="--th:#a78bfa" title="Discount % at this tier" /></div>';
+  });
+  html += '<p class="ch-sub">Discount triggers when total monthly pages reach each tier.</p></div></div>';
+
+  BYID('fieldsRoot').innerHTML = html;
+  recompute();
+}
+
+function controlHTML(f, v, color) {
+  if (f.select) {
+    const o = f.select.map(x => '<option' + (x === v ? ' selected' : '') + '>' + x + '</option>').join('');
+    return '<select class="ctl" data-k="' + f.k + '">' + o + '</select>';
+  }
+  return '<input type="range" data-k="' + f.k + '" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + v + '" style="--th:' + color + '">';
+}
+
+function refreshLabels() {
+  const s = cur();
+  FIELD_DEFS.forEach(g => g.fields.forEach(f => {
+    const el = document.querySelector('[data-q="' + f.k + '"]');
+    if (el) el.textContent = f.fmt ? f.fmt(s[f.k]) : s[f.k];
+  }));
+}
+function syncTiers() {
+  cur().tiers.forEach((t, i) => {
+    const tv = document.querySelector('[data-tv="' + i + '"]');
+    if (tv) tv.textContent = t.d + '%';
+  });
+}
+
+/* ───────── input wiring ───────── */
+function bindInputs() {
+  document.querySelectorAll('#fieldsRoot input, #fieldsRoot select').forEach(el => {
+    el.addEventListener('input', () => {
+      const s = cur();
+      const k = el.dataset.k;
+      if (k) { s[k] = el.tagName === 'SELECT' ? el.value : Number(el.value); }
+      else if (el.dataset.ti !== undefined) {
+        const i = +el.dataset.ti, key = el.dataset.key;
+        s.tiers[i][key] = Number(el.value);
+        syncTiers();
+      }
+      refreshLabels();
+      recompute();
+    });
+  });
+}
+
+/* ───────── recompute / kpi / views ───────── */
+function recompute() {
+  const r = evaluate(cur());
+  const v = verdict(r);
+  // KPI cards
+  BYID('k-tcv').textContent = money(r.tcv);
+  BYID('k-acv').textContent = money(r.acv);
+  BYID('k-acvSub').textContent = r.months + ' months · ' + money(r.acv) + ' /yr';
+  const gEl = BYID('k-gm'), nEl = BYID('k-nm');
+  gEl.textContent = pct(r.gm);
+  gEl.className = 'k-val ' + (r.gm >= STATE.comp.minGross ? 'green' : r.gm >= STATE.comp.minGross * 0.7 ? 'amber' : 'red');
+  nEl.textContent = money(r.net);
+  nEl.className = 'k-val ' + (r.net >= 0 ? 'green' : 'red');
+  BYID('k-nmSub').textContent = 'Net profit, ' + r.months + ' mo';
+  // header compliance pill
+  const cb = BYID('comBadge'), ct = BYID('comText');
+  ct.textContent = v.pass + ' / ' + v.checks.length + ' gates passed';
+  cb.className = 'hbadge ' + (v.pass === v.checks.length ? 'ok' : v.pass >= 3 ? 'warn' : 'fail');
+  // render active view
+  const view = STATE.view;
+  ['pnl', 'scen', 'sens', 'comp'].forEach(vn => {
+    BYID('view-' + vn).style.display = vn === view ? 'block' : 'none';
+  });
+  if (view === 'pnl')   renderPnl(r);
+  if (view === 'scen')  renderScen();
+  if (view === 'sens')  renderSens();
+  if (view === 'comp')  renderComp(r);
+}
+
+/* ───────── view: P&L ───────── */
+function renderPnl(r) {
+  const b = r.monthly;
+  const num = v => v >= 0 ? money(v) : '-' + money(-v);
+  let html = '<div class="note"><strong>Active:</strong> ' + SCEN_LABELS[cur().id][0] + ' · ' + r.months + '-month term · ' +
+    money(r.tRev) + ' revenue · ' + money(r.net) + ' net (gross margin ' + pct(r.gm) + ')</div>';
+  html += '<h3 style="font-size:12px;color:var(--muted);margin:12px 0 0">Monthly revenue &amp; cost (year 1)</h3>' +
+    '<table class="table"><thead><tr><th>Line</th><th>Revenue</th><th>Cost</th></tr></thead><tbody>' +
+    '<tr><td>Click revenue — mono</td><td>' + money(b.clickMono) + '</td><td></td></tr>' +
+    '<tr><td>Click revenue — colour</td><td>' + money(b.clickColour) + '</td><td></td></tr>' +
+    '<tr><td>Hardware bill-out</td><td>' + money(b.hwRev) + '</td><td>' + money(b.hwCost) + '</td></tr>' +
+    '<tr><td>Hardware service fees</td><td>' + money(b.hwSvc) + '</td><td></td></tr>' +
+    '<tr><td>Software licences</td><td>' + money(b.swRev) + '</td><td>' + money(b.swCost) + '</td></tr>' +
+    '<tr><td>Labour billings</td><td>' + money(b.laborRev) + '</td><td>' + money(b.laborCost) + '</td></tr>' +
+    '<tr><td>Consumables</td><td></td><td>' + money(b.consum) + '</td></tr>' +
+    '<tr><td>Delivery / PM</td><td></td><td>' + money(b.deliveryCost) + '</td></tr>' +
+    '<tr class="total"><td>Total</td><td>' + money(b.rev) + '</td><td>' + money(b.cost) + '</td></tr>' +
+    '<tr class="total"><td>Monthly gross profit</td><td colspan="2">' + money(b.gross) + ' (' + (b.rev ? (b.gross / b.rev * 100).toFixed(1) : 0) + '%)</td></tr>' +
+    '</tbody></table>';
+  html += '<h3 style="font-size:12px;color:var(--muted);margin:16px 0 0">Term economics</h3>' +
+    '<table class="table"><tbody>' +
+    '<tr><td>Total contract value (recurring + setup)</td><td>' + money(r.tcv) + '</td></tr>' +
+    '<tr><td>ACV</td><td>' + money(r.acv) + '</td></tr>' +
+    '<tr><td>Total revenue</td><td>' + money(r.tRev) + '</td></tr>' +
+    '<tr><td>Total direct cost</td><td>' + money(r.tCost) + '</td></tr>' +
+    '<tr><td>Gross profit (term)</td><td>' + money(r.gross) + ' · ' + pct(r.gm) + '</td></tr>' +
+    '<tr><td>Overhead allocation</td><td>− ' + money(r.oh) + '</td></tr>' +
+    '<tr><td>One-time deployment</td><td>− ' + money(r.s.deployment) + '</td></tr>' +
+    '<tr><td>Setup fee (billed upfront)</td><td>+' + money(r.s.setupFee) + '</td></tr>' +
+    '<tr class="total"><td>Net profit / margin</td><td>' + money(r.net) + ' · ' + pct(r.nm) + '</td></tr>' +
+    '</tbody></table>';
+  html += '<div class="note"><b>Displayed net margin</b> is net of overhead allocation and one-time deployment, before SG&A and taxes. SLA exposure this scenario ≈ ' + pct(r.slaExposurePct, 1) + ' of monthly revenue.</div>';
+  BYID('view-pnl').innerHTML = html;
+}
+
+/* ───────── view: Scenario Sim ───────── */
+function renderScen() {
+  const html = SCEN_IDS.map(id => {
+    const r = evaluate(STATE.scen[id]);
+    const v = verdict(r);
+    const pass = v.pass === v.checks.length;
+    return '<div class="scen-card ca-' + id + '">' +
+      '<div class="scen-head"><div><div class="nm">' + SCEN_LABELS[id][0] + '</div><div class="tag">' + SCEN_LABELS[id][1] + '</div></div>' +
+      '<div class="' + (pass ? 'chip chip-ok' : 'chip chip-fail') + '">' + v.pass + '/' + v.checks.length + ' gates</div></div>' +
+      '<div class="scen-body">' +
+      kb('TCV', money(r.tcv)) + kb('ACV', money(r.acv)) +
+      kb('Gross margin', pct(r.gm)) +
+      bar(r.gm, STATE.comp.minGross) +
+      kb('Net margin', pct(r.nm)) +
+      kb('Net profit', money(r.net)) +
+      kb('Blended discount', pct(r.blended, 1)) + kb('Labour utilization', pct(r.s.laborUtilization)) +
+      '<div class="note">Click price mono ' + r.s.priceMono.toFixed(4) + ' · colour ' + r.s.priceColor.toFixed(3) + ' · hw disc ' + r.s.hwDiscount + '%</div>' +
+      '</div></div>';
+  }).join('');
+  BYID('view-scen').innerHTML = '<div class="compare">' + html + '</div>';
+}
+function kb(l, n) { return '<div class="kb-row"><span class="kb-l">' + l + '</span><span class="kb-v">' + n + '</span></div>'; }
+function bar(pctV, th) {
+  const w = clamp(pctV / th * 100, 0, 100);
+  const col = pctV >= th ? '#34d399' : pctV >= th * 0.7 ? '#fbbf24' : '#fb7185';
+  return '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + col + '"></div></div>';
+}
+
+/* ───────── view: Sensitivity ───────── */
+function renderSens() {
+  const baseIds = SCEN_IDS;
+  const rows = baseIds.map(id => {
+    const base = evaluate(Object.assign({}, STATE.scen[id]));
+    return { id, base };
+  });
+  const maxW = Math.max(15, ...rows.map(x => x.base.gm));
+  let html = '<div class="overlay-sliders">' +
+    '<div class="ov-row"><div class="sl-top"><label>Labour utilization</label><span class="sl-val" id="v-util"></span></div>' +
+    '<input type="range" id="o-util" min="0" max="100" step="1" value="' + STATE.overlay.util + '" style="--th:#a78bfa">' +
+    '<p>Billable% of scheduled hours. Lower = more un-billed internal cost.</p></div>' +
+    '<div class="ov-row"><div class="sl-top"><label>Hardware discount</label><span class="sl-val" id="v-disc"></span></div>' +
+    '<input type="range" id="o-disc" min="0" max="25" step="1" value="' + STATE.overlay.disc + '" style="--th:#fbbf24">' +
+    '<p>Extra concession off hardware bill-out, applied when overlay is on.</p></div></div>';
+  html += '<label style="display:inline-flex;align-items:center;gap:8px;margin:10px 0 6px;font-size:12px;color:var(--muted);cursor:pointer">' +
+    '<input type="checkbox" id="ov-on"' + (STATE.overlay.enabled ? ' checked' : '') + '> Apply overlay across all scenarios</label>';
+  html += '<div class="note" style="margin-top:8px">Bars scale gross margin vs each scenario floor. Overlay re-baselines utilization and hardware discount for every scenario until unticked.</div>';
+  html += rows.map(r => {
+    const ov = evaluate(Object.assign({}, STATE.scen[r.id]));
+    const u = ov.s.laborUtilization;
+    const g = ov.gm;
+    const w = clamp(g / maxW * 100, 3, 100);
+    return '<div class="sens-row"><span class="s-lbl">' + SCEN_LABELS[r.id][0] + '</span>' +
+      '<span class="s-track"><span class="s-fill" style="left:0;width:' + w + '%;background:' + (g >= STATE.comp.minGross ? '#a78bfa' : '#fb7185') + '"></span></span>' +
+      '<span class="s-note">GM ' + pct(g) + ' · util ' + u + '%</span></div>';
+  }).join('');
+  BYID('view-sens').innerHTML = html;
+  BYID('v-util').textContent = STATE.overlay.util + '%';
+  BYID('v-disc').textContent = STATE.overlay.disc + '%';
+  bindSensitivity();
+}
+
+function bindSensitivity() {
+  const u = BYID('o-util'), d = BYID('o-disc'), on = BYID('ov-on');
+  if (!u || !d) return;
+  u.addEventListener('input', () => { STATE.overlay.util = Number(u.value); BYID('v-util').textContent = STATE.overlay.util + '%'; if (STATE.overlay.enabled) recompute(); });
+  d.addEventListener('input', () => { STATE.overlay.disc = Number(d.value); BYID('v-disc').textContent = STATE.overlay.disc + '%'; if (STATE.overlay.enabled) recompute(); });
+  if (on) on.addEventListener('change', () => { STATE.overlay.enabled = on.checked; recompute(); });
+}
+
+/* ───────── view: Compliance ───────── */
+function renderComp(r) {
+  const v = verdict(r);
+  let html = '<h3 style="font-size:12px;color:var(--muted);margin:10px 0 6px">Corporate gate thresholds</h3>';
+  html += '<div class="th-edit">' + [
+    ['minGross', 'Min gross margin %', STATE.comp.minGross],
+    ['minNet', 'Min net margin %', STATE.comp.minNet],
+    ['minLaborMargin', 'Min labour markup %', STATE.comp.minLaborMargin],
+    ['maxBlendedDisc', 'Max blended discount %', STATE.comp.maxBlendedDisc],
+    ['maxSlaExposure', 'Max SLA exposure %', STATE.comp.maxSlaExposure]
+  ].map(x => '<div class="th-field"><label>' + x[1] + '</label><div class="wrap"><input type="number" data-th="' + x[0] + '" value="' + x[2] + '" step="0.5" min="0"></div></div>').join('') + '</div>';
+  html += '<h3 style="font-size:12px;color:var(--muted);margin:6px 0 6px">Active scenario gates</h3>';
+  html += v.checks.map(c => {
+    const stCls = c.status === 'PASS' ? 'st-pass' : c.status === 'WARN' ? 'st-warn' : 'st-fail';
+    const rowCls = c.status === 'FAIL' ? 'fail-row' : c.status === 'WARN' ? 'warn-row' : '';
+    return '<div class="com-row ' + rowCls + '"><span class="com-name">' + c.name + '</span>' +
+      '<span class="com-st ' + stCls + '" style="flex:0 0 62px">' + c.status + '</span>' +
+      '<span class="com-th">' + c.th + c.unit + '</span><span class="com-val ' + (c.status === 'PASS' ? 'green' : 'red') + '">' +
+      (c.unit.indexOf('margin') > -1 ? pct(c.val) : c.val.toFixed(2) + c.unit) + '</span></div>';
+  }).join('');
+  html += '<div class="note"><b>Verdict:</b> ' + v.pass + ' of ' + v.checks.length + ' gates passed for the active scenario' +
+    (v.pass === v.checks.length ? ' — deal can proceed to booking review.' : ' — <span class="red">bring thresholds or structure into compliance before booking.</span>') + '</div>';
+  BYID('view-comp').innerHTML = html;
+  BYID('view-comp').querySelectorAll('input[data-th]').forEach(el => {
+    el.addEventListener('input', () => {
+      STATE.comp[el.dataset.th] = Number(el.value);
+      recompute();
+    });
+  });
+}
+
+/* ───────── tab wiring ───────── */
+function bindTabs() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      STATE.view = t.dataset.view;
+      const r = evaluate(cur());
+      if (STATE.view === 'pnl')   renderPnl(r);
+      if (STATE.view === 'scen')  renderScen();
+      if (STATE.view === 'sens')  renderSens();
+      if (STATE.view === 'comp')  renderComp(r);
+      ['pnl', 'scen', 'sens', 'comp'].forEach(vn => { BYID('view-' + vn).style.display = vn === STATE.view ? 'block' : 'none'; });
+    });
+  });
+}
+
+/* ───────── scenario buttons / utility ───────── */
+function bindScenarioSwitch() {
+  document.querySelectorAll('.scen-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      STATE.active = b.dataset.scen;
+      document.querySelectorAll('.scen-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      BYID('kpiHeadLabel').textContent = SCEN_LABELS[STATE.active][0] + ' · ' + SCEN_LABELS[STATE.active][1];
+      renderFields();
+      recompute();
+    });
+  });
+}
+
+/* ───────── CSV export ───────── */
+function exportCSV() {
+  const rows = [];
+  const head = ['Metric'].concat(SCEN_IDS.map(id => SCEN_LABELS[id][0]));
+  rows.push(head.join(','));
+  function add(name, fn) {
+    rows.push([name].concat(SCEN_IDS.map(id => fn(evaluate(STATE.scen[id])))).join(','));
+  }
+  add('TCV', r => r.tcv.toFixed(2));
+  add('ACV', r => r.acv.toFixed(2));
+  add('Revenue (term)', r => r.tRev.toFixed(2));
+  add('Direct cost (term)', r => r.tCost.toFixed(2));
+  add('Gross margin %', r => r.gm.toFixed(2));
+  add('Net margin %', r => r.nm.toFixed(2));
+  add('Net profit', r => r.net.toFixed(2));
+  add('Blended discount %', r => r.blended.toFixed(2));
+  add('Mono pages', r => r.s.volumeMono);
+  add('Colour pages', r => r.s.volumeColor);
+  add('Mono price', r => r.s.priceMono);
+  add('Colour price', r => r.s.priceColor);
+  add('Hardware markup %', r => r.s.hwMarkup);
+  add('Labour markup %', r => r.s.laborMargin);
+  add('Utilization %', r => r.s.laborUtilization);
+  add('SLA exposure %', r => r.slaExposurePct.toFixed(2));
+  const blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dmps-deal-simulator.csv';
+  a.click();
+}
+
+/* ───────── init ───────── */
+function init() {
+  if (localStorage.getItem('dmps-theme') === 'light') document.documentElement.classList.add('light');
+  const themeBtn = BYID('themeBtn');
+  const syncThemeBtn = () => { themeBtn.textContent = document.documentElement.classList.contains('light') ? '◐ Dark' : '◐ Light'; };
+  themeBtn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+    localStorage.setItem('dmps-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+    syncThemeBtn();
+  });
+  syncThemeBtn();
+  BYID('resetBtn').addEventListener('click', () => {
+    STATE.scen[STATE.active] = baseScenario(STATE.active);
+    renderFields();
+    bindInputs();
+  });
+  BYID('csvBtn').addEventListener('click', () => { /* export disabled on this preview */ });
+  window.addEventListener('beforeprint', ev => ev.preventDefault());
+  window.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'p') ev.preventDefault();
+    if ((ev.ctrlKey || ev.metaKey) && (ev.key.toLowerCase() === 's')) ev.preventDefault();
+  });
+  BYID('methodBtn').addEventListener('click', () => BYID('method').classList.toggle('open'));
+  BYID('explainToggle').addEventListener('click', () => {
+    const on = document.querySelector('aside').classList.toggle('explain');
+    BYID('explainToggle').children[1].textContent = on ? '▲' : '▼';
+  });
+  document.querySelectorAll('.sc-head').forEach(h => h.addEventListener('click', () => h.closest('.side-card').classList.toggle('collapsed')));
+  bindScenarioSwitch();
+  bindTabs();
+  renderFields();
+  bindInputs();
+  recompute();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

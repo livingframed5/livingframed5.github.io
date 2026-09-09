@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAR Process Documentation &amp; Governance Framework</title>
+<style>
+  :root {
+    --ink: #1a2332;
+    --muted: #5b6b7f;
+    --accent: #1f4e79;
+    --accent-2: #0e3a5c;
+    --line: #d9e1ea;
+    --soft: #f4f7fa;
+    --input-fill: #fbfdff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", -apple-system, Arial, sans-serif;
+    color: var(--ink);
+    background: #eef1f5;
+    margin: 0;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+  .sheet {
+    max-width: 980px;
+    margin: 24px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(20,40,70,.12);
+    overflow: hidden;
+  }
+  .band {
+    background: linear-gradient(120deg, var(--accent-2), var(--accent) 60%, #2e6da4);
+    color: #fff;
+    padding: 28px 40px 22px;
+  }
+  .band h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
+  .band .sub { margin: 6px 0 0; font-size: 14px; opacity: .92; }
+  .band .meta { margin-top: 14px; font-size: 12px; display: flex; gap: 20px; flex-wrap: wrap; opacity: .9; }
+  .body { padding: 12px 40px 48px; }
+  h2 {
+    font-size: 18px;
+    color: var(--accent);
+    border-left: 5px solid var(--accent);
+    padding-left: 12px;
+    margin: 34px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+  h3 { font-size: 15px; color: var(--accent-2); margin: 22px 0 8px; }
+  h4 { font-size: 13.5px; margin: 16px 0 6px; color: var(--ink); }
+  p { margin: 6px 0; }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: var(--soft);
+    margin: 14px 0;
+  }
+  .card h4 { margin-top: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 13px;
+  }
+  th {
+    background: var(--accent);
+    color: #fff;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 600;
+  }
+  td {
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+    vertical-align: top;
+    background: #fff;
+  }
+  tbody tr:nth-child(even) td { background: var(--soft); }
+  code {
+    background: var(--chip, #eef3f9);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+  }
+  pre {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: Consolas, monospace;
+    font-size: 12.5px;
+    overflow-x: auto;
+  }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+
+  /* Progress bar for completeness */
+  .progress-wrap { padding: 0 40px 6px; }
+  #progressBar { height: 8px; border-radius: 6px; overflow: hidden; background: var(--line); }
+  #progressFill { width: 0%; height: 100%; background: linear-gradient(90deg, #2e6da4, var(--accent)); transition: width .3s; }
+  #progressLabel { font-size: 12px; color: var(--muted); margin: 4px 0 0; text-align: right; }
+
+  /* Interactive inputs */
+  input.txt, textarea.txt {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--ink);
+    background: var(--input-fill);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 2px 6px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input.txt:focus, textarea.txt:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(31,78,121,.15);
+  }
+  input.cbx { accent-color: var(--accent); width: 15px; height: 15px; margin: 0 4px 0 0; vertical-align: -2px; }
+  .inline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  td input.txt { min-width: 70px; }
+  .sig {
+    border-top: 1px solid var(--line);
+    margin-top: 14px;
+    padding-top: 10px;
+    font-size: 12.5px;
+  }
+  .sig .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .sig label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .badge {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 11.5px; font-weight: 600;
+    background: var(--chip, #eef3f9); color: var(--accent); border: 1px solid var(--line);
+  }
+  .toolbar { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); padding: 8px 40px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(20,40,70,.08); }
+  .toolbar button {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  }
+  .toolbar button:hover { background: var(--accent-2); }
+  .toolbar button.ghost { background: #fff; color: var(--accent); border: 1px solid var(--line); }
+  .toolbar .backp {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--accent); text-decoration: none; border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 14px; background: #fff; white-space: nowrap;
+  }
+  .toolbar .backp:hover { background: var(--soft); border-color: var(--accent); }
+  .tabs { position: sticky; top: 52px; z-index: 9; background: #fff; border-bottom: 1px solid var(--line); padding: 6px 40px; display: flex; gap: 4px; }
+  .tabs button {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    background: transparent; color: var(--muted); border: 0; border-radius: 6px;
+    padding: 7px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .tabs button:hover { color: var(--accent); background: var(--soft); }
+  .tabs button.active { color: #fff; background: var(--accent); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .foot { border-top: 2px solid var(--line); margin-top: 30px; padding-top: 12px; font-size: 12px; color: var(--muted); text-align: center; }
+  @media print {
+    body { background: #fff; }
+    .sheet, .toolbar, .progress-wrap { display: none !important; }
+    #print-block {
+      display: flex !important;
+      position: fixed; inset: 0; z-index: 9999;
+      align-items: center; justify-content: center;
+      background: #fff; color: #1a2332; text-align: center; padding: 40px;
+    }
+    #print-block .pb-inner { max-width: 520px; }
+    #print-block .pb-icon {
+      width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%;
+      background: linear-gradient(120deg, #0e3a5c, #1f4e79 60%, #2e6da4);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+    }
+    #print-block h2 { margin: 0 0 8px; font-size: 22px; border: 0; padding: 0; text-transform: none; letter-spacing: 0; color: #1a2332; }
+    #print-block p { margin: 6px 0; font-size: 14px; color: #5b6b7f; line-height: 1.6; }
+    #print-block hr { border: 0; border-top: 1px solid #d9e1ea; margin: 18px 0; }
+  }
+#print-block { display: none; }
+</style>
+</head>
+<body>
+
+<div id="print-block">
+  <div class="pb-inner">
+    <div class="pb-icon">&#128274;</div>
+    <h2>Portfolio preview &mdash; not available for print</h2>
+    <p>This document is a live portfolio sample showing governance capability and is protected from printing, saving, and offline copying. It is meant to be reviewed on screen only.</p>
+    <hr>
+    <p>For access to the full editable framework or a permitted copy, please reach out to Whitney Smith directly.</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  <a class="backp" href="index.html">&larr; Portfolio</a>
+  <button type="button" disabled style="opacity:.45;cursor:not-allowed;" title="Printing temporarily disabled">Print / Save PDF</button>
+  <button type="button" class="ghost" onclick="localStorage.removeItem('soarData'); location.reload();">Clear All</button>
+  <span style="font-size:12px;color:var(--muted);margin-left:auto">Auto-saving to your browser</span>
+</div>
+
+<div class="tabs">
+  <button type="button" id="tabGuide" data-view="guide">&#128214; Guide</button>
+  <button type="button" id="tabDoc" class="active" data-view="doc">&#128220; SOAR Framework</button>
+</div>
+
+<div class="view" id="viewGuide">
+
+<div class="sheet">
+  <div class="band">
+    <h1>SOAR Framework &mdash; User Guide</h1>
+    <div class="sub">How to run a deal or program through the stage-gate governance process</div>
+    <div class="meta">
+      <span><b>Audience:</b> Pursuit Leads, Finance, PMO, Sponsors, Consultants</span>
+      <span><b>Time to read:</b> ~10 min</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <h2>How This Framework Works</h2>
+    <p>The SOAR framework is a <b>stage-gate governance system</b> for managed-services deals. Every committed dollar of effort, pricing, or risk must pass a formal gate before it is released. The framework lives in four stages, each guarded by a gate that cannot be skipped:</p>
+    <pre>S1 SCOPE &amp; QUALIFY &#8594; G1 &#8594; O2 OPPORTUNITY &amp; MODEL &#8594; G2 &#8594; A3 APPROVE &amp; COMMIT &#8594; G3 &#8594; R4 REVIEW &amp; RUN &#8594; G4 &#8594; G5 PROGRAM REVIEW (recurring)</pre>
+
+    <h2>Quick Tour of Tabs</h2>
+    <table>
+      <tr><th>Tab</th><th>What it does</th></tr>
+      <tr><td><b>Guide</b> (you are here)</td><td>Explains the process and how to fill each section.</td></tr>
+      <tr><td><b>SOAR Framework</b></td><td>The live, editable governance document. Type directly in fields; checkboxes track gates, controls, and document status. Progress auto-saves and shows at the top.</td></tr>
+    </table>
+
+    <h2>Gates &mdash; When to Call a Review</h2>
+    <table>
+      <tr><th>Gate</th><th>Trigger</th><th>Who must approve to pass</th></tr>
+      <tr><td><b>G1</b> Bid/No-Bid</td><td>Opportunity identified, before pursuit resources are used</td><td>Pursuit Lead + Sponsor</td></tr>
+      <tr><td><b>G2</b> Approval to Propose</td><td>Before the proposal/pricing is sent to the customer</td><td>Finance Controller + Deal Lead + Sponsor</td></tr>
+      <tr><td><b>G3</b> Approval to Commit</td><td>Before order booking and contract signature</td><td>CFO delegate + Legal + Sponsor</td></tr>
+      <tr><td><b>G4</b> Delivery Hand-off</td><td>Before delivery takes over from the pursuit team</td><td>Delivery Executive + PMO + Finance</td></tr>
+      <tr><td><b>G5</b> Program Review</td><td>Recurring (monthly/quarterly) during the contract</td><td>Program Director + Finance Controller</td></tr>
+    </table>
+    <p><b>Escalation:</b> any gate that fails, any control marked &ldquo;Not Met&rdquo;, or any guardrail breach (e.g., margin below MSL, cost-to-serve above threshold for 2+ months) goes up the escalation ladder in the <b>Escalation Pathways</b> section of the framework &mdash; in writing, within 48 hours, with a named owner.</p>
+
+    <h2>How to Fill the Financial Validation</h2>
+    <p>The <b>most important section for finance review</b>. Everything here must trace to a source document listed in the <b>Documentation Repository</b> (the Source Doc ID column is your audit trail).</p>
+    <ul>
+      <li><b>4.1 Deal Summary</b> &mdash; identity fields. Completing this makes the pack traceable.</li>
+      <li><b>4.2 TCV Schedule</b> &mdash; break TCV by revenue line. Total must reconcile to the order-booking value; if not, explain in the Reconciliation row.</li>
+      <li><b>4.3 Gross Margin</b> &mdash; one column for the original deal model, one for the latest forecast, one for actuals to date. Variance is model vs forecast. Pass column should only be ticked when results meet the guardrail (&ge; MSL for GM%).</li>
+      <li><b>4.4 Cost-to-Serve</b> &mdash; labor + third-party + overhead per operating month. The &ldquo;Cost-to-Serve (% of revenue)&rdquo; row is a guardrail metric &mdash; breaching it for 2+ months triggers escalation.</li>
+      <li><b>4.5 Variance Analysis</b> &mdash; the &ldquo;why&rdquo; behind every gap. Fill one row per driver. Root Cause + Mitigation + Owner + Due date are mandatory for any red/over-target item.</li>
+      <li><b>Forecast Health Statement</b> &mdash; completed by the Finance Controller. Overall assessment drives the gate decision (On plan / Watch / Over target / Red).</li>
+    </ul>
+
+    <h2>Controls &amp; Sign-Off</h2>
+    <ul>
+      <li>Tick <b>C1&ndash;C12</b> only when the evidence exists. &ldquo;Not Met&rdquo; blocks the gate and routes to escalation. Any waiver requires CFO + Compliance approval in writing.</li>
+      <li>The <b>Signature Blocks (5.2)</b> make the gate legally defensible: Finance, Risk/Compliance, Pursuit/Delivery, Sponsor, and PMO certification must all be signed for the gate to pass.</li>
+    </ul>
+
+    <h2>Document Repository</h2>
+    <ul>
+      <li><b>D1&ndash;D15</b> are the mandatory artifacts. Tick &ldquo;Uploaded?&rdquo; and enter the Doc ID. Missing mandatory docs block the gate.</li>
+      <li>Use <b>6.2 Repository Notes</b> for any annotations, exceptions, or where-files-live details.</li>
+    </ul>
+
+    <h2>Best Practices for Running a Gate Review</h2>
+    <ol>
+      <li>PMO issues the gate pack <b>&ge; 5 business days</b> before the gate date.</li>
+      <li>Reviewers pre-fill the <b>Financial Validation</b> and <b>Controls checklists</b> before the meeting &mdash; the meeting is for decisions, not data entry.</li>
+      <li>Keep to a <b>45-minute</b> meeting: status (10), finance deep-dive (15), risks/compliance (10), decision &amp; actions (10).</li>
+      <li>Decision options are always: <b>Approve / Approve with conditions / Reject &amp; rework / Escalate</b>.</li>
+      <li>File minutes + signed sign-offs in the repository within <b>48 hours</b>.</li>
+    </ol>
+
+    <div class="card">
+      <h4>Tip: Make it yours first</h4>
+      <p>Before running real reviews, open the <b>SOAR Framework</b> tab and replace every <code>[__]</code> placeholder with your organization&rsquo;s thresholds (MSL, guardrails, TCV threshold, retention years, naming convention). The form auto-saves as you go.</p>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<div class="view active" id="viewDoc">
+
+<div class="sheet">
+
+  <div class="band">
+    <h1>SOAR Process Documentation &amp; Governance Framework</h1>
+    <div class="sub">Complex Enterprise Managed Services (dMPS) &mdash; Pursuits &amp; Program Reviews</div>
+    <div class="meta">
+      <span><b>Document Type:</b> Interactive Governance Guide &amp; Review Template</span>
+      <span><b>Version:</b> 1.0 &nbsp;|&nbsp; <b>Status:</b> Draft for Review</span>
+      <span><b>Owner:</b> PMO / Finance Controls</span>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div id="progressLabel">0% complete</div>
+  </div>
+
+  <div class="body">
+
+    <h2>Document Control</h2>
+    <table>
+      <tr><td style="width:30%"><b>Document ID</b></td><td><input class="txt" data-k="docId" style="width:220px" value="SOAR-GOV-FW-001"></td></tr>
+      <tr><td><b>Prepared By</b></td><td><input class="txt" data-k="preparedBy" placeholder="Type name..."></td></tr>
+      <tr><td><b>Approved By (Governance Lead)</b></td><td><input class="txt" data-k="approvedBy" placeholder="Type name..."></td></tr>
+      <tr><td><b>Effective Date</b></td><td><input class="txt" data-k="effectiveDate" placeholder="DD/MM/YYYY"></td></tr>
+      <tr><td><b>Review Cycle</b></td><td><input class="txt" data-k="reviewCycle" style="width:280px" value="Quarterly or upon process change"></td></tr>
+      <tr><td><b>Controlled Copy Location</b></td><td><input class="txt" data-k="repoLoc" placeholder="SharePoint / PMO repository link"></td></tr>
+      <tr><td><b>Supersedes</b></td><td><input class="txt" data-k="supersedes" placeholder="Document ID / N/A"></td></tr>
+    </table>
+
+    <h2>Purpose &amp; Scope</h2>
+    <h3>Purpose</h3>
+    <p>This framework standardizes the <b>SOAR stage-gate governance</b> applied to complex enterprise managed services pursuits (bids) and in-flight program reviews. It ensures that every deal and program:</p>
+    <ul>
+      <li>Passes clearly defined <b>quality, financial, and compliance gates</b> before resources and commitments are released.</li>
+      <li>Has <b>validated financial status</b> (TCV, gross margin, labor cost, cost-to-serve) supported by verifiable source documentation.</li>
+      <li>Carries documented <b>business controls, compliance attestations, and risk mitigations</b> with accountable owners.</li>
+      <li>Reaches delivery with a <b>fully evidenced hand-off</b> and continues through governed program reviews.</li>
+    </ul>
+    <h3>Scope</h3>
+    <ul>
+      <li><b>In scope:</b> Managed services pursuits &ge; <input class="txt" data-k="tcvThreshold" style="width:110px" placeholder="[threshold $]"> TCV; all program reviews for active dMPS contracts; financial re-forecasts; change orders; renewals/extensions.</li>
+      <li><b>Out of scope:</b> Product development releases; non-managed-services T&amp;M work; internal admin projects (governed by <input class="txt" data-k="outOfScopeRef" style="width:160px" placeholder="[reference]">).</li>
+    </ul>
+
+    <h2>SOAR Governance Lifecycle Overview</h2>
+    <pre>S1 SCOPE &amp; QUALIFY &#8594; G1 &#8594; O2 OPPORTUNITY &amp; MODEL &#8594; G2 &#8594; A3 APPROVE &amp; COMMIT &#8594; G3 &#8594; R4 REVIEW &amp; RUN &#8594; G4 &#8594; G5 PROGRAM REVIEW (recurring)</pre>
+
+    <p>Replace the <code>[_%]</code> thresholds below with your organization&rsquo;s values, then tick the criteria as they are met for the gate in review.</p>
+
+    <!-- G1 -->
+    <h3>Gate Exit Criteria &mdash; Enter current review gate:</h3>
+    <table>
+      <tr><th>Stage</th><th>Name</th><th>Exit Criteria (ALL must be met)</th><th>Met?</th></tr>
+      <tr><td><b>S1</b></td><td>Scope &amp; Qualify</td><td>
+        Strategic fit confirmed / Indicative margin &ge; <input class="txt" data-k="g1Msl" style="width:54px" placeholder="__%"> at MSL / Capacity confirmed / Legal blockers assessed / Sponsor assigned
+      </td><td style="text-align:center"><input type="checkbox" class="cb" data-k="cg1"></td></tr>
+      <tr><td><b>O2</b></td><td>Opportunity &amp; Model</td><td>
+        Pricing model validated by Finance / GM% &ge; <input class="txt" data-k="g2Msl" style="width:54px" placeholder="__%"> after risk reserve / SOW peer-reviewed / Risk register owned / Repository complete
+      </td><td style="text-align:center"><input type="checkbox" class="cb" data-k="cg2"></td></tr>
+      <tr><td><b>A3</b></td><td>Approve &amp; Commit</td><td>
+        Booking compliance attested / GM &amp; TCV reconciled / Risk &amp; compliance sign-offs / Sponsor approval / Hand-off ready
+      </td><td style="text-align:center"><input type="checkbox" class="cb" data-k="cg3"></td></tr>
+      <tr><td><b>R4</b></td><td>Review &amp; Run (Hand-off)</td><td>
+        Financial baseline locked / Cost centers created / Consultant onboarding done / Governance cadence scheduled
+      </td><td style="text-align:center"><input type="checkbox" class="cb" data-k="cg4"></td></tr>
+      <tr><td><b>R5*</b></td><td>Program Review <i>(recurring)</i></td><td>
+        Variance &le; <input class="txt" data-k="g5Var" style="width:54px" placeholder="__%"> / Cost-to-serve within guardrail / Risk register current / No unreported leakage
+      </td><td style="text-align:center"><input type="checkbox" class="cb" data-k="cg5"></td></tr>
+    </table>
+
+    <h3>Escalation Pathways</h3>
+    <table>
+      <tr><th>Trigger</th><th>Level 1 (Immediate)</th><th>Level 2 (Executive)</th><th>Level 3 (Enterprise)</th></tr>
+      <tr><td>Margin at/below MSL after reserves</td><td>MEC</td><td>CFO sign-off</td><td>CEO/Board waiver</td></tr>
+      <tr><td>Booking rule breach / unapproved order</td><td>Finance Controller halt</td><td>CFO</td><td>Audit / Compliance</td></tr>
+      <tr><td>Cost-to-Serve &gt; guardrail <input class="txt" data-k="escalateCts" style="width:54px" placeholder="__%"> for 2+ months</td><td>Program Director</td><td>COO</td><td>Portfolio re-balance</td></tr>
+      <tr><td>Major risk materializing (severity 1)</td><td>Incident &amp; Risk Owner</td><td>PMO Board</td><td>Executive Steering</td></tr>
+      <tr><td>Out-of-scope scope creep &ge; <input class="txt" data-k="escalateScope" style="width:54px" placeholder="__%"> TCV</td><td>Change Control Board</td><td>CFO</td><td>Board notification</td></tr>
+    </table>
+
+    <h2>Project Financial Status &amp; Margin Validation Template</h2>
+    <p>Complete for every gate and program review. <b>All figures must trace to source documents</b> (see the Documentation Repository).</p>
+
+    <h3>Deal / Program Summary</h3>
+    <table>
+      <tr><td style="width:30%"><b>Deal / Program Name</b></td><td><input class="txt" data-k="dealName" placeholder="Type..."></td></tr>
+      <tr><td><b>Opportunity/Contract ID</b></td><td><input class="txt" data-k="contractId" placeholder="Type..."></td></tr>
+      <tr><td><b>Market Unit / Region</b></td><td><input class="txt" data-k="region" placeholder="Type..."></td></tr>
+      <tr><td><b>Pursuit Lead / Delivery PM</b></td><td><input class="txt" data-k="lead" placeholder="Type..."></td></tr>
+      <tr><td><b>Executive Sponsor</b></td><td><input class="txt" data-k="sponsor" placeholder="Type..."></td></tr>
+      <tr><td><b>Finance Controller</b></td><td><input class="txt" data-k="finance" placeholder="Type..."></td></tr>
+      <tr><td><b>Contract Start / End</b></td><td><input class="txt" data-k="term" placeholder="DD/MM/YYYY &ndash; DD/MM/YYYY"></td></tr>
+      <tr><td><b>Review Type</b></td><td><span class="inline"><label><input type="checkbox" class="cb" data-k="rtG1">G1</label><label><input type="checkbox" class="cb" data-k="rtG2">G2</label><label><input type="checkbox" class="cb" data-k="rtG3">G3</label><label><input type="checkbox" class="cb" data-k="rtG4">G4</label><label><input type="checkbox" class="cb" data-k="rtG5">G5</label></span></td></tr>
+      <tr><td><b>Review Date</b></td><td><input class="txt" data-k="reviewDate" placeholder="DD/MM/YYYY"></td></tr>
+      <tr><td><b>Currency</b></td><td><input class="txt" data-k="currency" style="width:90px" placeholder="USD/EUR/..."></td></tr>
+    </table>
+
+    <h3>Total Contract Value (TCV) Schedule</h3>
+    <table>
+      <tr><th>#</th><th>Revenue Line (from SOW/pricing model)</th><th>One-time</th><th>Recurring/Mo</th><th>Term (mos)</th><th>Recurring Total</th><th>Line TCV</th><th>% of TCV</th><th>Source Doc ID</th></tr>
+      <tr><td>1</td><td>Implementation / transition</td><td><input class="txt" data-k="tc1_ot"></td><td><input class="txt" data-k="tc1_rmo"></td><td><input class="txt" data-k="tc1_term"></td><td><input class="txt" data-k="tc1_rt"></td><td><input class="txt" data-k="tc1_tcv"></td><td><input class="txt" data-k="tc1_pct"></td><td><input class="txt" data-k="tc1_src"></td></tr>
+      <tr><td>2</td><td>Service desk / support</td><td><input class="txt" data-k="tc2_ot"></td><td><input class="txt" data-k="tc2_rmo"></td><td><input class="txt" data-k="tc2_term"></td><td><input class="txt" data-k="tc2_rt"></td><td><input class="txt" data-k="tc2_tcv"></td><td><input class="txt" data-k="tc2_pct"></td><td><input class="txt" data-k="tc2_src"></td></tr>
+      <tr><td>3</td><td>Infrastructure mgmt</td><td><input class="txt" data-k="tc3_ot"></td><td><input class="txt" data-k="tc3_rmo"></td><td><input class="txt" data-k="tc3_term"></td><td><input class="txt" data-k="tc3_rt"></td><td><input class="txt" data-k="tc3_tcv"></td><td><input class="txt" data-k="tc3_pct"></td><td><input class="txt" data-k="tc3_src"></td></tr>
+      <tr><td>4</td><td>Application services</td><td><input class="txt" data-k="tc4_ot"></td><td><input class="txt" data-k="tc4_rmo"></td><td><input class="txt" data-k="tc4_term"></td><td><input class="txt" data-k="tc4_rt"></td><td><input class="txt" data-k="tc4_tcv"></td><td><input class="txt" data-k="tc4_pct"></td><td><input class="txt" data-k="tc4_src"></td></tr>
+      <tr><td>5</td><td>Projects / enhancements</td><td><input class="txt" data-k="tc5_ot"></td><td><input class="txt" data-k="tc5_rmo"></td><td><input class="txt" data-k="tc5_term"></td><td><input class="txt" data-k="tc5_rt"></td><td><input class="txt" data-k="tc5_tcv"></td><td><input class="txt" data-k="tc5_pct"></td><td><input class="txt" data-k="tc5_src"></td></tr>
+      <tr><td>6</td><td>Third-party / COTS</td><td><input class="txt" data-k="tc6_ot"></td><td><input class="txt" data-k="tc6_rmo"></td><td><input class="txt" data-k="tc6_term"></td><td><input class="txt" data-k="tc6_rt"></td><td><input class="txt" data-k="tc6_tcv"></td><td><input class="txt" data-k="tc6_pct"></td><td><input class="txt" data-k="tc6_src"></td></tr>
+      <tr><td>7</td><td>Renewals / options</td><td><input class="txt" data-k="tc7_ot"></td><td><input class="txt" data-k="tc7_rmo"></td><td><input class="txt" data-k="tc7_term"></td><td><input class="txt" data-k="tc7_rt"></td><td><input class="txt" data-k="tc7_tcv"></td><td><input class="txt" data-k="tc7_pct"></td><td><input class="txt" data-k="tc7_src"></td></tr>
+      <tr><td>8</td><td>Other</td><td><input class="txt" data-k="tc8_ot"></td><td><input class="txt" data-k="tc8_rmo"></td><td><input class="txt" data-k="tc8_term"></td><td><input class="txt" data-k="tc8_rt"></td><td><input class="txt" data-k="tc8_tcv"></td><td><input class="txt" data-k="tc8_pct"></td><td><input class="txt" data-k="tc8_src"></td></tr>
+    </table>
+    <p><b>Reconciliation:</b> TCV above = Booking value <label><input type="checkbox" class="cb" data-k="reconYes">Yes</label> <label><input type="checkbox" class="cb" data-k="reconNo">No</label> &mdash; if no, explain: <input class="txt" data-k="reconExplain" style="width:60%"></p>
+
+    <h3>Gross Margin &amp; Profitability</h3>
+    <table>
+      <tr><th>Metric</th><th>Target (Model)</th><th>Revised Forecast</th><th>Actual (to date)</th><th>Variance ($)</th><th>Variance (%)</th><th>Guardrail</th><th>Pass?</th></tr>
+      <tr><td>Total Revenue (TCV recognized)</td><td><input class="txt" data-k="gm_rev_t"></td><td><input class="txt" data-k="gm_rev_f"></td><td><input class="txt" data-k="gm_rev_a"></td><td><input class="txt" data-k="gm_rev_vd"></td><td><input class="txt" data-k="gm_rev_vp"></td><td>&mdash;</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm1ok"></td></tr>
+      <tr><td>Direct Labor Cost</td><td><input class="txt" data-k="gm_lab_t"></td><td><input class="txt" data-k="gm_lab_f"></td><td><input class="txt" data-k="gm_lab_a"></td><td><input class="txt" data-k="gm_lab_vd"></td><td><input class="txt" data-k="gm_lab_vp"></td><td>&le; <input class="txt" data-k="guardLab" style="width:54px" placeholder="__%"> rev</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm_lab_ok"></td></tr>
+      <tr><td>Third-party / Supplier Cost</td><td><input class="txt" data-k="gm_3p_t"></td><td><input class="txt" data-k="gm_3p_f"></td><td><input class="txt" data-k="gm_3p_a"></td><td><input class="txt" data-k="gm_3p_vd"></td><td><input class="txt" data-k="gm_3p_vp"></td><td>&le; <input class="txt" data-k="guard3p" style="width:54px" placeholder="__%"> rev</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm_3p_ok"></td></tr>
+      <tr><td>Transition / One-time Cost</td><td><input class="txt" data-k="gm_tr_t"></td><td><input class="txt" data-k="gm_tr_f"></td><td><input class="txt" data-k="gm_tr_a"></td><td><input class="txt" data-k="gm_tr_vd"></td><td><input class="txt" data-k="gm_tr_vp"></td><td>&le; <input class="txt" data-k="guardTrip" style="width:54px" placeholder="__%"> rev</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm_tr_ok"></td></tr>
+      <tr><td>Risk Reserve Utilized</td><td><input class="txt" data-k="gm_risk_t"></td><td><input class="txt" data-k="gm_risk_f"></td><td><input class="txt" data-k="gm_risk_a"></td><td><input class="txt" data-k="gm_risk_vd"></td><td><input class="txt" data-k="gm_risk_vp"></td><td>&le; <input class="txt" data-k="guardRisk" style="width:54px" placeholder="__%"> rev</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm_risk_ok"></td></tr>
+      <tr><td><b>Gross Margin ($)</b></td><td><input class="txt" data-k="gm_t"></td><td><input class="txt" data-k="gm_f"></td><td><input class="txt" data-k="gm_a"></td><td><input class="txt" data-k="gm_vd"></td><td><input class="txt" data-k="gm_vp"></td><td>&mdash;</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gm_ok"></td></tr>
+      <tr><td><b>Gross Margin (%)</b></td><td><input class="txt" data-k="gmp_t"></td><td><input class="txt" data-k="gmp_f"></td><td><input class="txt" data-k="gmp_a"></td><td><input class="txt" data-k="gmp_vd"></td><td><input class="txt" data-k="gmp_vp"></td><td>&ge; <input class="txt" data-k="msl" style="width:54px" placeholder="__%"> MSL</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="gmp_ok"></td></tr>
+    </table>
+
+    <h3>Labor &amp; Cost-to-Serve</h3>
+    <table>
+      <tr><th>Cost Driver</th><th>Modeled</th><th>Forecast</th><th>Actual</th><th>Variance</th><th>Commentary / Owner</th></tr>
+      <tr><td>FTE plan (headcount)</td><td><input class="txt" data-k="cts1_m"></td><td><input class="txt" data-k="cts1_f"></td><td><input class="txt" data-k="cts1_a"></td><td><input class="txt" data-k="cts1_v"></td><td><input class="txt" data-k="cts1_c"></td></tr>
+      <tr><td>Blended labor rate</td><td><input class="txt" data-k="cts2_m"></td><td><input class="txt" data-k="cts2_f"></td><td><input class="txt" data-k="cts2_a"></td><td><input class="txt" data-k="cts2_v"></td><td><input class="txt" data-k="cts2_c"></td></tr>
+      <tr><td>Overtime / premium</td><td><input class="txt" data-k="cts3_m"></td><td><input class="txt" data-k="cts3_f"></td><td><input class="txt" data-k="cts3_a"></td><td><input class="txt" data-k="cts3_v"></td><td><input class="txt" data-k="cts3_c"></td></tr>
+      <tr><td>Subcontract labor</td><td><input class="txt" data-k="cts4_m"></td><td><input class="txt" data-k="cts4_f"></td><td><input class="txt" data-k="cts4_a"></td><td><input class="txt" data-k="cts4_v"></td><td><input class="txt" data-k="cts4_c"></td></tr>
+      <tr><td>Facilities &amp; tooling</td><td><input class="txt" data-k="cts5_m"></td><td><input class="txt" data-k="cts5_f"></td><td><input class="txt" data-k="cts5_a"></td><td><input class="txt" data-k="cts5_v"></td><td><input class="txt" data-k="cts5_c"></td></tr>
+      <tr><td><b>Total Cost-to-Serve</b></td><td><input class="txt" data-k="cts6_m"></td><td><input class="txt" data-k="cts6_f"></td><td><input class="txt" data-k="cts6_a"></td><td><input class="txt" data-k="cts6_v"></td><td></td></tr>
+      <tr><td><b>Cost-to-Serve (% rev)</b></td><td><input class="txt" data-k="cts7_m"></td><td><input class="txt" data-k="cts7_f"></td><td><input class="txt" data-k="cts7_a"></td><td><input class="txt" data-k="cts7_v"></td><td>Guardrail &le; <input class="txt" data-k="ctsGuard" style="width:54px" placeholder="__%"> <input type="checkbox" class="cb" data-k="cts_ok"> Pass</td></tr>
+      <tr><td>Indirect / SG&amp;A allocation</td><td><input class="txt" data-k="cts8_m"></td><td><input class="txt" data-k="cts8_f"></td><td><input class="txt" data-k="cts8_a"></td><td><input class="txt" data-k="cts8_v"></td><td></td></tr>
+    </table>
+
+    <h3>Variance Analysis &mdash; Original Deal Model vs. Actual Execution Forecast</h3>
+    <table>
+      <tr><th>#</th><th>Variance Driver</th><th>Original Model</th><th>Current Forecast</th><th>&Delta; ($)</th><th>&Delta; (%)</th><th>Root Cause</th><th>Margin Impact</th><th>Mitigation</th><th>Owner</th><th>Due</th></tr>
+      <tr><td>1</td><td>Pricing / volume</td><td><input class="txt" data-k="v1_om"></td><td><input class="txt" data-k="v1_cf"></td><td><input class="txt" data-k="v1_d"></td><td><input class="txt" data-k="v1_dp"></td><td><input class="txt" data-k="v1_rc"></td><td><input class="txt" data-k="v1_mi"></td><td><input class="txt" data-k="v1_mg"></td><td><input class="txt" data-k="v1_ow"></td><td><input class="txt" data-k="v1_due"></td></tr>
+      <tr><td>2</td><td>Labor mix / rates</td><td><input class="txt" data-k="v2_om"></td><td><input class="txt" data-k="v2_cf"></td><td><input class="txt" data-k="v2_d"></td><td><input class="txt" data-k="v2_dp"></td><td><input class="txt" data-k="v2_rc"></td><td><input class="txt" data-k="v2_mi"></td><td><input class="txt" data-k="v2_mg"></td><td><input class="txt" data-k="v2_ow"></td><td><input class="txt" data-k="v2_due"></td></tr>
+      <tr><td>3</td><td>Effort burn (EAC vs CPC)</td><td><input class="txt" data-k="v3_om"></td><td><input class="txt" data-k="v3_cf"></td><td><input class="txt" data-k="v3_d"></td><td><input class="txt" data-k="v3_dp"></td><td><input class="txt" data-k="v3_rc"></td><td><input class="txt" data-k="v3_mi"></td><td><input class="txt" data-k="v3_mg"></td><td><input class="txt" data-k="v3_ow"></td><td><input class="txt" data-k="v3_due"></td></tr>
+      <tr><td>4</td><td>Third-party costs</td><td><input class="txt" data-k="v4_om"></td><td><input class="txt" data-k="v4_cf"></td><td><input class="txt" data-k="v4_d"></td><td><input class="txt" data-k="v4_dp"></td><td><input class="txt" data-k="v4_rc"></td><td><input class="txt" data-k="v4_mi"></td><td><input class="txt" data-k="v4_mg"></td><td><input class="txt" data-k="v4_ow"></td><td><input class="txt" data-k="v4_due"></td></tr>
+      <tr><td>5</td><td>Transition slippage</td><td><input class="txt" data-k="v5_om"></td><td><input class="txt" data-k="v5_cf"></td><td><input class="txt" data-k="v5_d"></td><td><input class="txt" data-k="v5_dp"></td><td><input class="txt" data-k="v5_rc"></td><td><input class="txt" data-k="v5_mi"></td><td><input class="txt" data-k="v5_mg"></td><td><input class="txt" data-k="v5_ow"></td><td><input class="txt" data-k="v5_due"></td></tr>
+      <tr><td>6</td><td>Scope creep / change orders</td><td><input class="txt" data-k="v6_om"></td><td><input class="txt" data-k="v6_cf"></td><td><input class="txt" data-k="v6_d"></td><td><input class="txt" data-k="v6_dp"></td><td><input class="txt" data-k="v6_rc"></td><td><input class="txt" data-k="v6_mi"></td><td><input class="txt" data-k="v6_mg"></td><td><input class="txt" data-k="v6_ow"></td><td><input class="txt" data-k="v6_due"></td></tr>
+      <tr><td>7</td><td>Risk events realized</td><td><input class="txt" data-k="v7_om"></td><td><input class="txt" data-k="v7_cf"></td><td><input class="txt" data-k="v7_d"></td><td><input class="txt" data-k="v7_dp"></td><td><input class="txt" data-k="v7_rc"></td><td><input class="txt" data-k="v7_mi"></td><td><input class="txt" data-k="v7_mg"></td><td><input class="txt" data-k="v7_ow"></td><td><input class="txt" data-k="v7_due"></td></tr>
+      <tr><td>8</td><td>FX / indexation</td><td><input class="txt" data-k="v8_om"></td><td><input class="txt" data-k="v8_cf"></td><td><input class="txt" data-k="v8_d"></td><td><input class="txt" data-k="v8_dp"></td><td><input class="txt" data-k="v8_rc"></td><td><input class="txt" data-k="v8_mi"></td><td><input class="txt" data-k="v8_mg"></td><td><input class="txt" data-k="v8_ow"></td><td><input class="txt" data-k="v8_due"></td></tr>
+      <tr><td>9</td><td>Other</td><td><input class="txt" data-k="v9_om"></td><td><input class="txt" data-k="v9_cf"></td><td><input class="txt" data-k="v9_d"></td><td><input class="txt" data-k="v9_dp"></td><td><input class="txt" data-k="v9_rc"></td><td><input class="txt" data-k="v9_mi"></td><td><input class="txt" data-k="v9_mg"></td><td><input class="txt" data-k="v9_ow"></td><td><input class="txt" data-k="v9_due"></td></tr>
+    </table>
+
+    <div class="card">
+      <h4>Forecast Health Statement (Finance Controller)</h4>
+      <p class="inline">Forecast accuracy last 3 periods: <input class="txt" data-k="acc1" style="width:60px"> <input class="txt" data-k="acc2" style="width:60px"> <input class="txt" data-k="acc3" style="width:60px"> (guardrail &ge; <input class="txt" data-k="accGuard" style="width:46px" placeholder="__%">)</p>
+      <p class="inline">Current EAC vs CPC: <input class="txt" data-k="eac" style="width:200px"></p>
+      <p class="inline">Overall assessment:
+        <label><input type="checkbox" class="cb" data-k="assessOn">On plan</label>
+        <label><input type="checkbox" class="cb" data-k="assessWatch">Watch</label>
+        <label><input type="checkbox" class="cb" data-k="assessOver">Over target</label>
+        <label><input type="checkbox" class="cb" data-k="assessRed">Red</label>
+        &mdash; Escalated: <label><input type="checkbox" class="cb" data-k="escalatedYes">Yes</label> <label><input type="checkbox" class="cb" data-k="escalatedNo">No</label>
+      </p>
+    </div>
+
+    <h2>Business Controls, Compliance &amp; Risk Sign-Off</h2>
+    <h3>Control Verification Checkpoints</h3>
+    <table>
+      <tr><th>#</th><th>Control Checkpoint</th><th>Evidence Required</th><th>Responsible</th><th>Met?</th></tr>
+      <tr><td>C1</td><td>Order booking rules (SOF, booking authority, approval delegation) adhered</td><td>Approved SOF + booking policy checklist</td><td>Order Mgmt / Finance</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c1"></td></tr>
+      <tr><td>C2</td><td>Minimum selling level (MSL) confirmed at gate</td><td>Margin validation pack</td><td>Finance Controller</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c2"></td></tr>
+      <tr><td>C3</td><td>Deal recorded in system-of-record with accurate TCV/start/end</td><td>Contract &amp; system entry match</td><td>Order Mgmt</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c3"></td></tr>
+      <tr><td>C4</td><td>Project cost management guardrails established (cost centers, budgets, thresholds)</td><td>Approved cost structure / WBSE</td><td>Delivery PM / PMO</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c4"></td></tr>
+      <tr><td>C5</td><td>Budget vs. actual tracked with defined tolerances</td><td>Monthly cost pack</td><td>Finance Controller</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c5"></td></tr>
+      <tr><td>C6</td><td>Risk register current with owners, scores, and mitigation dates</td><td>Risk register extract</td><td>Risk/Compliance</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c6"></td></tr>
+      <tr><td>C7</td><td>Unresolved high-severity risks formally escalated</td><td>Escalation log</td><td>Risk/Compliance</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c7"></td></tr>
+      <tr><td>C8</td><td>Legal &amp; regulatory requirements (GDPR, export control, local law) assessed</td><td>Legal review memo</td><td>Legal</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c8"></td></tr>
+      <tr><td>C9</td><td>Change control / scope governance active</td><td>Change log / CCB minutes</td><td>PMO</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c9"></td></tr>
+      <tr><td>C10</td><td>Contract &amp; SOW aligned to executed agreement</td><td>Redline vs signed copy</td><td>Legal / Pursuit</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c10"></td></tr>
+      <tr><td>C11</td><td>Hand-off criteria and transition plan documented</td><td>Transition plan + G4 pack</td><td>Operational Consultant</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c11"></td></tr>
+      <tr><td>C12</td><td>No unauthorized commitments / unbilled exposure</td><td>Commitments log</td><td>Finance</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="c12"></td></tr>
+    </table>
+
+    <h3>Mandatory Approval Sign-Off Blocks</h3>
+    <p>Each gate is <b>incomplete until all blocks are signed</b> by the named roles.</p>
+
+    <div class="card">
+      <p class="inline"><b>Gate:</b> <label><input type="checkbox" class="cb" data-k="sigG1">G1</label><label><input type="checkbox" class="cb" data-k="sigG2">G2</label><label><input type="checkbox" class="cb" data-k="sigG3">G3</label><label><input type="checkbox" class="cb" data-k="sigG4">G4</label><label><input type="checkbox" class="cb" data-k="sigG5">G5</label> <span style="margin-left:12px">Date: <input class="txt" data-k="sigDate" style="width:110px"></span></p>
+
+      <h4>Finance Validation</h4>
+      <p>I confirm the financial status has been validated against source documentation; TCV, GM%, labor cost, and cost-to-serve figures are accurate and variance is explained.</p>
+      <div class="sig"><div class="grid">
+        <div><label>Name</label><input class="txt" data-k="s1Name"></div>
+        <div><label>Title (Finance Controller)</label><input class="txt" data-k="s1Title" placeholder="Finance Controller"></div>
+        <div><label>Signature</label><input class="txt" data-k="s1Sig"></div>
+        <div><label>Date</label><input class="txt" data-k="s1Date"></div>
+      </div></div>
+
+      <h4>Risk &amp; Compliance</h4>
+      <p>I confirm all control checkpoints (C1&ndash;C12) are met or formally waived, and risks are documented with accountable owners.</p>
+      <div class="sig"><div class="grid">
+        <div><label>Name</label><input class="txt" data-k="s2Name"></div>
+        <div><label>Title (Risk/Compliance Officer)</label><input class="txt" data-k="s2Title" placeholder="Risk/Compliance Officer"></div>
+        <div><label>Signature</label><input class="txt" data-k="s2Sig"></div>
+        <div><label>Date</label><input class="txt" data-k="s2Date"></div>
+      </div></div>
+
+      <h4>Pursuit / Delivery Lead</h4>
+      <p>I confirm the pack is complete, deliverables are evidenced, and hand-off (or delivery) status is accurate.</p>
+      <div class="sig"><div class="grid">
+        <div><label>Name</label><input class="txt" data-k="s3Name"></div>
+        <div><label>Title (Pursuit/Delivery Lead)</label><input class="txt" data-k="s3Title" placeholder="Pursuit/Delivery Lead"></div>
+        <div><label>Signature</label><input class="txt" data-k="s3Sig"></div>
+        <div><label>Date</label><input class="txt" data-k="s3Date"></div>
+      </div></div>
+
+      <h4>Executive Sponsor</h4>
+      <p>I approve proceeding through this gate and accept any residual risk/margin exposure recorded above.</p>
+      <div class="sig"><div class="grid">
+        <div><label>Name</label><input class="txt" data-k="s4Name"></div>
+        <div><label>Title (Executive Sponsor)</label><input class="txt" data-k="s4Title" placeholder="Executive Sponsor"></div>
+        <div><label>Signature</label><input class="txt" data-k="s4Sig"></div>
+        <div><label>Date</label><input class="txt" data-k="s4Date"></div>
+      </div></div>
+
+      <h4>Governance / PMO (Gate Certification)</h4>
+      <p>I certify the gate exit criteria above are fully satisfied and this package is accepted into the controlled repository.</p>
+      <div class="sig"><div class="grid">
+        <div><label>Name</label><input class="txt" data-k="s5Name"></div>
+        <div><label>Title (PMO / Governance Lead)</label><input class="txt" data-k="s5Title" placeholder="PMO / Governance Lead"></div>
+        <div><label>Signature</label><input class="txt" data-k="s5Sig"></div>
+        <div><label>Date</label><input class="txt" data-k="s5Date"></div>
+      </div></div>
+    </div>
+
+    <h2>Expert Consultation &amp; Documentation Repository</h2>
+    <h3>Required Supporting Documentation Checklist</h3>
+    <table>
+      <tr><th>#</th><th>Document</th><th>Required At</th><th>Owner</th><th>Uploaded?</th><th>Doc ID</th></tr>
+      <tr><td>D1</td><td>Signed opportunity brief &amp; strategic fit scorecard</td><td>G1</td><td>Pursuit</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d1"></td><td><input class="txt" data-k="d1id" style="width:100px"></td></tr>
+      <tr><td>D2</td><td>Full pricing model (MS Excel) with assumptions tab</td><td>G2</td><td>Pricing Modeler</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d2"></td><td><input class="txt" data-k="d2id" style="width:100px"></td></tr>
+      <tr><td>D3</td><td>Customer baseline data &amp; volume assumptions</td><td>G2</td><td>Solution Architect</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d3"></td><td><input class="txt" data-k="d3id" style="width:100px"></td></tr>
+      <tr><td>D4</td><td>Statement of Work (SOW) draft &amp; final</td><td>G2/G3</td><td>Pursuit/Legal</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d4"></td><td><input class="txt" data-k="d4id" style="width:100px"></td></tr>
+      <tr><td>D5</td><td>Solution design / technical architecture</td><td>G2</td><td>Solution Architect</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d5"></td><td><input class="txt" data-k="d5id" style="width:100px"></td></tr>
+      <tr><td>D6</td><td>Cost-to-serve build (labor, third-party, burden)</td><td>G2</td><td>Operational Consultant</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d6"></td><td><input class="txt" data-k="d6id" style="width:100px"></td></tr>
+      <tr><td>D7</td><td>Risk register (with scoring &amp; mitigations)</td><td>G2&rarr;R5</td><td>Risk/Compliance</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d7"></td><td><input class="txt" data-k="d7id" style="width:100px"></td></tr>
+      <tr><td>D8</td><td>Financial validation &amp; margin analysis pack</td><td>G2/G3</td><td>Finance Controller</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d8"></td><td><input class="txt" data-k="d8id" style="width:100px"></td></tr>
+      <tr><td>D9</td><td>Order booking compliance pack (SOF, delegation)</td><td>G3</td><td>Order Mgmt</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d9"></td><td><input class="txt" data-k="d9id" style="width:100px"></td></tr>
+      <tr><td>D10</td><td>Final executed contract + redline summary</td><td>G3</td><td>Legal</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d10"></td><td><input class="txt" data-k="d10id" style="width:100px"></td></tr>
+      <tr><td>D11</td><td>Transition plan &amp; delivery baseline</td><td>G4</td><td>Operational Consultant</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d11"></td><td><input class="txt" data-k="d11id" style="width:100px"></td></tr>
+      <tr><td>D12</td><td>Program charter, SLA/KPI framework</td><td>G4</td><td>Delivery PM</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d12"></td><td><input class="txt" data-k="d12id" style="width:100px"></td></tr>
+      <tr><td>D13</td><td>Monthly financial review pack (actuals, EAC)</td><td>G5</td><td>Finance Controller</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d13"></td><td><input class="txt" data-k="d13id" style="width:100px"></td></tr>
+      <tr><td>D14</td><td>Change order log &amp; approvals</td><td>G5</td><td>PMO</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d14"></td><td><input class="txt" data-k="d14id" style="width:100px"></td></tr>
+      <tr><td>D15</td><td>Escalation log / decisions</td><td>Any</td><td>PMO</td><td style="text-align:center"><input type="checkbox" class="cb" data-k="d15"></td><td><input class="txt" data-k="d15id" style="width:100px"></td></tr>
+    </table>
+
+    <h3>Repository Standards &amp; Notes</h3>
+    <p>Update the standards with organization values and use the notes box for annotations, decisions, or repository-specific details.</p>
+    <table>
+      <tr><td style="width:25%"><b>Location</b></td><td><input class="txt" data-k="repoLocation" placeholder="PMO shared repository / SharePoint site"></td></tr>
+      <tr><td><b>Naming convention</b></td><td><input class="txt" data-k="namingConvention" style="font-family:Consolas,monospace;width:80%" value="[SOAR#]-[Deal/Program ID]-[DocType]-[Version]-[Date]"></td></tr>
+      <tr><td><b>Versioning rule</b></td><td><input class="txt" data-k="versioningRule" style="width:80%" value="Each revision increments version; superseded docs archived (never deleted) for audit."></td></tr>
+      <tr><td><b>Access &amp; retention</b></td><td><input class="txt" data-k="accessRetention" style="width:80%" value="Finance/Legal/Compliance full access; audit trail retained min [__] years post contract."></td></tr>
+      <tr><td><b>Review cadence</b></td><td><input class="txt" data-k="reviewCadence" style="width:80%" value="Repo completeness validated at every gate; missing mandatory docs block the gate."></td></tr>
+    </table>
+    <div class="card">
+      <h4>Repository Notes / Annotations</h4>
+      <textarea class="txt" data-k="repoNotes" rows="5" placeholder="Add repository-specific notes, decisions, exceptions, or links here..."></textarea>
+    </div>
+
+    <div class="foot">
+      Replace all <b>[__]</b> placeholders with organization-specific thresholds before ratification.<br>
+      This form auto-saves progress locally in your browser.
+    </div>
+  </div>
+</div>
+
+</div><!-- /viewDoc -->
+
+<script>
+  (function () {
+    var tabBtns = document.querySelectorAll('.tabs button');
+    tabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+        var target = document.getElementById('view' + btn.getAttribute('data-view').charAt(0).toUpperCase() + btn.getAttribute('data-view').slice(1));
+        if (target) target.classList.add('active');
+      });
+    });
+
+    const KEY = 'soarData';
+    var data = {};
+    try { data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+
+    var fields = document.querySelectorAll('.txt, .cb');
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+    }
+    fields.forEach(function (el) {
+      var k = el.getAttribute('data-k');
+      if (!k) return;
+      if (el.classList.contains('cb')) {
+        el.checked = !!data[k];
+        el.addEventListener('change', function () { data[k] = el.checked; save(); updateProgress(); });
+      } else {
+        el.value = data[k] || '';
+        el.addEventListener('input', function () { data[k] = el.value; save(); updateProgress(); });
+      }
+    });
+
+    function updateProgress() {
+      var cbEls = document.querySelectorAll('.cb');
+      var done = 0;
+      cbEls.forEach(function (c) { if (c.checked) done++; });
+      var txtEls = document.querySelectorAll('.txt');
+      var doneT = 0;
+      txtEls.forEach(function (t) { if (t.value.trim() !== '') doneT++; });
+      var total = cbEls.length + txtEls.length;
+      var pct = total ? Math.round(((done + doneT) / total) * 100) : 0;
+      var fill = document.getElementById('progressFill');
+      var label = document.getElementById('progressLabel');
+      if (fill) fill.style.width = pct + '%';
+      if (label) label.textContent = pct + '% complete (' + (done + doneT) + ' of ' + total + ' fields filled)';
+    }
+    updateProgress();
+  })();
+</script>
+</body>
+</html>

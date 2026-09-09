@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Win/Loss Analytics &amp; Benchmarking Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0f1c; --panel:#111827; --panel2:#0b1220; --edge:#1f2a44;
+  --txt:#e6ebf5; --muted:#8b97b3; --accent:#22d3ee; --green:#34d399;
+  --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa; --blue:#60a5fa;
+  --mono:Consolas,'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.45}
+a{color:var(--accent);text-decoration:none}
+.wrap{display:grid;grid-template-columns:310px 1fr;gap:20px;padding:20px;min-width:1180px}
+header.main{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:4px 2px 14px}
+header.main h1{font-size:19px;font-weight:700;letter-spacing:.2px}
+header.main .tag{color:var(--muted);font-size:12px;margin-top:2px}
+.brand-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--green));box-shadow:0 0 12px var(--accent)}
+.spacer{flex:1}
+.pill{background:var(--panel);border:1px solid var(--edge);color:var(--muted);font-size:11px;border-radius:20px;padding:6px 12px}
+.back{color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap;padding:6px 12px;border:1px solid var(--edge);border-radius:20px;background:var(--panel);transition:color .15s ease,border-color .15s ease}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.button{background:linear-gradient(135deg,#0e7490,#0e9f6e);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600}
+.button.ghost{background:transparent;border:1px solid var(--edge);color:var(--muted)}
+.button:hover{filter:brightness(1.15)}
+.button[disabled]{opacity:.35;cursor:not-allowed;filter:grayscale(.45)}
+.filters{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:16px;position:sticky;top:20px;height:max-content;max-height:calc(100vh - 40px);overflow:auto}
+.filters h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.filters h2::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%}
+.sec{margin-bottom:20px}
+.sec>h3{font-size:12px;color:var(--accent);margin-bottom:10px}
+label{display:block;font-size:11px;color:var(--muted);margin:10px 0 5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--panel2);border:1px solid var(--edge);color:var(--muted);border-radius:14px;padding:4px 10px;font-size:11px;cursor:pointer;user-select:none}
+.chip.on{background:rgba(34,211,238,.14);border-color:var(--accent);color:var(--accent)}
+.row{width:100%;margin:6px 0;display:flex;gap:8px;align-items:center}
+input[type=text],input[type=date],select,textarea{background:var(--panel2);border:1px solid var(--edge);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:12px;width:100%;font-family:inherit}
+textarea{min-height:74px;resize:vertical;font-family:var(--mono);font-size:11px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+main{display:grid;gap:16px;align-content:start;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.kpi{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--edge);border-radius:14px;padding:16px}
+.kpi .num{font-size:26px;font-weight:800;margin:6px 0 2px;letter-spacing:-.5px}
+.kpi .num small{font-size:12px;font-weight:600;color:var(--muted)}
+.kpi .lbl{font-size:11px;color:var(--muted)}
+.kpi .delta{font-size:11px;font-weight:700;margin-top:4px}
+.d-up{color:var(--green)} .d-down{color:var(--rose)} .d-flat{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.grid-1-2{display:grid;grid-template-columns:1fr 2fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:16px}
+.card h3{font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .sub{font-size:10px;color:var(--muted);font-weight:400}
+.card h3::before{content:'';width:5px;height:14px;background:var(--accent);border-radius:3px}
+.chart-box{position:relative;height:240px}
+.chart-box.radar{height:200px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--muted);text-align:left;font-weight:600;font-size:11px;padding:8px 6px;border-bottom:1px solid var(--edge)}
+td{padding:8px 6px;border-bottom:1px solid var(--edge);vertical-align:middle}
+.insights{display:grid;gap:10px}
+.insight{display:flex;gap:12px;background:var(--panel2);border:1px solid var(--edge);border-left:4px solid var(--violet);border-radius:10px;padding:12px;align-items:flex-start}
+.insight.sev-hi{border-left-color:var(--rose)} .insight.sev-med{border-left-color:var(--amber)} .insight.sev-lo{border-left-color:var(--green)}
+.insight .tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:var(--panel2);border-radius:4px;padding:3px 6px;white-space:nowrap;color:var(--muted)}
+.insight h4{font-size:13px;margin:2px 0 4px}
+.insight p{font-size:12px;color:var(--muted)}
+.insight .why{font-size:10.5px;color:var(--accent);margin-top:6px}
+.note{font-size:10px;color:var(--muted);margin-top:8px}
+.scen{background:linear-gradient(180deg,#0e749033,#0e9f8a22);border:1px solid #0e7490;border-radius:14px;padding:16px}
+.scen h3{font-size:13px;margin-bottom:12px;color:#7dd3fc}
+.scen .num{font-size:20px;font-weight:800;color:var(--txt)}
+.scen .stat{margin:6px 0}
+::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-thumb{background:#22304d;border-radius:6px} ::-webkit-scrollbar-track{background:transparent}
+body[data-theme="light"]{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f7; --edge:#dfe5ef;
+  --txt:#0f172a; --muted:#5b6b84; --accent:#0891b2; --green:#059669;
+  --amber:#d97706; --rose:#e11d48; --violet:#7c3aed; --blue:#2563eb;
+}
+body[data-theme="light"] .scen{background:linear-gradient(180deg,#f0f9ff,#ecfeff);border-color:#a5d3e8}
+body[data-theme="light"] .insight{background:#f8fafc}
+body[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c7d4e4}
+@media (max-width:1280px){.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+<header class="main">
+  <a class="back" href="index.html" title="Back to the main portfolio">&larr; Portfolio</a>
+  <div class="brand-dot"></div>
+  <div>
+    <h1>Win/Loss Analytics &amp; Benchmarking</h1>
+    <div class="tag">Enterprise Managed Services &middot; Pursuit Deal Strategy &middot; Prototype v1.0</div>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill">Baseline: IDC / WinLossBench 2024&ndash;25</span>
+  <button class="button ghost" id="theme-btn" onclick="toggleTheme()"></button>
+  <button class="button ghost" onclick="window.open('winloss-dashboard-guide.html','_blank')">Guide</button>
+  <button class="button ghost" onclick="resetData()">Reset Sample</button>
+  <button class="button" disabled title="Export is locked by the author to protect this prototype">Export Filtered CSV</button>
+</header>
+
+<aside class="filters">
+  <h2>Data Ingestion &amp; Filtering</h2>
+
+  <div class="sec">
+    <h3>Pursuit &amp; Scope Filters</h3>
+    <label>Industry Vertical</label>
+    <div class="chips" id="f-industry"></div>
+    <label>Geographic Region</label>
+    <div class="chips" id="f-region"></div>
+    <label>Deal Size (TCV bracket)</label>
+    <div class="chips" id="f-bracket"></div>
+    <label>Account / Pursuit Team</label>
+    <div class="chips" id="f-team"></div>
+  </div>
+
+  <div class="sec">
+    <h3>Deal Ingestion</h3>
+    <label>Outcome</label>
+    <div class="chips">
+      <span class="chip on" data-out="all" onclick="setOutcome('all')">All</span>
+      <span class="chip" data-out="won" onclick="setOutcome('won')">Won</span>
+      <span class="chip" data-out="lost" onclick="setOutcome('lost')">Lost</span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input type="date" id="d-from" onchange="renderAll()">
+      <input type="date" id="d-to" onchange="renderAll()">
+    </div>
+    <label>Bulk import historical records (CSV)</label>
+    <textarea id="csv-in" placeholder="date,region,industry,team,bracket,tcv_usd,outcome,discount_pct,margin_pct,cycle_days,contract_months,components,loss_reason"></textarea>
+    <div class="row">
+      <button class="button" onclick="importCSV()">Parse &amp; Import</button>
+      <button class="button ghost" onclick="clearImport()">Clear</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>Competitor Pricing Intelligence</h3>
+    <label>Paste intel (columns: competitor, region, discount_pct, note)</label>
+    <textarea id="intel-in" onchange="ingestIntel()"></textarea>
+  </div>
+
+  <div class="sec">
+    <h3>Customer Deal Requirements / RFx Notes</h3>
+    <label>Solution elements requested by current pursuits</label>
+    <textarea id="req-in" placeholder="e.g. AI/ML Ops, Managed SecOps, 24/7 SLA, FinOps, Data Analytics"></textarea>
+  </div>
+
+  <div class="sec">
+    <h3>Scenario Simulator</h3>
+    <label>Proposed discount ceiling: <span id="cap-lbl">12%</span></label>
+    <input type="range" id="cap" min="0" max="25" value="12" oninput="document.getElementById('cap-lbl').textContent=this.value+'%'; renderAll()">
+  </div>
+</aside>
+
+<main>
+
+  <section class="kpis" id="kpi-grid"></section>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Win Rate Trend <span class="sub">quarterly, filtered scope</span></h3>
+      <div class="chart-box"><canvas id="c-trend"></canvas></div>
+      <div class="note">Line = win rate &middot; bars = deals won / lost per quarter.</div>
+    </div>
+    <div class="card">
+      <h3>Outcome vs Pricing Variance <span class="sub">discount depth</span></h3>
+      <div class="chart-box"><canvas id="c-pricing"></canvas></div>
+      <div class="note">Bars = win rate per discount bucket &middot; line = avg margin achieved.</div>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>Win Rate by Contract Duration</h3>
+      <div class="chart-box"><canvas id="c-duration"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Win Rate by Deal Size (TCV)</h3>
+      <div class="chart-box"><canvas id="c-tcv"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Avg Deal Cycle Length</h3>
+      <div class="chart-box"><canvas id="c-cycle"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2-1">
+    <div class="card">
+      <h3>Benchmark vs External Baselines <span class="sub">internal vs industry</span></h3>
+      <div class="chart-box"><canvas id="c-bench"></canvas></div>
+      <div class="note">External baseline = aggregate managed-services sector win/loss pools, 2024&ndash;25.</div>
+    </div>
+    <div class="card">
+      <h3>Solution Component Attach</h3>
+      <div class="chart-box radar"><canvas id="c-components"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-1-2">
+    <div class="card">
+      <h3>Lost-Deal Root Causes <span class="sub">internal mix</span></h3>
+      <div class="chart-box"><canvas id="c-root"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Loss Mix vs Benchmark <span class="sub">internal % vs external % of losses</span></h3>
+      <div class="chart-box"><canvas id="c-loss-bench"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Competitor Intelligence <span class="sub">share of internal losses</span></h3>
+      <div id="intel-table"></div>
+    </div>
+    <div class="scen" id="scenario-card"></div>
+  </div>
+
+  <div class="card">
+    <h3>Strategic Insights &amp; Recommendation Engine</h3>
+    <div class="insights" id="insights"></div>
+    <div class="note">Rules are computed live from the filtered dataset: pricing ceilings, missing service elements, under-performing regions, cycle-time drag, and root-cause mix.</div>
+  </div>
+
+</main>
+</div>
+
+<script>
+var REGIONS=['AMER','EMEA','APAC','LATAM'];
+var INDUSTRIES=['Financial Services','Healthcare','Government','Manufacturing','Technology','Retail','Energy','Telecom'];
+var TEAMS=['Orion','Atlas','Nova','Borealis','Cascade','Meridian'];
+var BRACKETS=[['<$1M',0.3,1],['$1M\u2013$5M',1,5],['$5M\u2013$20M',5,20],['$20M+',20,60]];
+var COMPONENTS=['Managed Services','Cloud & Infrastructure','Managed Security','Data & Analytics','AI/ML Ops','FinOps','Support & Ops Assist','Consulting'];
+var LOSS_REASONS=['Price sensitivity','Scope misalignment','SLA constraints','Competitor feature','Incumbent lock-in','Value not justified'];
+var WIN_REASONS=['Price-competitive scope','Solution expertise','Reference wins','SLA confidence','Executive alignment','Proven operations track'];
+var COMPETITORS=['GloboTech','Nimbus Data','DataBridge','InfraCore','CloudSpan'];
+var LOSS_WEIGHTS=[0.38,0.21,0.15,0.12,0.09,0.05];
+var ATTR=[0.98,0.78,0.46,0.52,0.25,0.34,0.61,0.40];
+
+var EX_BENCH={
+  winRate:0.612,
+  margin:0.314,
+  discountBand:[5,11],
+  byRegion:{'AMER':0.66,'EMEA':0.55,'APAC':0.63,'LATAM':0.59},
+  byIndustry:{'Financial Services':0.60,'Manufacturing':0.62,'Government':0.57,'Technology':0.66,'Retail':0.61,'Energy':0.59,'Telecom':0.58},
+  lossMix:{'Price sensitivity':0.38,'Scope misalignment':0.21,'SLA constraints':0.16,'Competitor feature':0.13,'Incumbent lock-in':0.03,'Value not justified':0.09}
+};
+
+var SAMPLE_SEED=520175;
+
+function rng(seed){
+  return function(){ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+}
+function pick(r,arr){ return arr[Math.floor(r()*arr.length)]; }
+function pickw(r,arr,weights){
+  var x=r(),cum=0;
+  for(var i=0;i<weights.length;i++){ cum+=weights[i]; if(x<=cum) return arr[i]; }
+  return arr[arr.length-1];
+}
+
+function genDeals(seed,n){
+  var r=rng(seed||SAMPLE_SEED),list=[];
+  for(var i=0;i<n;i++){
+    var region=pickw(r,REGIONS,[0.34,0.30,0.24,0.12]);
+    var industry=pick(r,INDUSTRIES);
+    var team=pick(r,TEAMS);
+    var br=r();
+    var bracketName,lo,hi;
+    if(br<0.28){ bracketName=BRACKETS[0][0]; lo=BRACKETS[0][1]; hi=BRACKETS[0][2]; }
+    else if(br<0.58){ bracketName=BRACKETS[1][0]; lo=BRACKETS[1][1]; hi=BRACKETS[1][2]; }
+    else if(br<0.85){ bracketName=BRACKETS[2][0]; lo=BRACKETS[2][1]; hi=BRACKETS[2][2]; }
+    else { bracketName=BRACKETS[3][0]; lo=BRACKETS[3][1]; hi=BRACKETS[3][2]; }
+    var tcv=Math.round((lo+r()*(hi-lo))*100000)/10;
+    var dayOff=Math.floor(r()*730);
+    var d=new Date(Date.UTC(2023,0,1)+dayOff*86400000);
+    var discount=+(2+r()*16).toFixed(1);
+    var contractMonths=Math.round(8+r()*52);
+    var components=[];
+    for(var c=0;c<COMPONENTS.length;c++){ if(r()<ATTR[c]) components.push(COMPONENTS[c]); }
+    var p=0.68;
+    p-=discount*0.016;
+    if(region==='EMEA') p-=0.055;
+    if(region==='LATAM') p-=0.035;
+    if(industry==='Government') p+=0.07;
+    if(components.indexOf('AI/ML Ops')>-1) p+=0.045;
+    if(contractMonths>48) p-=0.05;
+    if(contractMonths<12) p+=0.04;
+    if(discount>13) p-=0.03;
+    if(discount>16) p-=0.06;
+    if(p>0.92) p=0.92;
+    if(p<0.12) p=0.12;
+    var won=r()<p;
+    var margin;
+    if(won){ margin=+(34-discount*0.5+r()*4+(contractMonths>36?4:0)).toFixed(1); }
+    else { margin=+(34-discount*0.35-r()*7+2).toFixed(1); }
+    var cycleDays=Math.round(28+r()*70+(region==='EMEA'?14:0)+(tcv>2?10:0));
+    list.push({
+      id:'DL-'+String(1000+i),
+      date:d,
+      iso:d.toISOString().slice(0,10),
+      quarter:String(d.getFullYear()%100)+'-Q'+Math.floor(d.getMonth()/3+1),
+      year:d.getFullYear(),
+      region:region, industry:industry, team:team,
+      bracket:bracketName, tcv:tcv, m:+(tcv).toFixed(1),
+      discount:discount, margin:margin,
+      contractMonths:contractMonths, cycleDays:cycleDays,
+      outcome:won?'won':'lost',
+      lossReason:won?null:pickw(r,LOSS_REASONS,LOSS_WEIGHTS),
+      competitor:won?null:pick(r,COMPETITORS),
+      dealReason:won?pick(r,WIN_REASONS):null,
+      components:components
+    });
+  }
+  return list;
+}
+
+var SAMPLE=genDeals(SAMPLE_SEED,140);
+var state={
+  deals:SAMPLE,
+  filters:{industries:{},regions:{},brackets:{},teams:{},outcome:'all',from:'',to:''},
+  intel:[
+    {c:'GloboTech',region:'AMER',disc:9,note:'Leads on AI governance + SLAs; aggressive bundle pricing'},
+    {c:'Nimbus Data',region:'EMEA',disc:12,note:'Price-led; weak delivery references'},
+    {c:'DataBridge',region:'LATAM',disc:8,note:'Value-scope focus; long cycle'},
+    {c:'InfraCore',region:'APAC',disc:11,note:'Deep local partnerships; lacks AIOps'}
+  ]
+};
+var charts={};
+
+function curTheme(){ return document.body.getAttribute('data-theme')||'light'; }
+function cText(){ return curTheme()==='light'?'#5b6b84':'#8b97b3'; }
+function cGrid(){ return curTheme()==='light'?'#dfe5ef':'#182238'; }
+function cTipBg(){ return curTheme()==='light'?'#ffffff':'#0b1220'; }
+function cTipBody(){ return curTheme()==='light'?'#1f2937':'#e6ebf5'; }
+
+function avg(arr){
+  if(!arr||!arr.length) return 0;
+  var s=0; for(var i=0;i<arr.length;i++) s+=arr[i];
+  return s/arr.length;
+}
+function median(arr){
+  if(!arr||!arr.length) return 0;
+  var s=arr.slice().sort(function(a,b){return a-b;});
+  var mid=Math.floor(s.length/2);
+  return s.length%2?s[mid]:(s[mid-1]+s[mid])/2;
+}
+function winRate(deals){
+  var w=0; for(var i=0;i<deals.length;i++) if(deals[i].outcome==='won') w++;
+  return deals.length? w/deals.length : 0;
+}
+function pctF(part,total,d){
+  return total?((part/total)*100).toFixed(d||1)+'%':'0.0%';
+}
+function deltaMark(actual,base){
+  if(base==null) return '';
+  var diff=actual-base;
+  var txt=(diff>=0?'\u25B2 +':'\u25BC ')+Math.abs(diff*100).toFixed(1)+' pp';
+  return '<div class="delta '+(diff>=0?'d-up':'d-down')+'">'+txt+' vs unfiltered</div>';
+}
+
+function activeList(key){
+  var out=[]; for(var k in state.filters[key]) if(state.filters[key][k]) out.push(k);
+  return out;
+}
+
+function filterDeals(){
+  var fl=state.filters;
+  var ind=activeList('industries'),reg=activeList('regions'),bra=activeList('brackets'),team=activeList('teams');
+  return state.deals.filter(function(d){
+    if(ind.length&&ind.indexOf(d.industry)===-1) return false;
+    if(reg.length&&reg.indexOf(d.region)===-1) return false;
+    if(bra.length&&bra.indexOf(d.bracket)===-1) return false;
+    if(team.length&&team.indexOf(d.team)===-1) return false;
+    if(fl.outcome!=='all'&&d.outcome!==fl.outcome) return false;
+    if(fl.from&&d.iso<fl.from) return false;
+    if(fl.to&&d.iso>fl.to) return false;
+    return true;
+  });
+}
+
+function setOutcome(o){
+  state.filters.outcome=o;
+  var els=document.querySelectorAll('[data-out]');
+  for(var i=0;i<els.length;i++) els[i].classList.toggle('on',els[i].getAttribute('data-out')===o);
+  renderAll();
+}
+
+function buildChips(){
+  buildChip('f-industry','industries',INDUSTRIES);
+  buildChip('f-region','regions',REGIONS);
+  buildChip('f-bracket','brackets',BRACKETS.map(function(b){return b[0];}));
+  buildChip('f-team','teams',TEAMS);
+}
+function buildChip(el,key,vals){
+  var box=document.getElementById(el);
+  box.innerHTML='';
+  vals.forEach(function(v){
+    var s=document.createElement('span');
+    s.className='chip on'; s.textContent=v;
+    s.onclick=function(){
+      var f=state.filters[key];
+      if(f[v]){ delete f[v]; s.classList.remove('on'); }
+      else { f[v]=1; s.classList.add('on'); }
+      renderAll();
+    };
+    box.appendChild(s);
+  });
+}
+
+function makeChart(id,cfg){
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(charts[id]) charts[id].destroy();
+  cfg.options=cfg.options||{};
+  cfg.options.responsive=true;
+  cfg.options.maintainAspectRatio=false;
+  cfg.options.plugins=cfg.options.plugins||{};
+  if(!cfg.options.plugins.legend) cfg.options.plugins.legend={labels:{color:cText(),boxWidth:12}};
+  if(!cfg.options.plugins.tooltip) cfg.options.plugins.tooltip={backgroundColor:cTipBg(),bodyColor:cTipBody(),borderColor:'#1f2a44',borderWidth:1};
+  charts[id]=new Chart(el,cfg);
+}
+function axisOpts(){
+  return {
+    y:{grid:{color:cGrid()},ticks:{color:cText()}},
+    x:{grid:{color:cGrid()},ticks:{color:cText(),maxRotation:0,autoSkip:true}}
+  };
+}
+
+function renderKPIs(deals){
+  var n=deals.length;
+  var won=deals.filter(function(d){return d.outcome==='won';});
+  var lost=deals.filter(function(d){return d.outcome==='lost';});
+  var wr=winRate(deals);
+  var cycleWon=avg(won.map(function(d){return d.cycleDays;}));
+  var mWon=avg(won.map(function(d){return d.margin;}));
+  var mLost=avg(lost.map(function(d){return d.margin;}));
+  var pipe=deals.reduce(function(a,d){return a+d.tcv;},0);
+  var baseWR=winRate(SAMPLE);
+  var cards=[
+    {l:'Overall Win Rate',num:pctF(won.length,n,1).slice(0,-1)+'%',d:deltaMark(wr,baseWR)},
+    {l:'Avg Deal Cycle (Won)',num:Math.round(cycleWon)+' days',d:'<div class="delta d-flat">median '+Math.round(median(won.map(function(d){return d.cycleDays;})))+'d</div>'},
+    {l:'Avg Margin Won vs Lost',num:(mWon?mWon.toFixed(1):'0.0')+'%',d:'<div class="delta d-flat">vs '+(mLost?mLost.toFixed(1):'0.0')+'% on lost</div>'},
+    {l:'Pipeline Value Impacted',num:'$'+pipe.toFixed(1)+'M',d:'<div class="delta d-flat">'+n+' deals in scope</div>'},
+    {l:'Win/Loss Margin Spread',num:'+'+(mWon-mLost).toFixed(1)+' pts',d:'<div class="delta d-flat">won margin minus lost margin</div>'}
+  ];
+  document.getElementById('kpi-grid').innerHTML=cards.map(function(c){
+    return '<div class="kpi"><div class="lbl">'+c.l+'</div><div class="num">'+c.num+'</div>'+c.d+'</div>';
+  }).join('');
+}
+
+function renderTrend(deals){
+  var q={};
+  deals.forEach(function(d){ (q[d.quarter]=q[d.quarter]||[]).push(d); });
+  var keys=Object.keys(q).sort();
+  var labels=[],winL=[],volW=[],volL=[];
+  keys.forEach(function(k){
+    var arr=q[k];
+    labels.push(k);
+    winL.push(+(winRate(arr)*100).toFixed(1));
+    volW.push(arr.filter(function(d){return d.outcome==='won';}).length);
+    volL.push(arr.filter(function(d){return d.outcome==='lost';}).length);
+  });
+  makeChart('c-trend',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Won',data:volW,backgroundColor:'rgba(52,211,153,.35)',borderColor:'#34d399',borderWidth:1},
+      {label:'Lost',data:volL,backgroundColor:'rgba(251,113,133,.3)',borderColor:'#fb7185',borderWidth:1},
+      {label:'Win Rate %',data:winL,type:'line',yAxisID:'y1',borderColor:'#22d3ee',backgroundColor:'transparent',borderWidth:3,pointRadius:3}
+    ]},
+    options:{scales:{y:axisOpts().y,y1:{position:'right',grid:{display:false},min:0,max:100,ticks:{color:'#22d3ee'}},x:axisOpts().x}}
+  });
+}
+
+function renderPricing(deals){
+  var buck=[['0\u20135%',0,5],['5\u20138%',5,8],['8\u201312%',8,12],['12\u201316%',12,16],['>16%',16,100]];
+  var labels=[],wr=[],mg=[];
+  buck.forEach(function(b){
+    var arr=deals.filter(function(d){return d.discount>=b[1]&&d.discount<b[2];});
+    labels.push(b[0]);
+    wr.push(arr.length?+(winRate(arr)*100).toFixed(1):0);
+    mg.push(arr.length?+avg(arr.map(function(d){return d.margin;})).toFixed(1):0);
+  });
+  makeChart('c-pricing',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Win Rate %',data:wr,backgroundColor:'rgba(52,211,153,.55)',borderColor:'#34d399',borderWidth:1},
+      {label:'Avg Margin %',data:mg,type:'line',borderColor:'#fbbf24',backgroundColor:'transparent',tension:.3}
+    ]},
+    options:{scales:axisOpts()}
+  });
+}
+
+function renderDuration(deals){
+  var buck=[['<12m',0,12],['12\u201324m',12,24],['24\u201336m',24,36],['36\u201348m',36,48],['>48m',48,999]];
+  var labels=[],wr=[],cnt=[];
+  buck.forEach(function(b){
+    var arr=deals.filter(function(d){return d.contractMonths>=b[1]&&d.contractMonths<b[2];});
+    labels.push(b[0]);
+    wr.push(arr.length?+(winRate(arr)*100).toFixed(1):0);
+    cnt.push(arr.length);
+  });
+  makeChart('c-duration',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Win Rate %',data:wr,backgroundColor:'rgba(167,139,250,.6)',borderColor:'#a78bfa',borderWidth:1},
+      {label:'Deal Count',data:cnt,type:'line',yAxisID:'y1',borderColor:'#60a5fa',backgroundColor:'transparent',pointRadius:2}
+    ]},
+    options:{scales:{y:{beginAtZero:true,max:100,grid:{color:'#182238'},ticks:{color:'#8b97b3'}},y1:{position:'right',grid:{display:false},ticks:{color:'#60a5fa'}},x:axisOpts().x}}
+  });
+}
+
+function renderTCV(deals){
+  var labels=[],wr=[],cnt=[];
+  BRACKETS.forEach(function(b){
+    var arr=deals.filter(function(d){return d.bracket===b[0];});
+    labels.push(b[0]);
+    wr.push(arr.length?+(winRate(arr)*100).toFixed(1):0);
+    cnt.push(arr.length);
+  });
+  makeChart('c-tcv',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Win Rate %',data:wr,backgroundColor:'rgba(251,191,36,.5)',borderColor:'#fbbf24',borderWidth:1},
+      {label:'Deal Count',data:cnt,type:'line',yAxisID:'y1',borderColor:'#34d399',backgroundColor:'transparent',pointRadius:2}
+    ]},
+    options:{scales:{y:{beginAtZero:true,max:100,grid:{color:'#182238'},ticks:{color:'#8b97b3'}},y1:{position:'right',grid:{display:false},ticks:{color:'#34d399'}},x:axisOpts().x}}
+  });
+}
+
+function renderCycle(deals){
+  var won=deals.filter(function(d){return d.outcome==='won';}).map(function(d){return d.cycleDays;});
+  var lost=deals.filter(function(d){return d.outcome==='lost';}).map(function(d){return d.cycleDays;});
+  var labels=['Won','Lost','All'];
+  var vals=[avg(won),avg(lost),avg(deals.map(function(d){return d.cycleDays;}))].map(Math.round);
+  makeChart('c-cycle',{
+    type:'bar',
+    data:{labels:labels,datasets:[{label:'Avg cycle length (days)',data:vals,backgroundColor:['rgba(52,211,153,.5)','rgba(251,113,133,.5)','rgba(96,165,250,.5)'],borderColor:'#1f2a44'}]},
+    options:{scales:{y:{beginAtZero:true,grid:{color:'#182238'},ticks:{color:'#8b97b3'}},x:{grid:{color:'#182238'},ticks:{color:'#8b97b3'}}}}
+  });
+}
+
+function renderBench(deals){
+  var labels=[],our=[],ext=[],mar=[];
+  REGIONS.forEach(function(reg){
+    var arr=deals.filter(function(d){return d.region===reg;});
+    labels.push(reg);
+    our.push(arr.length?+(winRate(arr)*100).toFixed(1):0);
+    ext.push((EX_BENCH.byRegion[reg]||0.6)*100);
+    mar.push(arr.length?+avg(arr.map(function(d){return d.margin;})).toFixed(1):0);
+  });
+  makeChart('c-bench',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Internal Win Rate %',data:our,backgroundColor:'rgba(34,211,238,.4)',borderColor:'#22d3ee',borderWidth:1},
+      {label:'External Baseline %',data:ext,backgroundColor:'rgba(148,163,184,.3)',borderColor:'#94a3b8',borderWidth:1},
+      {label:'Internal Margin %',data:mar,type:'line',yAxisID:'y1',borderColor:'#fbbf24',backgroundColor:'transparent',pointRadius:3}
+    ]},
+    options:{scales:{y:{beginAtZero:true,max:100,grid:{color:'#182238'},ticks:{color:'#8b97b3'}},y1:{position:'right',min:0,grid:{display:false},ticks:{color:'#fbbf24'}},x:axisOpts().x}}
+  });
+}
+
+function renderComponents(deals){
+  var labels=COMPONENTS;
+  var wrAtt=[],cnt=[];
+  labels.forEach(function(name){
+    var arr=deals.filter(function(d){return d.components.indexOf(name)>-1;});
+    wrAtt.push(arr.length?+(winRate(arr)*100).toFixed(1):0);
+    cnt.push(arr.length);
+  });
+  makeChart('c-components',{
+    type:'radar',
+    data:{labels:labels,datasets:[
+      {label:'Win Rate Where Attached %',data:wrAtt,borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.15)',pointBackgroundColor:'#22d3ee'},
+      {label:'Deals Containing Component',data:cnt,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.08)'}
+    ]},
+    options:{scales:{r:{angleLines:{color:cGrid()},grid:{color:cGrid()},pointLabels:{color:cText(),font:{size:9}},ticks:{display:false}}},plugins:{legend:{position:'bottom',labels:{color:cText(),boxWidth:12}}}}
+  });
+}
+
+function renderRoot(deals){
+  var lost=deals.filter(function(d){return d.outcome==='lost';});
+  var map={};
+  lost.forEach(function(d){ map[d.lossReason]=(map[d.lossReason]||0)+1; });
+  var labels=[],data=[];
+  LOSS_REASONS.forEach(function(name){ if(map[name]){ labels.push(name); data.push(map[name]); } });
+  makeChart('c-root',{
+    type:'doughnut',
+    data:{labels:labels,datasets:[{data:data,backgroundColor:['#fb7185','#fbbf24','#a78bfa','#60a5fa','#34d399','#f472b6']}]},
+    options:{plugins:{legend:{position:'bottom',labels:{color:cText(),boxWidth:10}}}}
+  });
+}
+
+function renderLossBench(deals){
+  var lost=deals.filter(function(d){return d.outcome==='lost';});
+  var map={};
+  lost.forEach(function(d){ map[d.lossReason]=(map[d.lossReason]||0)+1; });
+  var labels=Object.keys(EX_BENCH.lossMix);
+  var intPct=labels.map(function(k){ return lost.length?+((map[k]||0)/lost.length*100).toFixed(1):0; });
+  var extPct=labels.map(function(k){ return +(EX_BENCH.lossMix[k]*100).toFixed(1); });
+  makeChart('c-loss-bench',{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Internal % of Losses',data:intPct,backgroundColor:'rgba(251,113,133,.5)'},
+      {label:'External % of Losses',data:extPct,backgroundColor:'rgba(148,163,184,.35)'}
+    ]},
+    options:{indexAxis:'y',scales:{x:{beginAtZero:true,grid:{color:'#182238'},ticks:{color:'#8b97b3'}},y:{grid:{color:'#182238'},ticks:{color:'#8b97b3'}}}}
+  });
+}
+
+function renderIntel(deals){
+  var lost=deals.filter(function(d){return d.outcome==='lost';});
+  var map={};
+  lost.forEach(function(d){ if(d.competitor) map[d.competitor]=(map[d.competitor]||0)+1; });
+  var rows=state.intel.map(function(ci){
+    return '<tr>'+
+      '<td><b>'+ci.c+'</b><div class="note">'+ci.region+'</div></td>'+
+      '<td>'+ci.disc+'%</td>'+
+      '<td>'+pctF(map[ci.c]||0,lost.length,0)+'</td>'+
+      '<td>'+ci.note+'</td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('intel-table').innerHTML=
+    '<table><thead><tr><th>Competitor</th><th>Typical Discount</th><th>Share of Internal Losses</th><th>Market Intel</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function renderScenario(deals){
+  var cap=parseInt(document.getElementById('cap').value,10)||0;
+  var won=deals.filter(function(d){return d.outcome==='won';});
+  var above=won.filter(function(d){return d.discount>cap;});
+  var marginUplift=above.reduce(function(a,d){return a+(d.discount-cap)*0.5;},0);
+  var lost=deals.filter(function(d){return d.outcome==='lost';});
+  var recAdd=lost.filter(function(d){return d.discount<=cap&&d.lossReason==='Price sensitivity';}).length;
+  var el=document.getElementById('scenario-card');
+  el.innerHTML=
+    '<h3>Scenario Simulator &mdash; Discount Ceiling</h3>'+
+    '<div class="stat">Proposed ceiling: <span class="num">'+cap+'%</span> (industry band '+EX_BENCH.discountBand[0]+'\u2013'+EX_BENCH.discountBand[1]+'%)</div>'+
+    '<div class="stat">Won deals quoting above ceiling: <b>'+above.length+'</b></div>'+
+    '<div class="stat">Projected margin uplift if capped: <b class="d-up">+$'+marginUplift.toFixed(1)+'M</b></div>'+
+    '<div class="stat">Price-driven losses inside the cap (recoverable): <b>'+recAdd+'</b></div>'+
+    '<div class="note">Model: clipping discount to ceiling restores ~0.5 pts margin per point of discount; price-motivated losses inside the band are flagged as winnable with value-led packaging.</div>';
+}
+
+function renderInsights(deals){
+  var n=deals.length, ins=[];
+  if(n<5){
+    ins.push({sev:'lo',tag:'COVERAGE',title:'Insufficient data',body:'Add more deal records or loosen filters to unlock the insight engine. Press "Reset Sample" to restore the seeded dataset.',why:''});
+  } else {
+    var won=deals.filter(function(d){return d.outcome==='won';});
+    var lost=deals.filter(function(d){return d.outcome==='lost';});
+    var overallWR=winRate(deals);
+
+    var buck=[['0\u20134%',0,4],['4\u20138%',4,8],['8\u201312%',8,12],['12\u201316%',12,16],['>16%',16,100]];
+    var bestIdx=0,bestWR=-1;
+    buck.forEach(function(b,idx){
+      var arr=deals.filter(function(d){return d.discount>=b[1]&&d.discount<b[2];});
+      var wr=arr.length?winRate(arr):0;
+      if(wr>bestWR){ bestWR=wr; bestIdx=idx; }
+    });
+    var ceiling=buck[bestIdx][2];
+    ins.push({sev:'hi',tag:'PRICING',title:'Indicated max viable discount: ~'+ceiling+'%',
+      body:'Win rate degrades sharply beyond this bucket on current scope. Cap pricing variance on active pursuits and enforce deal-desk review above it.',
+      why:'Computed live: win rate vs discount depth ('+Math.round(overallWR*100)+'% overall).'});
+
+    var lossMap={};
+    lost.forEach(function(d){ lossMap[d.lossReason]=(lossMap[d.lossReason]||0)+1; });
+    var topLoss=null,maxCount=0;
+    LOSS_REASONS.forEach(function(name){ if((lossMap[name]||0)>maxCount){ maxCount=lossMap[name]; topLoss=name; } });
+    if(topLoss){
+      ins.push({sev:'med',tag:'ROOT CAUSE',title:'Program attack on: '+topLoss,
+        body:'Losses in this scope cluster on "'+topLoss+'". Build a pricing/SLA/scope playbook with the relevant owners and arm pursuit teams with counter-messaging.',
+        why:lost.length?pctF(maxCount,lost.length,0)+' of internal losses.':'',});
+    }
+
+    var minShare=1.1,gapComponent=null;
+    COMPONENTS.forEach(function(c){
+      var arr=deals.filter(function(d){return d.components.indexOf(c)>-1;});
+      var share=arr.length/n;
+      if(share<minShare){ minShare=share; gapComponent=c; }
+    });
+    if(gapComponent){
+      ins.push({sev:'hi',tag:'MISSING ELEMENT',title:'Bundle '+gapComponent+' by default in upcoming proposals',
+        body:'Attach rate for '+gapComponent+' is only '+pctF(minShare*n,n,0)+' in this scope yet it correlates with conversion in the radar. Make it a standard line item and option for customers.',
+        why:'Lowest component attach-rate among scored deals.'});
+    }
+
+    var worstRegion=null,worstGap=0;
+    REGIONS.forEach(function(reg){
+      var arr=deals.filter(function(d){return d.region===reg;});
+      if(!arr.length) return;
+      var gap=(EX_BENCH.byRegion[reg]||0.6)-winRate(arr);
+      if(gap>worstGap){ worstGap=gap; worstRegion=reg; }
+    });
+    if(worstRegion&&worstGap>0){
+      ins.push({sev:'med',tag:'GEOGRAPHY',title:worstRegion+' trails the external baseline by '+Math.round(worstGap*100)+'pp',
+        body:'Introduce regional discount guardrails, localize the value deck, and assign a pricing PMO before the next pursuit in this region.',
+        why:'Computed vs '+EX_BENCH.winRate*100+'% sector baseline.'});
+    }
+
+    var cycW=avg(won.map(function(d){return d.cycleDays;}));
+    var cycL=avg(lost.map(function(d){return d.cycleDays;}));
+    if(cycL>cycW*1.05){
+      ins.push({sev:'lo',tag:'CADENCE',title:'Longer cycles track losses',
+        body:'Lost deals average '+Math.round(cycL)+' days vs '+Math.round(cycW)+' for won. Set a '+Math.round(cycW)+'-day stage-gate warning to accelerate proposal-to-close.',
+        why:'Cycle-length gap: '+(cycL-cycW).toFixed(0)+' days.'});
+    }
+
+    var priceShare=lossMap['Price sensitivity']||0;
+    if(lost.length&&(priceShare/lost.length)>0.45){
+      ins.push({sev:'hi',tag:'COMMERCIAL',title:'Price sensitivity is systemic',
+        body:'Over '+pctF(priceShare,lost.length,0)+' of losses cite price. Compare against the external discount band ('+EX_BENCH.discountBand[0]+'\u2013'+EX_BENCH.discountBand[1]+'%) and rebuild value-selling thresholds.',
+        why:'Root-cause mix vs external benchmark.'});
+    }
+
+    var reqText=(document.getElementById('req-in').value||'').toLowerCase();
+    if(!reqText) reqText='ai/ml ops, finops, data analytics, 24x7 monitoring';
+    var missing=COMPONENTS.filter(function(c){
+      if(reqText.indexOf(c.toLowerCase())>-1) return false;
+      var use=deals.filter(function(d){return d.components.indexOf(c)>-1;}).length;
+      return use>0&&use/n>=0.6;
+    });
+    if(missing.length){
+      ins.push({sev:'lo',tag:'PROPOSAL',title:'Add to active pursuits: '+missing.join(', '),
+        body:'Customer RFx requirements do not mention these, yet they attach to 60%+ of scoped deals. Add them as optional line items to avoid scope-shortfall losses.',
+        why:'From customer-requirements panel vs attach-rate heuristic.'});
+    }
+  }
+  document.getElementById('insights').innerHTML=ins.map(function(i){
+    return '<div class="insight sev-'+i.sev+'">'+
+      '<span class="tag">'+i.tag+'</span>'+
+      '<div><h4>'+i.title+'</h4><p>'+i.body+'</p>'+(i.why?'<div class="why">'+i.why+'</div>':'')+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function parseCSV(text){
+  var rows=[],cur='',line=[],inQ=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=c; }
+    else if(c==='"') inQ=true;
+    else if(c===','){ line.push(cur); cur=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; line.push(cur); cur=''; if(line.length) rows.push(line); line=[]; }
+    else cur+=c;
+  }
+  if(cur!==''||line.length){ line.push(cur); rows.push(line); }
+  return rows;
+}
+
+function importCSV(){
+  var text=document.getElementById('csv-in').value.trim();
+  if(!text) return;
+  var rows=parseCSV(text);
+  if(rows.length<2){ alert('CSV needs a header row plus at least one record.'); return; }
+  var h=rows[0].map(function(x){ return x.trim().toLowerCase(); });
+  function ci(name){ var i=h.indexOf(name); return i>-1?i:-1; }
+  var iDate=ci('date'),iReg=ci('region'),iInd=ci('industry'),iTeam=ci('team'),iBr=ci('bracket'),iTcv=ci('tcv_usd'),iOut=ci('outcome'),
+      iDisc=ci('discount_pct'),iMar=ci('margin_pct'),iCyc=ci('cycle_days'),iCon=ci('contract_months'),iComp=ci('components'),iLos=ci('loss_reason');
+  var out=[];
+  rows.slice(1).forEach(function(r){
+    var tcv=parseFloat(r[iTcv])||0;
+    var d=iDate>-1&&r[iDate]?new Date(r[iDate]):new Date();
+    var comps=(iComp>-1&&r[iComp]?r[iComp]:'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+    out.push({
+      id:'IMP-'+Date.now()+Math.floor(Math.random()*1e3),
+      date:d,
+      iso:d.toISOString().slice(0,10),
+      quarter:String(d.getFullYear()%100)+'-Q'+Math.floor(d.getMonth()/3+1),
+      year:d.getFullYear(),
+      region:iReg>-1&&r[iReg]?r[iReg]:'AMER',
+      industry:iInd>-1&&r[iInd]?r[iInd]:'Other',
+      team:iTeam>-1&&r[iTeam]?r[iTeam]:'Orion',
+      bracket:iBr>-1&&r[iBr]?r[iBr]:'<$1M',
+      tcv:tcv,m:+(tcv).toFixed(1),
+      discount:parseFloat(r[iDisc])||0,
+      margin:parseFloat(r[iMar])||0,
+      contractMonths:parseInt(r[iCon])||12,
+      cycleDays:parseInt(r[iCyc])||45,
+      outcome:iOut>-1&&(r[iOut]||'').toLowerCase()==='won'?'won':'lost',
+      lossReason:iLos>-1&&r[iLos]?r[iLos]:null,
+      competitor:null,
+      dealReason:null,
+      components:comps.length?comps:['Managed Services']
+    });
+  });
+  if(out.length){ state.deals=state.deals.concat(out); renderAll(); }
+}
+function clearImport(){ document.getElementById('csv-in').value=''; }
+
+function ingestIntel(){
+  var text=document.getElementById('intel-in').value.trim();
+  if(!text) return;
+  var parsed=[];
+  text.split(/\n+/).forEach(function(line){
+    if(!line.trim()) return;
+    var p=line.split(',');
+    if(p.length>=2){
+      parsed.push({c:p[0].trim(),region:(p[1]||'').trim()||'All',disc:parseInt(p[2])||0,note:p.slice(3).join(',').trim()||'Imported intel'});
+    }
+  });
+  if(parsed.length) state.intel=parsed;
+}
+
+function exportCSV(){
+  return; /* export disabled on this preview */
+  var deals=filterDeals();
+  var head='date,region,industry,team,bracket,tcv_usd,outcome,discount_pct,margin_pct,cycle_days,contract_months,components,loss_reason';
+  var body=deals.map(function(d){
+    return [d.iso,d.region,d.industry,d.team,d.bracket,d.tcv,d.outcome,d.discount,d.margin,d.cycleDays,d.contractMonths,d.components.join(';'),d.lossReason||''].join(',');
+  }).join('\n');
+  var blob=new Blob([head+'\n'+body],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='winloss-export.csv';
+  a.click();
+}
+
+function resetData(){
+  state.deals=genDeals(SAMPLE_SEED,140);
+  state.filters={industries:{},regions:{},brackets:{},teams:{},outcome:'all',from:'',to:''};
+  state.intel=[
+    {c:'GloboTech',region:'AMER',disc:9,note:'Leads on AI governance + SLAs; aggressive bundle pricing'},
+    {c:'Nimbus Data',region:'EMEA',disc:12,note:'Price-led; weak delivery references'},
+    {c:'DataBridge',region:'LATAM',disc:8,note:'Value-scope focus; long cycle'},
+    {c:'InfraCore',region:'APAC',disc:11,note:'Deep local partnerships; lacks AIOps'}
+  ];
+  document.getElementById('csv-in').value='';
+  document.getElementById('intel-in').value='';
+  document.getElementById('req-in').value='AI/ML Ops, FinOps, Data Analytics, 24/7 Monitoring';
+  document.getElementById('d-from').value='';
+  document.getElementById('d-to').value='';
+  document.getElementById('cap').value=12;
+  document.getElementById('cap-lbl').textContent='12%';
+  buildChips();
+  setOutcome('all');
+  renderAll();
+}
+
+function toggleTheme(){
+  var cur=document.body.getAttribute('data-theme')||'light';
+  var next=cur==='light'?'dark':'light';
+  document.body.setAttribute('data-theme',next);
+  updateThemeButton();
+  renderAll();
+}
+function updateThemeButton(){
+  var cur=document.body.getAttribute('data-theme')||'light';
+  document.getElementById('theme-btn').textContent=cur==='light'?'Switch to Dark theme':'Switch to Light theme';
+}
+
+function renderAll(){
+  var deals=filterDeals();
+  renderKPIs(deals);
+  renderTrend(deals);
+  renderPricing(deals);
+  renderDuration(deals);
+  renderTCV(deals);
+  renderCycle(deals);
+  renderBench(deals);
+  renderComponents(deals);
+  renderRoot(deals);
+  renderLossBench(deals);
+  renderIntel(deals);
+  renderScenario(deals);
+  renderInsights(deals);
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  buildChips();
+  document.getElementById('req-in').value='AI/ML Ops, FinOps, Data Analytics, 24/7 Monitoring';
+  updateThemeButton();
+  renderAll();
+});
+window.addEventListener('beforeprint', function(ev){ ev.preventDefault(); });
+document.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+window.addEventListener('keydown', function(ev){
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'p') ev.preventDefault();
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') ev.preventDefault();
+});
+window.addEventListener('resize',function(){ renderAll(); });
+</script>
+</body>
+</html>
