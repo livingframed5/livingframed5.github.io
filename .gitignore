@@ -1,0 +1,45 @@
+# ---- Private: local only, never publish ----
+# Business context holds practice names, brands, and financials.
+business-context.md
+# Agent instructions + the Board sub-agent definition.
+AGENTS.md
+.opencode/
+# Pre-publish review tooling. Regenerate with: node prompt-library/make-review.js
+prompt-library/REVIEW.html
+prompt-library/make-review.js
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Environment / secrets
+.env
+.env*.local
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
